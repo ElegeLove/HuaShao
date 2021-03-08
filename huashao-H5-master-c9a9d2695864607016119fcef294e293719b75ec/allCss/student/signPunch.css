@@ -1,0 +1,146 @@
+#signPunch {
+    width: 100%;
+    /* padding-top: 1rem; */
+    box-sizing: border-box;
+}
+
+.top {
+    width: 100%;
+    padding: 0.265rem 0.3rem;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 111;
+    background: #ffffff;
+}
+
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topImg {
+    width: 0.4rem;
+    height: 0.4rem;
+}
+
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.ban {
+    width: 100%;
+    height: 3.54rem;
+}
+
+.ban img {
+    width: 100%;
+    height: 3.54rem;
+}
+
+.main {
+    width: 100%;
+    padding: 0.84rem 0.75rem 0.2rem;
+    box-sizing: border-box;
+}
+
+.inp {
+    width: 100%;
+    height: 0.88rem;
+    margin-bottom: 0.36rem;
+    border: 0.01rem solid rgba(204, 204, 204, 1);
+    border-radius: 0.1rem;
+    overflow: hidden;
+    padding: 0 0.25rem;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+}
+
+
+/* .main_phone {
+    padding: 0 0.25rem;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+} */
+
+.birthday {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.birthday>div {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: break-all;
+}
+
+.birthday_text {
+    font-size: 0.3rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(202, 202, 202, 1);
+    line-height: 0.4rem;
+}
+
+.van-picker__title {
+    display: flex;
+    align-items: center;
+}
+
+.btn {
+    width: 100%;
+    height: 1.06rem;
+    background: url('../../images/student/Icon_button_login.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+    margin-top: 1.65rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.4rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(255, 255, 255, 1);
+}
+
+.spannom {
+    font-size: 0.28rem !important;
+    width: 1.3rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: break-all;
+    line-height: 0.4rem !important;
+    height: 0.4rem !important;
+}
+
+.spanact {
+    width: 1.3rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: break-all;
+    line-height: 0.4rem !important;
+    height: 0.4rem !important;
+}
+
+.province {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    padding-bottom: 0.2rem;
+    padding-left: 0.1rem;
+    /* line-height: 0.4rem !important; */
+    height: 0.6rem !important;
+}

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>发布打卡</title>
+		<script src="../../js/public/rem.js"></script>
+		<script src="../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../allCss/public.css">
+		<link rel="stylesheet" href="../../allCss/teacher/IssuePunch.css">
+		<link rel="stylesheet" href="../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="fixeds">
+				<div class="head_top">
+				    <div class="head_topBox">
+				        <img class="head_topImg" src="../../images/student/icon_back.png" alt="" @click="goback">
+				        <div class="head_topTitle">发布打卡</div>
+				        <div class="head_topImg"></div>
+				    </div>
+				</div>
+				<div class="checkClass">
+					<div>
+						<div class="altitles">
+							<div @click="checks(1)">
+								<img src="../../images/teacher/xq_yuan.png" v-if="postData.check==1"/>
+								<img src="../../images/teacher/xq_yuan2.png" v-else/>
+							</div>
+							<div class="rigs">
+								<span @click="checks(1)">发布至班级</span>
+								<div class="align_items addTypes" v-if="postData.check==1">
+									<div class="newsAdd"  v-for="(item,index) in postData.classes_ids_name" :key="index">
+										<p>{{item}}</p>
+										<img src="../../images/teacher/ic_del.png" @click="deleteClass(index)"/>
+									</div>
+									<div class="adds" @click="addClass">+添加</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="stadent">
+						<div class="altitles">
+							<div @click="checks(2)">
+								<img src="../../images/teacher/xq_yuan.png" v-if="postData.check==2"/>
+								<img src="../../images/teacher/xq_yuan2.png" v-else/>
+							</div>
+							<div class="rigs">
+								<span @click="checks(2)">发布至学生</span>
+								<div class="addStudent" v-if="postData.check==2">
+									<div class="cloum_items" v-for="(item,index) in postData.students_name" :key="index">
+										<img :src="item.student_head" onerror="this.src = '../../images/teacher/error.png'" />
+										<p class="danshen">{{item.student_name}}</p>
+									</div>
+									<img src="../../images/teacher/My_add.png" @click="addStudents"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class="content">
+				<div v-for="(item,index) in postData.task_list">
+					<p class="danshen">{{item.txt}}</p>
+					<div class="align_items">
+						<p><span>*</span>发布日期</p>
+						<div class="align_items" @click="openTim(index)">
+							<p>{{item.end_date}}</p>
+							<img src="../../images/teacher/ic_more.png" />
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="timePop">
+				<van-popup v-model="timeShow" position="bottom">
+					<van-datetime-picker
+					  v-model="currentDate"
+					  type="datetime"
+					  title="选择时间"
+					  :min-date="minDate"
+					  :max-date="maxDate"
+					  @cancel="chekTim(false)"
+					  @confirm="getTim"
+					  :formatter="formatter"
+					  :filter="filter"
+					/>
+				</van-popup>
+			</div>
+			<div class="fotBtn">
+				<div class="align_items" v-if="status==1" @click="checkSends">
+					<img src="../../images/teacher/xq_yuan.png" v-if="postData.syn_school==1"/>
+					<img src="../../images/teacher/xq_yuan2.png" v-else/>
+					<span>同步至学校练习库</span>
+				</div>
+				<van-button type="default" class="gon" @click="submits">确认发布</van-button>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../js/public/vue.js"></script>
+	<script src="../../js/public/vant.js"></script>
+	<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					minDate: new Date(2020, 0, 1),
+					maxDate: new Date(2030, 10, 1),
+					currentDate: new Date(),
+					timeShow:false,
+					list:[],
+					listIx:-1,
+					status:0,              //是否是自主新增
+					postData:{},
+					status_type:"",
+					temporaryData:"",		 //上传视频后最终发布数据
+					btnCheck:true            //节流处理
+	            }
+	        },
+			
+	        created(){
+				iosReload()
+				var status = GetQueryValue("status")
+				this.status = status
+				var status_type = GetQueryValue("status_type")
+				this.status_type = status_type
+				var curDate = new Date();
+				var nextDate = new Date(curDate.getTime() + 24*60*60*1000); //后一天
+				var dateTims = getTime(nextDate)
+				var tim = dateTims[0]+"."+dateTims[1]+'.'+dateTims[2]+' '+dateTims[3]+':00'
+				var datas = JSON.parse(localStorage.getItem('sendData'))
+				if(this.status_type!="edit"){
+					if(datas.task_list[0].end_date==""){
+						datas.task_list.forEach(function(it){
+							it.end_date = tim
+						})
+					}
+				}
+				this.postData = datas
+				if(this.status_type!="edit"){
+					if(this.postData.end_date==""){
+						this.postData.end_date = tim          //可删掉
+					}
+				}
+	        },
+	        methods: {
+				filter(type, options) {				  if (type === 'minute') {					return options.filter((option) => option % 10 === 0);				  }				  return options;				},
+				formatter (type, value) {         //时间格式化
+				  var tim = formatters(type,value)
+				  return tim;
+				},
+				checkSends(){           //同步至练习库
+					this.postData.syn_school==1?this.postData.syn_school=0:this.postData.syn_school=1
+				},
+				deleteClass(index){       //删除班级
+					this.postData.classes_ids.splice(index,1)
+					this.postData.classes_ids_name.splice(index,1)
+				},
+				goback(){
+					history.go(-1)
+				},
+				checks(type){
+					this.postData.check = type
+				},
+				addClass(){         //添加发布班级
+					localStorage.setItem('sendData',JSON.stringify(this.postData))
+					location.href = "checkSendClass.html"
+				},
+				addStudents(){        //添加学生
+					localStorage.setItem('sendData',JSON.stringify(this.postData))
+					location.href = "checkStudents.html"
+				},
+				chekTim(bool){         //打开时间弹窗
+					this.timeShow = bool;
+				},
+				openTim(ix){         //打开时间弹窗
+					this.listIx = ix ;
+					this.timeShow = true
+				},
+				getTim(val){        //获取时间
+					var dateTims = getTime(val)
+					var tim = dateTims[0]+"."+dateTims[1]+'.'+dateTims[2]+' '+dateTims[3]+':'+dateTims[4]
+					this.postData.task_list[this.listIx].end_date = tim
+					this.timeShow = false
+					this.postData.end_date = tim
+				},
+				sendReg(posts){
+					var bool = true
+					if(posts.check==1){
+						if(posts.classes_ids.length!==0){
+							posts.students = []
+							posts.students_name = []
+						}else{
+							vant.Toast("请选择发布班级")
+							bool = false
+						}
+					}else{
+						if(posts.students.length!==0){
+							posts.classes_ids = []
+							posts.classes_ids_name = []
+						}else{
+							vant.Toast("请选择学生")
+							bool = false
+						}
+					}
+					if(posts.end_date==""){
+						vant.Toast("请选择截止日期")
+						bool = false
+					}
+					return bool;
+				},
+				editVicCall(res){           //编辑--上传视频回调
+					var posts = JSON.parse(JSON.stringify(this.temporaryData))
+					var videoIdArr = JSON.parse(res)
+					videoIdArr.forEach(function(it){
+						posts.attachment.push(it)
+					})
+					this.sendLoad(posts)
+				},
+				addVicCall(res){               //新增--上传视频回调
+					var posts = JSON.parse(JSON.stringify(this.temporaryData))
+					var videoIdArr = JSON.parse(res)
+					posts.attachment = videoIdArr
+					this.sendLoad(posts)
+				},
+ 				submits(){           //确认发布
+					var that =this;
+					var posts = JSON.parse(JSON.stringify(this.postData))
+					var bools = this.sendReg(posts)
+					if(!bools){
+						return false
+					}
+					posts.end_date = posts.end_date.split(".").join("-")
+					posts.task_list.forEach(function(item){
+						item.end_date = item.end_date.split(".").join("-")
+					})
+					if(this.btnCheck){
+						this.btnCheck = false
+						if(this.status_type=="edit"){        //编辑
+							var videoArrs = []
+							posts.attachment_arr.forEach(function(item){
+								if(item.url==""){
+									videoArrs.push({video_loc_path:item.videoPath,cover_path_id:item.coverPathId})
+								}
+							})
+							if(videoArrs.length!==0){          //选择了新视频
+								this.temporaryData = JSON.parse(JSON.stringify(posts))
+								AndroidRouter('uploadVideo',JSON.stringify(videoArrs),this.editVicCall,"set_uploadVideo")
+							}else{
+								that.sendLoad(posts)
+							}
+						}else{                             //其他
+							if(this.status==1){                     //自主新增
+								var videoArr = []
+								if(posts.attachment_arr.length!==0){
+									posts.attachment_arr.forEach(function(it){
+										videoArr.push({video_loc_path:it.videoPath,cover_path_id:it.coverPathId})
+									})
+									this.temporaryData = JSON.parse(JSON.stringify(posts))
+									AndroidRouter('uploadVideo',JSON.stringify(videoArr),this.addVicCall,"set_uploadVideo")
+								}else{
+									that.sendLoad(posts)
+								}
+							}else{               //其他方式
+								this.sendLoad(posts)
+							}
+						}
+						setTimeout(function(){
+							that.btnCheck = true
+						},1500)
+					}	
+				},
+				sendLoad(posts){
+					this.$refs.loadings.openLoading()
+					var urls = ""
+					if(this.status_type=="edit"){        //编辑
+						urls = "teacher/Teachertask/editPractice"
+					}else if(this.status_type=="addAll"){           //多个发布
+						urls = "teacher/Teachertask/publishPracticeAll"
+					}else{
+						if(this.status==1){          //自主
+							urls = 'teacher/Teachertask/publishPractice'
+						}else{                    //使用练习
+							urls = 'teacher/Teachertask/publishTaskTaskId'
+						}
+					}
+					var that = this;
+					ajax(urls,'POST',posts,function(res){
+						that.$refs.loadings.closedLoading()
+						vant.Toast(res.msg)
+						if(res.code==1){
+							localStorage.setItem("check",1)
+							if(that.status_type=="edit"||that.status_type==3){
+								setTimeout(function(){
+									history.go(-3)
+								},700)
+							}else if(that.status_type=="addAll"||that.status_type==4){
+								setTimeout(function(){
+									history.go(-2)
+								},700)
+							}else{
+								if(that.status==1){
+									setTimeout(function(){
+										history.go(-2)
+									},700)
+								}else{
+									setTimeout(function(){
+										history.go(-3)
+									},700)
+								}
+							}
+							localStorage.removeItem('sendData')
+						}
+					})
+				}
+	        }
+	    });
+	</script>
+</html>

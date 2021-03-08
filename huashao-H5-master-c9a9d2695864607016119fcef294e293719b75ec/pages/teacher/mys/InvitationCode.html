@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>邀请码</title>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/teacher/InvitationCode.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="heads_top">
+			    <div class="heads_topBox">
+			        <img class="heads_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+			        <div class="heads_topTitle">邀请码</div>
+			        <div class="heads_rig" @click="goRule">规则</div>
+			    </div>
+			</div>
+			<div class="th_padd">
+				<div class="getCode">
+					<span>我的邀请码</span>
+					<input type="text" v-model="videCode" readonly="readonly"/>
+					<!-- <p id="copyInp">{{videCode}}</p> -->
+					<div class="align_items">
+						<p @click="copty">复制</p>
+						<p @click="shears(true)">分享</p>
+					</div>
+				</div>
+				<div class="listBox">
+					<div class="t_titles align_items">
+						<span></span>
+						<p>邀请记录</p>
+					</div>
+				</div>
+				<van-list
+				      v-model="loading"
+				      :finished="finished"
+				      :immediate-check="false"
+				      finished-text="已加载完毕"
+				      @load="onLoad"
+				      :offset="10"
+				    >
+					<div class="allList">
+						<div class="align_items" v-for="(it,ix) in lists" :key="ix">
+							<p class="danshen">{{it.title}}</p>
+							<div>{{it.create_time}}</div>
+						</div>
+					</div>
+				</van-list>
+				<input type="text" id="copyInp" v-model="videCode" readonly="readonly" class="hisddens"/>
+				<van-popup v-model="show" round position="bottom" style="max-height: 70%;">
+					<div class="shareWay">
+						<div @click="share('WEIXIN')">
+							<img src="../../../images/teacher/pic_chat.png" />
+							<p>微信</p>
+						</div>
+						<div @click="share('WEIXIN_CIRCLE')">
+							<img src="../../../images/teacher/pic_friend.png" />
+							<p>朋友圈</p>
+						</div>
+					</div>
+					<div class="shareWay_Cacel" @click="shears(false)">取消</div>
+				</van-popup>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script src="../../../js/public/vant.js"></script>
+	<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					show:false,
+					page:1,
+					lists:[],
+					videCode:"",
+					loading:false,
+					finished:false,
+					sharesData:{}
+	            }
+	        },
+			mounted(){
+				this.getDetails()
+			},
+	        methods: {
+				share(type){       //分享
+					var that = this;
+					var urls = pageUrl+"huashao_h5/pages/shares/sharePage/shareInvitation.html?type=1&invite_code="+this.videCode
+					ajax("teacher/Share/inviteShare",'POST',{share_url:urls},function(res){
+						that.show = false;
+						if(res.code==1){
+							var sharesData = res.data.result.share
+							var objs = {
+								content:sharesData.description,
+								description:sharesData.description,
+								platform:type,
+								title:sharesData.title,
+								url:sharesData.webpageUrl
+							}
+							AndroidRouter("share",JSON.stringify(objs),that.set_share,"set_share")
+						}
+					})
+					
+				},
+				set_share(res){         //分享回调
+					
+				},
+				onLoad(){      //上拉加载
+				  this.page++
+				  this.getDetails()
+				},
+				getDetails(){
+					if(this.page==1){
+						this.$refs.loadings.openLoading()
+					}
+					var that = this;
+					ajax("teacher/Teacher/inviteLog",'POST',{page:this.page},function(res){
+						that.loading = false
+						that.$refs.loadings.closedLoading()
+						if(res.code==1){
+							that.videCode = res.data.invite_code
+							var numData = JSON.parse(JSON.stringify(res.data))
+							that.allData = numData.result
+							if(numData.list.length==0){
+							  that.finished = true
+							  return false
+							}
+							if(that.page==1){
+							  that.lists = numData.list
+							}else{
+							  that.lists = that.lists.concat(numData.list)
+							}
+							that.loading = false
+						}
+						vant.Toast.clear();
+					})
+				},
+				goback(){
+					AndroidRouter("closePage","")
+					// history.go(-1)
+				},
+				copty(){
+					var input = document.getElementById("copyInp");
+					input.select(); // 选中文本
+					document.execCommand("copy"); // 执行浏览器复制命令
+					vant.Toast("复制成功")
+				},
+				goRule(){     //规则
+					location.href = "rules.html?title=分享规则&key=invite_rules"
+				},
+				shears(bool){
+					this.show = bool;
+				}
+	        }
+	    });
+	
+	
+	</script>
+</html>

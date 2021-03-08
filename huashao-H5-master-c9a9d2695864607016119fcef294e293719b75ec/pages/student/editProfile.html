@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>编辑资料</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <script src="../../js/public/address4.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/editProfile.css">
+    <link rel="stylesheet" href="../../allCss/student/addrss.css">
+</head>
+
+<body>
+    <div id="editProfile" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">编辑资料</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="main_box main_boxs">
+                <div class="left_text">头像</div>
+                <div class="main_box_right">
+                    <img class="right_header" @click="upload" :src="userInfo.head" alt="">
+                    <img class="right_icon" src="../../images/student/ic_jt.png" alt="">
+                </div>
+            </div>
+            <div class="main_box" @click="updataName">
+                <div class="left_text">用户昵称</div>
+                <div class="main_box_right">
+                    <div class="right_text signName">{{userInfo.name}}</div>
+                </div>
+            </div>
+            <van-dialog v-model="showName" title="用户昵称" show-cancel-button @confirm="nameSure">
+                <input class="getStyle" maxlength="20" type="text" v-model="username" placeholder="请输入昵称" />
+            </van-dialog>
+            <div class="main_box">
+                <div class="left_text">ID号</div>
+                <div class="main_box_right">
+                    <!-- <input class="right_text" type="text" :value="userID" placeholder="请输入用户ID号"> -->
+                    <div class="right_text">{{userInfo.student_id}}</div>
+                </div>
+            </div>
+            <div class="main_box" @click="updataPersona">
+                <div class="left_text">个性签名</div>
+                <div class="main_box_right">
+                    <!-- <input class="right_text" type="text" :value="autograph" placeholder="请输入用户个性签名"> -->
+                    <div class="right_text signName">{{userInfo.personal_sign}}</div>
+                </div>
+            </div>
+            <van-dialog v-model="showPersonal" title="个性签名" show-cancel-button @confirm="personalSure">
+                <textarea class="getStyles" maxlength="300" v-model="personal" cols="30" rows="10" placeholder="请输入个性签名"></textarea>
+            </van-dialog>
+            <div class="main_box" @click="areaClick">
+                <div class="left_text">地区</div>
+                <div class="main_box_right">
+                    <div class="right_text signName">{{addr}}</div>
+                    <!-- <div class="right_text">{{userInfo.address}}</div> -->
+                    <img class="right_icon" src="../../images/student/ic_jt.png" alt="">
+                </div>
+            </div>
+            <van-popup v-model="areaShow" position="bottom">
+                <!-- <van-area title="城市选择" :area-list="areaList" @confirm="areaData" @cancel="areaCancel" /> -->
+                <div class="blackbg">
+                    <div class="addkuang">
+                        <div class="province">
+                            <span @click="dataList()" :class="prishow==true?'spanact':'spannom'">{{pro}}</span>
+                            <span @click="citys()" v-show="cityspanshow==true" :class="cityshow==true?'spanact':'spannom'">{{cit}}</span>
+                            <span @click="qus()" v-show="quspanshow==true" :class="qushow==true?'spanact':'spannom'">{{qu}}</span>
+                            <span @click="streets()" v-show="streetspanshow==true" :class="streetshow==true?'spanact':'spannom'">{{street}}</span>
+                            <span id="xxx" @click="close()">确定</span>
+                        </div>
+                        <div class="chooseadd">
+                            <div ref="pro1" v-show="prishow==true" class="provinceEach" v-for="(item, index) in proList" :key="index" @click="cityfun(item.childs,item.name)">
+                                {{item.name}}
+                            </div>
+                            <div ref="cit2" v-show="cityshow==true" class="provinceEach" v-for="(item, index) in citList" :key="'city'+index" @click="qufun(item.childs,item.name)">
+                                {{item.name}}
+                            </div>
+                            <div ref="qu3" v-show="qushow==true" class="provinceEach" v-for="(item, index) in quList" :key="'qu'+index" @click="streetfun(item.childs,item.name)">
+                                {{item.name}}
+                            </div>
+                            <div ref="street4" v-show="streetshow==true" class="provinceEach" v-for="(item, index) in streetList" :key="'street'+index" @click="endlist(item.childs,item.name)">
+                                {{item.name}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </van-popup>
+            <div class="main_box" @click="sexClick">
+                <div class="left_text">性别</div>
+                <div class="main_box_right">
+                    <div class="right_text">{{userInfo.sexVal}}</div>
+                    <img class="right_icon" src="../../images/student/ic_jt.png" alt="">
+                </div>
+            </div>
+            <van-popup v-model="sexShow" position="bottom">
+                <div class="sexItem" @click="sexCheng(1)">男</div>
+                <div class="sexItem" @click="sexCheng(2)">女</div>
+                <div class="sexItemCan" @click="sexCancel">取消</div>
+            </van-popup>
+
+            <div class="main_box" @click="getBirthday">
+                <!-- <input type="text" placeholder="请选择出生日期"> -->
+                <div class="left_text">出生日期</div>
+                <div class="birthday_img">
+                    <div class="right_text">{{userInfo.birth}}</div>
+                    <img src="../../images/student/ic_jt.png" alt="">
+                </div>
+            </div>
+            <van-popup v-model="show" position="bottom">
+                <van-datetime-picker v-model="currentDate" type="date" title="" confirm-button-text="完成" :min-date="minDate" :max-date="maxDate" :formatter="formatter" @confirm="suData" @cancel="cancel" />
+            </van-popup>
+            <div class="main_box" v-if="userInfo.password_status == 0" @click="updataPhone(userInfo.password_status)">
+                <div class="left_text">密码</div>
+                <div class="main_box_right">
+                    <div class="right_text">未设置</div>
+                    <img class="right_icon" src="../../images/student/ic_jt.png" alt="">
+                </div>
+            </div>
+            <div class="main_box" v-if="userInfo.password_status == 1" @click="updataPhone(userInfo.password_status)">
+                <div class="left_text">密码</div>
+                <div class="main_box_right">
+                    <div class="right_text">修改</div>
+                    <img class="right_icon" src="../../images/student/ic_jt.png" alt="">
+                </div>
+            </div>
+
+            <div class="btn" @click="outLogin">退出登录</div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#editProfile',
+        data() {
+            return {
+                header: '',
+                username: '',
+                personal: '',
+                showPersonal: false,
+                showName: false,
+                areaShow: false,
+                sexShow: false,
+                sexVal: '',
+                birthdayTime: '',
+                show: false,
+                minDate: new Date(1992, 03, 03),
+                maxDate: new Date(2025, 10, 1),
+                currentDate: new Date(),
+                userInfo: {
+                    head: '../../images/student/pic_26.png'
+                },
+                addr: "",
+                bgshow: false,
+                proList: [],
+                citList: [],
+                quList: [],
+                streetList: [],
+                prishow: true,
+                cityshow: false,
+                qushow: false,
+                streetshow: false,
+                cityspanshow: false,
+                quspanshow: false,
+                streetspanshow: false,
+                pro: "请选择",
+                cit: "请选择",
+                qu: "请选择",
+                street: "请选择",
+            }
+        },
+        mounted() {
+            this.getUserInfo();
+            this.dataList();
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            getUserInfo() {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                this.$refs.loadings.openLoading();
+                let that = this;
+                ajax('student/student/student', "POST", {}, function(res) {
+                    if (res.code == 1) {
+                        if (res.data.result.sex == 1) {
+                            res.data.result.sexVal = '男';
+                        } else {
+                            res.data.result.sexVal = '女';
+                        }
+                        if (res.data.result.head == '') {
+                            res.data.result.head = '../../images/student/pic_26.png';
+                        }
+                        that.proList = address;
+                        if (res.data.result.province == '') {
+                            that.citList = [];
+                            that.quList = [];
+                            that.streetList = [];
+                            that.prishow = true;
+                            that.cityshow = false;
+                            that.qushow = false;
+                            that.streetshow = false;
+                            that.cityspanshow = false;
+                            that.quspanshow = false;
+                            that.streetspanshow = false;
+                            that.pro = "请选择";
+                            that.cit = "请选择";
+                            that.qu = "请选择";
+                            that.street = "请选择";
+                        } else {
+                            address.filter(function(item) {
+                                return item.name == res.data.result.province
+                            }).map(function(item) {
+                                that.citList = item.childs
+                            })
+                            that.citList.filter(function(item) {
+                                return item.name == res.data.result.city
+                            }).map(function(item) {
+                                that.quList = item.childs
+                            })
+                            that.quList.filter(function(item) {
+                                return item.name == res.data.result.area
+                            }).map(function(item) {
+                                that.streetList = item.childs
+                            })
+                            that.cityspanshow = true;
+                            that.quspanshow = true;
+                            that.streetspanshow = true;
+                            that.prishow = false;
+                            that.cityshow = false;
+                            that.qushow = false;
+                            that.streetshow = true;
+                            that.pro = res.data.result.province;
+                            that.cit = res.data.result.city;
+                            that.qu = res.data.result.area;
+                            that.street = res.data.result.address;
+                            that.addr = res.data.result.province + res.data.result.city + res.data.result.area + res.data.result.address;
+                        }
+                        that.userInfo = res.data.result;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                    }
+                })
+            },
+            //头像上传
+            upload() {
+                AndroidRouter('uploadHead', 1, this.setPic, "set_uploadHead")
+            },
+            setPic(res) {
+                // vant.Toast(111)
+                let data = JSON.parse(res)
+                    // vant.Toast(data[0].id)
+                this.header = data[0].path;
+                this.setUserInfo(data[0].id, '', '', '', '')
+            },
+            //修改用户名
+            updataName() {
+                this.showName = true;
+            },
+            nameSure() {
+                this.showName = false;
+                // this.userInfo.name = this.username;
+                this.setUserInfo('', this.username, '', '', '')
+            },
+            setUserInfo(head, name, personal, sex, birth) {
+                let that = this;
+                ajax('student/student/student_edit', "POST", {
+                    head: head,
+                    name: name,
+                    personal_sign: personal,
+                    sex: sex,
+                    birth: birth
+                }, function(res) {
+                    if (res.code == 1) {
+                        if (head != '') {
+                            that.userInfo.head = that.header;
+                        }
+                        if (name != '') {
+                            that.userInfo.name = name;
+                        }
+                        if (personal != '') {
+                            that.userInfo.personal_sign = personal;
+                        }
+                        if (sex != '') {
+                            if (sex == 1) {
+                                that.userInfo.sexVal = '男';
+                            } else {
+                                that.userInfo.sexVal = '女';
+                            }
+                            that.userInfo.sex = sex;
+                        }
+                        if (birth != '') {
+                            that.userInfo.birth = birth;
+                        }
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                    // that.getUserInfo();
+                })
+            },
+            //修改个性签名
+            updataPersona() {
+                this.showPersonal = true;
+            },
+            personalSure() {
+                this.showPersonal = false;
+                // this.userInfo.personal_sign = this.personal;
+                this.setUserInfo('', '', this.personal, '', '')
+            },
+            //城市选择
+            areaClick() {
+                this.areaShow = true;
+            },
+            areaData(data) {
+                console.log(data)
+                let adess = '';
+                data.forEach(function(item) {
+                    adess += item.name;
+                });
+                this.userInfo.address = adess;
+                this.areaShow = false;
+            },
+            areaCancel() {
+                this.areaShow = false;
+            },
+            //性别选择
+            sexClick() {
+                this.sexShow = true;
+            },
+            sexCheng(i) {
+                if (i == 1) {
+                    this.userInfo.sexVal = '男';
+                } else {
+                    this.userInfo.sexVal = '女';
+                }
+                this.userInfo.sex = i;
+                this.setUserInfo('', '', '', i, '')
+                this.sexShow = false;
+            },
+            sexCancel() {
+                this.sexShow = false;
+            },
+            getBirthday() {
+                this.show = true;
+            },
+            suData(data) {
+                const d = new Date(data)
+                    //年月日
+                const resDate = d.getFullYear() + '-' + this.p((d.getMonth() + 1)) + '-' + this.p(d.getDate())
+                    //时分秒
+                    // const resTime = this.p(d.getHours()) + ':' + this.p(d.getMinutes()) + ':' + this.p(d.getSeconds())
+                this.userInfo.birth = resDate;
+                this.setUserInfo('', '', '', '', resDate)
+                this.show = false;
+            },
+            p(s) {
+                return s < 10 ? '0' + s : s
+            },
+            formatter(type, val) {
+                if (type === 'year') {
+                    return `${val}年`;
+                } else if (type === 'month') {
+                    return `${val}月`;
+                } else if (type === 'day') {
+                    return `${val}日`;
+                }
+                return val;
+            },
+            cancel() {
+                this.show = false;
+            },
+            outLogin() {
+                vant.Dialog.confirm({
+                    title: '退出登录',
+                    message: '确认要退出吗？'
+                }).then(function() {
+                    // localStorage.removeItem("token")
+                    AndroidRouter('loginOut', '');
+                })
+            },
+            //城市选择
+            // getAddress:function(){
+            //     this.bgshow=true;
+            // },
+            dataList: function() {
+                this.proList = address;
+                // window.console.log(address);
+                this.prishow = true;
+                this.cityshow = false;
+                this.qushow = false;
+                this.streetshow = false;
+            },
+            cityfun: function(e, n) {
+                this.pro = n;
+                this.citList = e;
+                this.cityspanshow = true;
+                this.quspanshow = false;
+                this.streetspanshow = false;
+                this.prishow = false;
+                this.cityshow = true;
+                this.qushow = false;
+                this.streetshow = false;
+                this.cit = "请选择";
+                this.qu = "请选择";
+                this.street = "请选择";
+
+            },
+            citys: function() {
+                this.prishow = false;
+                this.cityshow = true;
+                this.qushow = false;
+                this.streetshow = false;
+            },
+            qus: function() {
+                this.prishow = false;
+                this.cityshow = false;
+                this.qushow = true;
+                this.streetshow = false;
+            },
+            qufun: function(e, n) {
+                this.cit = n;
+                this.quList = e;
+                this.quspanshow = true;
+                this.streetspanshow = false;
+
+                this.prishow = false;
+                this.cityshow = false;
+                this.qushow = true;
+                this.streetshow = false;
+
+                this.qu = "请选择";
+                this.street = "请选择";
+            },
+            streets: function() {
+                this.prishow = false;
+                this.cityshow = false;
+                this.qushow = false;
+                this.streetshow = true;
+            },
+            streetfun: function(e, n) {
+                this.qu = n;
+                this.streetList = e;
+                this.streetspanshow = true;
+                this.prishow = false;
+                this.cityshow = false;
+                this.qushow = false;
+                this.streetshow = true;
+                this.street = "请选择";
+            },
+            endlist: function(e, n) {
+                this.street = n;
+                // this.bgshow=false;
+                // this.areaShow = false;
+                // this.addr = this.pro + " " + this.cit + " " + this.qu + " " + this.street;
+            },
+
+            close: function() {
+                this.areaShow = false;
+                this.addr = this.pro + this.cit + this.qu + this.street;
+                // this.addr = this.pro + this.cit + this.qu + this.street;
+                // this.$emit('sendValueToParent',this.pro,this.cit,this.qu,false);
+                let that = this;
+                ajax('student/student/student_edit', "POST", {
+                    province: that.pro,
+                    city: that.cit,
+                    area: that.qu,
+                    address: that.street
+                }, function(res) {
+                    that.userInfo.province = that.pro;
+                    that.userInfo.city = that.cit;
+                    that.userInfo.area = that.qu;
+                    that.userInfo.address = that.address;
+                    that.addr = that.pro + that.cit + that.qu + that.street;
+                    // that.userInfo = {}
+                    // that.getUserInfo();
+                })
+            },
+            // 验证手机号
+            updataPhone(i) {
+                location.href = './verifyPhone.html?status=' + i;
+            },
+            // // 修改密码
+            // updataPwd() {
+            //     location.href = './changePwd.html';
+            // },
+        }
+    });
+</script>
+
+</html>

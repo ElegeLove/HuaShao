@@ -1,0 +1,170 @@
+#box{
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	padding-top: 1.9rem;
+	overflow-y: scroll;
+/* 	-webkit-overflow-scrolling: touch;
+	overflow-scrolling: touch; */
+}
+.top {
+    width: 100%;
+    padding: 0.265rem 0.25rem;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 111;
+    background: #ffffff;
+}
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.topImg {
+    width: 0.45rem;
+    height: 0.45rem;
+}
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+}
+.tabs{
+	width: 100%;
+	position: fixed;
+	top: 0.98rem;
+	left: 0;
+	background-color: white;
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	box-sizing: border-box;
+	border-bottom: 0.02rem solid #EEEEEE;
+}
+.tabs>div{
+	font-size: 0.28rem;
+	color: #999999;
+	position: relative;
+	height: 0.99rem;
+	display: flex;
+	align-items: center;
+}
+.antives::after{
+	position: absolute;
+	content: '';
+	width: 0.5rem;
+	height: 0.06rem;
+	background-color: #2EC5E0;
+	bottom: 0;
+	left: 50%;
+	transform: translateX(-50%);
+}
+.listBox{
+	box-sizing: border-box;
+	padding: 0.49rem 0.3rem 0 0.3rem;
+}
+.list{
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.46rem;
+}
+.list>.user{
+	display: flex;
+	align-items: center;
+}
+.list>.user>img{
+	width: 1rem;
+	height: 1rem;
+	border-radius: 50%;
+}
+.list>.user>span{
+	font-size: 0.32rem;
+	color: #444444;
+	margin-left: 0.18rem;
+	width: 1.5rem;
+	line-height: 0.45rem;
+}
+.list>.btns{
+	width: 1.8rem;
+	height: 0.5rem;
+	background-color: #2EC5E0;
+	font-size: 0.24rem;
+	color: #FFFFFF;
+	border-radius: 0.25rem;
+	text-align: center;
+	line-height: 0.5rem;
+}
+.list>.cpres{
+	display: flex;
+	align-items: center;
+	font-size: 0.32rem;
+	color: #FFBB03;
+	width: 1.5rem;
+	justify-content: flex-start;
+}
+.list>.cpres>div{
+	width: 0.26rem;
+	height: 0.33rem;
+	margin-right: 0.15rem;
+}
+.list>.cpres>div>img{
+	width: 100%;
+	height: 100%;
+}
+.thcheckTab{
+	box-sizing: border-box;
+	padding-top: 0.38rem;
+	border-bottom: 0.02rem solid #EEEEEE;
+	width: 100%;
+	position: fixed;
+	top: 0.98rem;
+	left: 0;
+	background-color: white;
+}
+.thcheckTab .van-tabs--line .van-tabs__wrap{
+	height: 0.6rem !important;
+}
+.thcheckTab .van-tab{
+	font-size: 0.28rem;
+}
+.thcheckTab .van-tab span{
+	font-size: 0.28rem !important;
+	line-height: 0.35rem !important;
+}
+
+.fotBtn>p{
+	width: 1.8rem;
+	height: 0.5rem;
+	background-color: #2EC5E0;
+	font-size: 0.24rem;
+	color: #FFFFFF;
+	text-align: center;
+	line-height: 0.5rem;
+	border-radius: 0.44rem;
+	box-shadow: 0 0.05rem 0 #15A9C3;
+}
+.checkTab{
+	width: 100%;
+	position: fixed;
+	top: 0.98rem;
+	left: 0;
+	background-color: white;
+	box-sizing: border-box;
+	padding-top: 0.38rem;
+	border-bottom: 0.02rem solid #EEEEEE;
+}
+.checkTab .van-tabs--line .van-tabs__wrap{
+	height: 0.6rem;
+}
+.checkTab .van-tab{
+	font-size: 0.28rem;
+}
+.checkTab .van-ellipsis{
+	font-size: 0.28rem;
+	line-height: 0.35rem;
+}

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>学员列表</title>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/teacher/newStudentList.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box"  v-cloak ref="alls">
+			<div class="topFixd">
+				<div class="heads_top">
+				    <div class="heads_topBox">
+				        <img class="heads_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+				        <div class="heads_topTitle">学员列表</div>
+				        <div class="heads_rig" @click="openRemove">{{removeShow?'确认移除':'移除学员'}}</div>
+				    </div>
+				</div>
+				<div class="searchBox" @click="goSearch">
+					<div class="ipts">
+						<input v-model="postData.keyword" readonly="readonly"/>
+						<div class="align_items" v-show="postData.keyword==''">
+							<img src="../../../images/teacher/ic_search.png" />
+							<p>手机号搜索</p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="th_padd staBox" v-if="loadAll">
+				<div class="list" >
+					<div class="align_items titleBox">
+						<div class="align_items">
+							<span></span>
+							<p class="danshen" v-if="classInfo!==''">{{classInfo.class_name}}({{classInfo.student_num}}人)</p>
+						</div>
+						<div class="fotBtns" v-if="!removeShow" @click="addStudent">
+							<p>+新增学员</p>
+						</div>
+					</div>
+					<div class="lasList" v-if="list.length!==0">
+						<div class="align_items alsList" v-for="(it,index) in list" :key="index">
+							<div class="lefts align_items" @click.stop="goUserpage(it)">
+								<img :src="it.student_head" onerror="this.src = '../../../images/teacher/error.png'"/>
+								<div>
+									<p class="danshen">{{it.student_name}}</p>
+									<p>手机号:{{it.student_mobile}}</p>
+								</div>
+							</div>
+							<div class="rigs" v-if="removeShow" @click="checkRemove(it)">
+								<img src="../../../images/teacher/checkBoxOne.png" v-if="it.check"/>
+								<img src="../../../images/teacher/checkBoxTwo.png" v-else/>
+							</div>
+						</div>
+					</div>
+					<div class="nullEmptys mads" v-if="list.length==0">
+						<img src="../../../images/student/null.png" />
+						<p>什么都没有...</p>
+					</div>
+				</div>
+			</div>
+			<div class="alertBox">
+				<van-overlay :show="show" @click="removes(false)" z-index="999">
+					<div class="wrapper" @click.stop>
+					    <div class="alerts">
+							<div class="hearts align_items">
+								<span></span>
+								<p>确定移除</p>
+								<img src="../../../images/teacher/ic_cancle.png" @click="removes(false)"/>
+							</div>
+							<div class="cont">移除学员后，学员将不再同步作业，是否确定移除？</div>
+							<div class="fotBtn">
+								<p @click="removeSub">确定</p>
+							</div>
+						</div>
+				    </div>
+				</van-overlay>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script src="../../../js/public/vant.js"></script>
+	<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					postData:{
+						keyword:"",
+						classes_id:""
+					},
+					classInfo:"",
+					list:[],
+					removeData:{
+						classes_student_id:[]
+					},
+					loadAll:false,
+					removeShow:false,             //是否移除学员
+					show:false          //确定移除弹窗
+	            }
+	        },
+			mounted(){
+				iosReload()
+				var id = GetQueryValue("id")
+				this.postData.classes_id = id
+				// this.classInfo = JSON.parse(obj)
+				this.getStudentList()
+			},
+	        methods: {
+				goSearch(){         //搜索
+					location.href = "./searchStudent.html?id="+this.postData.classes_id
+				},
+				getStudentList(){
+					this.$refs.loadings.openLoading()
+					var that = this;
+					ajax("teacher/Classes/classesStudentList",'POST',this.postData,function(res){
+						if(res.code==1){
+							that.loadAll = true
+							var datas = JSON.parse(JSON.stringify(res.data.list))
+							that.classInfo = res.data.classes_list
+							datas.forEach(function(its){
+								its.check = false
+							})
+							that.list = datas
+						}
+						that.$refs.loadings.closedLoading()
+					})
+				},
+				goback(){
+					history.go(-1)
+				},
+				openRemove(){       //移除学员
+					if(this.removeShow){       //确认移除
+						var newArr = []
+						this.list.forEach(function(item){
+							if(item.check==true){
+								newArr.push(item.classes_student_id)
+							}
+						})
+						this.removeData.classes_student_id = newArr
+						if(this.removeData.classes_student_id.length!==0){
+							this.show = true
+						}else{
+							vant.Toast("请选择学生")
+						}
+					}else{ 						//移除学员
+						this.removeShow = true
+					}
+				},
+				removeSub(){       //确定移除学生
+					this.$refs.loadings.openLoading()
+					var that = this;
+					ajax("teacher/Classes/removeStudentFromClass",'POST',this.removeData,function(res){
+						that.$refs.loadings.closedLoading()
+						vant.Toast(res.msg)
+						that.show = false
+						if(res.code==1){
+							that.classInfo.student_num-= that.removeData.classes_student_id.length
+							that.removeShow = false
+							that.removeData.classes_student_id = []
+							setTimeout(function(){
+								that.getStudentList()
+							},500)
+						}
+					})
+				},
+				checkRemove(it){         //选择删除的数据
+					it.check?it.check=false:it.check=true
+				},
+				removes(bool){          //确定移除
+					this.show = bool
+				},
+				addStudent(){          //新增学员
+					location.href = "../newStudents.html?status=1"
+				},
+				goUserpage(item){
+					location.href = "../mys/outhPage.html?id="+item.student_id+"&u_type=0"
+				}
+	        }
+	    });
+	</script>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>学校简介</title>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<script src="../../../js/public/quilljs.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/principal/t_schoolProfile.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+		<link href="../../../allCss/quill.css" rel="stylesheet">
+	</head>
+	<body>
+		<div id="box">
+			<div class="th_headers">
+			    <div class="th_headers_topBox">
+			        <img class="th_headers_topImg" src="../../../images/student/icon_back.png" alt="" @click="goBack">
+			        <div class="th_headers_topTitle">学校简介</div>
+					<div class="th_headers_rigs" @click="overs">完成</div>
+			    </div>
+			</div>
+			<div id="content" ref="myQuillEditor">
+			</div>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script src="../../../js/public/vant.js"></script>
+	<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					editor:null
+	            }
+	        },
+			mounted(){
+				var toolbarData = [
+					['bold'],        // 切换按钮
+					// [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+					// [{ 'indent': '-1'}, { 'indent': '+1' }],          // 减少缩进/缩进
+					[{ 'size': ['small', false, 'large', 'huge'] }],  // 用户自定义下拉
+					// [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+
+					[{ 'color': [] }],          // 主题默认下拉，使用主题提供的值
+					[{ 'align': [] }],
+					['image']
+				  ];
+				  var that = this
+				 this.editor = new Quill('#content', {
+				    modules: { toolbar:{
+						container:toolbarData,
+						 handlers: {
+							'image': function (value) {
+							  if (value) {
+								// 触发input框选择图片文件
+								that.uploads()
+							  } else {
+								this.quill.format('image', false);
+							  }
+							}
+						},
+					}},
+				    theme: 'snow'
+				  });
+				  var quill = localStorage.getItem("quill")
+				  if(quill!==null&&quill!==""&&quill!=undefined){
+					  document.querySelector('#content').children[0].innerHTML = quill
+				  }
+			},
+			methods:{
+				overs(){
+				  var html = document.querySelector('#content').children[0].innerHTML
+				  ajax('school/school/school_edit',"POST",{content:html},function(res){
+					  vant.Toast(res.msg)
+					  if(res.code==1){
+						 setTimeout(function(){
+							  history.go(-1)
+						 },500)
+					  }
+				  })
+				},
+				goBack(){
+					history.go(-1)
+				},
+				uploads(){
+					AndroidRouter("selectPic",1,this.upImgCall,"set_selectPic")
+				},
+				upImgCall(res){       //封面图回调
+					var resPen = JSON.parse(res)
+					var length = this.editor.selection.savedRange.index;
+				    // 插入图片  res.info为服务器返回的图片地址
+				    this.editor.insertEmbed(length, 'image', resPen[0].path);
+				    // 调整光标到最后
+				    this.editor.setSelection(length + 1)
+					
+				},
+			}
+	    });
+	</script>
+</html>

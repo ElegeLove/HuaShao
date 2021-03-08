@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title></title>
+    <!-- <title>{{dataVal.student_name}}</title> -->
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/directShare.css">
+</head>
+
+<body>
+    <div id="directShare" class="content" v-cloak>
+        <!-- <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">{{dataVal.student_name}}的打卡成绩</div>
+                <div class="topImg"></div>
+            </div>
+        </div> -->
+        <div class="main">
+            <div class="main_top">
+                <div class="main_top_num">
+                    <div class="main_top_num_main">
+                        <img src="../../images/student/pic_star01.png" alt="">
+                        <div class="main_top_num_main_num">{{dataVal.star_num}}枚</div>
+                        <div class="main_top_num_main_text">[ {{dataVal.student_name}}正在参加“花少教育”的打卡挑战 ]</div>
+                        <!-- <div class="main_top_num_main_text">[ {{dataVal.student_name}}正在参加“{{dataVal.current_task.name}}”的打卡挑战 ]</div> -->
+                    </div>
+                </div>
+                <div class="main_top_list">
+                    <div class="list_item">
+                        <div class="list_item_top">{{dataVal.punch_clock_all_days}}天</div>
+                        <div class="list_item_main">
+                            <div>
+                                <img src="../../images/student/Icon_cumulativepunch.png" alt="">
+                                <div>累计打卡</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list_item">
+                        <div class="list_item_top">{{dataVal.punch_clock_series_days}}天</div>
+                        <div class="list_item_main">
+                            <div>
+                                <img src="../../images/student/Icon_clockingcontinuously.png" alt="">
+                                <div>连续打卡</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="main_content">
+                <div class="main_content_border">
+                    <div class="main_content_top">{{dataVal.student_name}}最近的练习作品</div>
+                    <div>
+
+                        <div v-if="dataVal.current_task != '' || dataVal.current_task.length > 0">
+                            <div class="main_content_banner">
+                                <img class="main_content_banner_img" v-if="dataVal.current_task.cover_img && dataVal.current_task.cover_img !=''" :src="dataVal.current_task.cover_img" alt="">
+                                <div class="main_content_banner_icon">
+                                    <img v-if="dataVal.current_task.form == 1" src="../../images/student/Icon_pic.png" alt="">
+                                    <img v-if="dataVal.current_task.form == 2" src="../../images/student/Icon_audio.png" alt="">
+                                    <img v-if="dataVal.current_task.form == 3" src="../../images/student/Icon_video.png" alt="">
+                                    <div>
+                                        {{dataVal.current_task.form_text}}<span>练习</span>&nbsp;<span>{{dataVal.current_task.end_date}}</span>
+                                    </div>
+                                </div>
+                                <!-- <div class="main_content_banner_icon">
+                                    <img src="../../images/student/Icon_audio.png" alt="">
+                                    <div>{{dataVal.current_task.form_text}}<span>练习</span>&nbsp;<span>2020.02.23</span></div>
+                                </div> -->
+                            </div>
+                            <div class="main_content_title">
+                                <div class="main_content_title_left">{{dataVal.current_task.name}}</div>
+                                <div class="main_content_title_right" v-if="dataVal.current_task.tag_name && dataVal.current_task.tag_name != ''">
+                                    {{dataVal.current_task.tag_name}}</div>
+                            </div>
+                            <div class="main_content_text">{{dataVal.current_task.content}}</div>
+                            <div class="main_content_footer" @click="showInfo(dataVal.current_task.student_task_id)">
+                                查看他的作品
+                            </div>
+                        </div>
+                        <div v-else class="taskNumm">
+                            <div>
+                                <img src="../../images/student/null.png" alt="">
+                                <div>暂无练习</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="main_understand">
+                    <div class="main_content_top">了解“<span>{{dataVal.school.school_name}}</span>”，共同参与打卡</div>
+                    <!-- <img src="../../images/student/pic_04.png" alt=""> -->
+                    <div v-html="dataVal.school.content"></div>
+                </div>
+            </div>
+            <div class="main_footer_box">
+                <div class="main_footer">
+                    <div class="main_footer_left" @click="thumbs">给他一个赞吧</div>
+                    <div class="main_footer_right" @click="goClock">我也要打卡</div>
+                </div>
+            </div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#directShare',
+        data() {
+            return {
+                dataVal: {
+                    current_task: {
+                        name: ''
+                    },
+                    school: {
+                        school_name: ''
+                    }
+                },
+                name: ''
+            }
+        },
+        mounted() {
+            // this.name = '1212';
+            // vant.Toast.loading({
+            //     message: '',
+            //     forbidClick: true,
+            //     loadingType: 'spinner',
+            //     duration: 0,
+            //     icon: "../../images/loading.gif"
+            // });
+            var share_code = GetQueryValue("student_share_code");
+            this.$refs.loadings.openLoading();
+            let that = this;
+            ajax('current/share/punch_clock_achievement', "POST", {
+                student_share_code: share_code,
+                share_url: pageUrl + 'huashao_h5/pages/student/directShare.html'
+            }, function(ress) {
+                if (ress.code == 1) {
+                    that.dataVal = ress.data.result;
+                    document.title = ress.data.result.student_name + '的打卡成绩'
+                        // vant.Toast.clear();
+                    that.$refs.loadings.closedLoading();
+                }
+            })
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            goClock() {
+                let url = {
+                    code: this.dataVal.share.webpageUrl
+                }
+                location.href = './signPunch.html?share=' + this.dataVal.share.webpageUrl;
+            },
+            showInfo(id) {
+                location.href = './graphicDetails.html?id=' + id;
+                // var obj = {
+                // 	txt:this.allData.title,
+                // 	path:path
+                // }
+                // localStorage.setItem("videoMess",JSON.stringify(obj))
+                // location.href = "../shares/principal/autoVideo.html"
+            },
+            //点赞
+            thumbs() {
+                let that = this;
+                ajax('current/share/punch_clock_achievement_click', "POST", {
+                    share_code: that.dataVal.share_code,
+                    student_task_id: that.dataVal.current_task.student_task_id
+                }, function(res) {
+                    if (res.code == 1) {
+                        vant.Toast(res.msg)
+                    }
+                })
+            }
+        }
+    });
+</script>
+
+</html>

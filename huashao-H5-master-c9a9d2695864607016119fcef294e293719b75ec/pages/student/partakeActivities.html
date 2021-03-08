@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>参与活动</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/partakeActivities.css">
+</head>
+
+<body>
+    <div id="partakeActivities" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack()" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">参与活动</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="main_name">
+                <div class="name_text">
+                    <span class="redColor">*</span><span>我的姓名</span>
+                </div>
+                <input class="namr_inp" type="text" v-model="nameVal" placeholder="请输入姓名">
+            </div>
+            <div class="theme">
+                <div>
+                    <span class="redColor">*</span><span>我的主题（100字以内）</span>
+                </div>
+                <input class="theme_text" type="text" v-model="themeVal" maxlength="100" placeholder="请输入作品主题">
+                <!-- <textarea class="theme_text" @focus="noneBtn" @blur="showBtn" v-model="themeVal" maxlength="100" id="" cols="30" rows="10"
+                    placeholder="请输入作品主题"></textarea> -->
+            </div>
+            <div class="theme">
+                <div>
+                    主题描述（300字以内）
+                </div>
+                <input class="theme_text theme_texts" v-model="describeVal" placeholder="请输入主题描述" maxlength="300" type="text">
+                <!-- <textarea class="theme_text theme_texts" @focus="noneBtn" @blur="showBtn" v-model="describeVal" maxlength="300" id="" cols="30" rows="10"
+                    placeholder="请输入主题描述"></textarea> -->
+            </div>
+            <div class="upload">
+                <div>
+                    <span class="redColor">*</span>
+                    <span>{{activetyType==0?"上传图片作品":activetyType==1?'上传音频作品':'上传视频作品'}}</span>
+                </div>
+                <div class="upFile" v-if="activetyType==2">
+                    <div class="upFile_file" @click="upload(activetyType)"></div>
+                    <div v-if="imgPath.length > 0">
+                        <!-- <img v-for="item in imgPath" :src="item.video_loc_path" alt=""> -->
+                        <div v-for="(item,i) in imgPath" :key="i">
+                            <img :src="item.cover_path" class="imgs" />
+                            <img src="../../images/teacher/ic_del.png" class="dele" @click="deleteVideo" />
+                        </div>
+                    </div>
+                </div>
+                <div class="upFile" v-if="activetyType==1">
+                    <div class="upFile_file" @click="upload(activetyType)"></div>
+                    <div v-if="imgPath.length > 0">
+                        <!-- <img v-for="item in imgPath" :src="item.file_path" alt=""> -->
+                        <div class="audios" v-for="item in imgPath">
+                            <img src="../../images/student/Collection_voice.png" class="imgs" />
+                            <span>{{item.duration}}〞</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="upFile" v-if="activetyType==0">
+                    <div class="upFile_file" @click="upload(activetyType)"></div>
+                    <div v-if="imgPath.length > 0">
+                        <!-- <img v-for="item in imgPath" :src="item.path" alt=""> -->
+                        <div v-for="(item,i) in imgPath" :key="i">
+                            <img :src="item.path" class="imgs" />
+                            <img src="../../images/teacher/ic_del.png" class="dele" @click="deleteVideo" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="listBtn">
+                <div class="listBtn_main" @click="subData">确定参加</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+            $("#video").hide()
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#partakeActivities',
+        data() {
+            return {
+                dataVal: {},
+                dataList: [],
+                activetyId: '',
+                activetyType: '',
+                nameVal: '',
+                themeVal: '',
+                describeVal: '',
+                imgPath: [],
+                imgPaths: [],
+                isShow: true
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("id");
+            var type = GetQueryValue("type");
+            this.activetyId = id;
+            this.activetyType = type;
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            deleteVideo() { //删除视频
+                // this.postData.attachment.splice(ix,1)
+                this.imgPath = [];
+                this.imgPaths = [];
+            },
+            upload(type) {
+                let that = this;
+                if (type == 0) {
+                    // AndroidRouter('selectPic', '1', function (ress) {
+                    //     that.imgPath = JSON.parse(ress);
+                    // })
+                    AndroidRouter('selectPic', 1, this.setPic, "set_selectPic")
+                } else if (type == 1) {
+                    AndroidRouter('selectVoice', 1, this.setVoice, "set_selectVoice")
+                        // AndroidRouter('selectVoice', '', function (res) {
+                        //     let data = JSON.parse(res);
+                        //     AndroidRouter('uploadVideo', {
+                        //         duration: data.duration,
+                        //         file_path: data.file_path,
+                        //     }, function (ress) {
+                        //         that.imgPath = JSON.parse(ress);
+                        //     })
+                        // })
+                } else {
+                    AndroidRouter('selectVideo', 1, this.setVideo, "set_selectVideo")
+                        // AndroidRouter('selectVideo', '', function (res) {
+                        //     let data = JSON.parse(res);
+                        //     AndroidRouter('uploadVideo', {
+                        //         cover_path_id: data.cover_path_id,
+                        //         video_loc_path: data.video_loc_path,
+                        //     }, function (ress) {
+                        //         that.imgPath = JSON.parse(ress);
+                        //     })
+                        // })
+                }
+            },
+            // 图文
+            setPic(res) {
+                this.imgPath = JSON.parse(res);
+            },
+            // 音频
+            setVoice(res) {
+                let data = JSON.parse(res);
+                let dataVal = {
+                    duration: data.duration,
+                    file_path: data.file_path
+                }
+                let arr = [];
+                arr.push(dataVal)
+                this.imgPath = arr;
+                AndroidRouter('uploadVoice', JSON.stringify(arr), this.setUploadVoice, "set_uploadVoice");
+            },
+            setUploadVoice(res) {
+                this.imgPaths = JSON.parse(res);
+            },
+            // 视频
+            setVideo(res) {
+                let data = JSON.parse(res);
+                let dataVal = [{
+                    cover_path_id: data.cover_path_id,
+                    video_loc_path: data.video_loc_path
+                }]
+                let dataVal1 = [{
+                    cover_path: data.cover_path,
+                    cover_path_id: data.cover_path_id,
+                    video_loc_path: data.video_loc_path
+                }]
+                this.imgPath = dataVal1;
+                AndroidRouter('uploadVideo', JSON.stringify(dataVal), this.setuploadVideo, "set_uploadVideo");
+            },
+            setuploadVideo(res) {
+                this.imgPaths = JSON.parse(res);
+            },
+            subData() {
+                let that = this;
+                let id = '';
+                if (this.activetyType == 0) {
+                    id = this.imgPath[0].id;
+                } else if (this.activetyType == 1) {
+                    id = this.imgPaths[0];
+                } else {
+                    id = this.imgPaths[0];
+                }
+                if (that.imgPath.length > 0) {
+                    ajax('student/vote/vote_activity_join', "POST", {
+                        vote_activity_id: that.activetyId,
+                        full_name: that.nameVal,
+                        title: that.themeVal,
+                        conent: that.describeVal,
+                        attachment: id
+                    }, function(res) {
+                        if (res.code == 1) {
+                            vant.Toast.success('参与成功');
+                            history.go(-1);
+                        } else {
+                            vant.Toast.fail(res.msg);
+                        }
+                    })
+                } else {
+                    vant.Toast('请上传视频');
+                }
+
+            }
+        }
+    });
+</script>
+
+</html>

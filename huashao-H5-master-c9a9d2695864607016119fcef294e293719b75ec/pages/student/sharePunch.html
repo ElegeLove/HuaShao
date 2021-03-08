@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>分享打卡</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/sharePunch.css">
+</head>
+
+<body>
+    <div id="sharePunch" class="content" v-cloak>
+        <div :class="type==1?'top':'topss'">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/ic_back_white.png" alt="">
+                <div class="topTitle">分享你的打卡</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="main_top">
+                <div>
+                    <div class="main_top_title">
+                        {{dataVal.student_name}}<span>累计打卡</span>
+                    </div>
+                    <div class="main_top_day">{{dataVal.punch_clock_all_days }}天</div>
+                </div>
+                <img src="../../images/student/pic_smile.png" alt="">
+            </div>
+            <div class="main_title">[ 我正在参加“{{dataVal.name}}”打卡活动 ]</div>
+            <div class="main_starBox">
+                <div>
+                    <img src="../../images/student/pic_star01.png" alt="">
+                    <div class="main_starBox_text">{{dataVal.end_date}}获得</div>
+                </div>
+            </div>
+            <van-divider content-position="left" dashed="dashed" :style="{ color: '#333333', borderColor: '#A5E8F4',fontSize:'0.3rem',fontWeight:'500' }">
+                连续{{dataVal.punch_clock_series_days }}天打卡
+            </van-divider>
+            <div class="main_footer">
+                <img :src="pathUrl" alt="">
+                <div>
+                    <div class="main_footer_text">长按识别二维码</div>
+                    <div class="main_footer_text">让口语能力成为孩子一生的竞争优势</div>
+                </div>
+            </div>
+        </div>
+        <div class="footer" v-if="type == 1">
+            <img @click="goShareDetail('WEIXIN')" src="../../images/student/share_chat1.png" alt="">
+            <!-- <img @click="goShareDetail('QQ')" src="../../images/student/share_qq.png" alt=""> -->
+            <img @click="goShareDetail('WEIXIN_CIRCLE')" src="../../images/student/share_friend1.png" alt="">
+        </div>
+        <!-- <img src="../../images/student/pic_star01.png" id="imgs" style="display: none;" />
+        <img src="../../images/student/pic_smile.png" id="img" style="display: none;" />
+        <img src="../../images/student/pic_33.png" id="lamp" style="display: none;" /> -->
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#sharePunch',
+        data() {
+            return {
+                dataVal: {},
+                pathUrl: '',
+                student_share_code: '',
+                imgUrl: '',
+                type: 0,
+                share_code: ''
+
+            }
+        },
+        mounted() {
+            // this.canvasBox()
+            let id = GetQueryValue("id");
+            this.type = GetQueryValue("type");
+            let student_share_code = GetQueryValue("student_share_code");
+            this.student_task_id = id;
+            this.student_share_code = student_share_code;
+            // vant.Toast.loading({
+            //     message: '',
+            //     forbidClick: true,
+            //     loadingType: 'spinner',
+            //     duration: 0,
+            //     icon: "../../images/loading.gif"
+            // });
+            this.$refs.loadings.openLoading();
+            let that = this;
+            if (student_share_code) {
+                ajax('current/share/my_punch_clock', "POST", {
+                    student_share_code: student_share_code,
+                    student_task_id: id,
+                    share_url: pageUrl + 'huashao_h5/pages/student/directShare.html'
+                }, function(ress) {
+                    if (ress.code == 1) {
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        that.dataVal = ress.data.result;
+                        that.imgUrl = that.canvasBox(ress.data.result);
+                        that.pathUrl = 'http://huashao.mx5918.com/index.php/current/index/qrcode?qr_url=' + that.dataVal.share.webpageUrl
+                    } else {
+                        vant.Toast(ress.msg)
+                    }
+                })
+            } else {
+                ajax('student/student/mine', "POST", {}, function(res) {
+                    if (res.code == 1) {
+                        ajax('current/share/my_punch_clock', "POST", {
+                            student_share_code: res.data.result.share_code,
+                            student_task_id: id,
+                            share_url: pageUrl + 'huashao_h5/pages/student/directShare.html'
+                        }, function(ress) {
+                            if (ress.code == 1) {
+                                // vant.Toast.clear();
+                                that.$refs.loadings.closedLoading();
+                                that.dataVal = ress.data.result;
+                                that.imgUrl = that.canvasBox(ress.data.result);
+                                that.pathUrl = 'http://huashao.mx5918.com/index.php/current/index/qrcode?qr_url=' + that.dataVal.share.webpageUrl
+                            } else {
+                                vant.Toast(ress.msg)
+                            }
+                        })
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                })
+            }
+
+            ajax('student/student/mine', "POST", {}, function(res1) {
+                if (res1.code == 1) {
+                    that.share_code = res1.data.result.share_code
+                        // ajax('current/share/my_punch_clock', "POST", {
+                        //     student_share_code: res1.data.result.share_code,
+                        //     student_task_id: that.student_task_id,
+                        //     share_url: ress.data.result.path
+                        //         // share_url: pageUrl + 'huashao_h5/pages/student/sharePunch.html?id=' + that.student_task_id + '&type=0'
+                        // }, function(ress1) {
+                        //     if (ress1.code == 1) {
+                        //         let data = {
+                        //             "content": ress1.data.result.share.content,
+                        //             "description": ress1.data.result.share.description,
+                        //             "platform": val,
+                        //             "title": ress1.data.result.share.title,
+                        //             "url": ress1.data.result.share.webpageUrl,
+                        //             "media": 'image'
+                        //         };
+                        //         AndroidRouter('share', JSON.stringify(data), this.setShare, "set_share");
+                        //     } else {
+                        //         vant.Toast(res.msg)
+                        //     }
+                        // })
+                } else {
+                    vant.Toast(res1.msg)
+                }
+            })
+        },
+        methods: {
+            goBack() {
+                // history.go(-3);
+                AndroidRouter('closePage', "")
+            },
+            goShareDetail(val) {
+                let that = this;
+                ajax('current/upload/oss_config', "POST", {}, function(res) {
+                    if (res.code == 1) {
+                        let CommUpload = res.result;
+                        // let fileName = Common.randoms()
+                        const uploadMediaData = new FormData();
+                        uploadMediaData.append('accessKeyId', CommUpload.AccessKeyId);
+                        uploadMediaData.append('bucket', CommUpload.bucket);
+                        uploadMediaData.append('accessKeySecret', CommUpload.AccessKeySecret);
+                        uploadMediaData.append('endpoint', CommUpload.endpoint);
+                        uploadMediaData.append('key', new Date().getTime());
+                        uploadMediaData.append('stsToken', CommUpload.SecurityToken);
+                        uploadMediaData.append('success_action_status', 201);
+                        // that.imgUrl = that.canvasBox(that.dataVal)
+                        let aes = that.dataURItoBlob(that.imgUrl.toDataURL('image/png', 1.0))
+                        uploadMediaData.append('file', aes, "--image" + new Date().getTime() + "client_signature.png");
+
+                        // console.log(uploadMediaData)
+                        ajaxUpload('https://huashao.mx5918.com/index.php/current/upload/index', "POST", uploadMediaData, function(ress) {
+                            // console.log(ress.data.result.path)
+                            // console.log(ress)
+                            if (ress.code == 1) {
+                                if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
+                                    ajax('current/share/my_punch_clock', "POST", {
+                                        student_share_code: that.share_code,
+                                        student_task_id: that.student_task_id,
+                                        share_url: pageUrl + 'huashao_h5/pages/student/directShare.html'
+                                    }, function(ress1) {
+                                        if (ress1.code == 1) {
+                                            // vant.Toast(urlType)
+                                            let data = {
+                                                "content": ress1.data.result.share.content,
+                                                "description": ress1.data.result.share.description,
+                                                "platform": val,
+                                                "title": ress1.data.result.share.title,
+                                                "url": ress1.data.result.share.webpageUrl,
+                                                "media": 'web'
+                                            };
+                                            // vant.Toast(data.url)
+                                            AndroidRouter('share', JSON.stringify(data), that.setShare, "set_share")
+                                        } else {
+                                            vant.Toast(ress1.msg)
+                                        }
+                                    })
+                                } else {
+                                    setTimeout(function() {
+                                        ajax('current/share/my_punch_clock', "POST", {
+                                            student_share_code: that.share_code,
+                                            student_task_id: that.student_task_id,
+                                            share_url: ress.data.result.path
+                                                // share_url: pageUrl + 'huashao_h5/pages/student/sharePunch.html?id=' + that.student_task_id + '&type=0'
+                                        }, function(ress1) {
+                                            if (ress1.code == 1) {
+                                                let data = {
+                                                    "content": ress1.data.result.share.content,
+                                                    "description": ress1.data.result.share.description,
+                                                    "platform": val,
+                                                    "title": ress1.data.result.share.title,
+                                                    "url": ress1.data.result.share.webpageUrl,
+                                                    "media": 'image'
+                                                };
+                                                AndroidRouter('share', JSON.stringify(data), this.setShare, "set_share");
+                                            } else {
+                                                vant.Toast(ress1.msg)
+                                            }
+                                        })
+                                    }, 300)
+                                }
+
+                            } else {
+                                vant.Toast(ress.msg)
+                            }
+                        })
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                })
+
+
+            },
+            setShare(res) {
+                this.show = false;
+                // if (res == -1) {
+                //     vant.Toast('分享失败')
+                // }
+                // if (res == 0) {
+                //     vant.Toast('取消分享')
+                // }
+                // if (res == 1) {
+                //     vant.Toast('分享成功')
+                // }
+            },
+            canvasBox(val) {
+                var mcanvasBox = document.createElement('canvas');
+                var mcontextBox = mcanvasBox.getContext('2d');
+
+                // var mcanvasBox = document.getElementById("mcanvasBox");    //获得画布
+                // var mcontextBox = mcanvasBox.getContext("2d");    //获得上下文
+
+                mcanvasBox.width = $(window).width();
+                mcanvasBox.height = $(window).height();
+                // mcanvasBox.style.background = "url('https://huashao.mx5918.com/huashao_h5/images/student/pic_33.png') no-repeat";
+                // mcanvasBox.style.background = "url('../../images/student/pic_33.png') no-repeat";
+                // mcanvasBox.style.backgroundSize = '100% 100%';
+                mcanvasBox.style.zIndex = '0';
+
+                mcontextBox.clearRect(0, 0, $(window).width(), $(window).height());
+                // var imgbg = document.getElementById("lamp");
+
+                var imgbg = new Image(); //这个就是 img标签的dom对象
+                imgbg.src = 'https://miaoxing.oss-cn-beijing.aliyuncs.com/202008/13/1439e7857d7cb7523a0ac73e44755b14.jpg';
+                // imgbg.src = 'https://huashao.mx5918.com/huashao_h5/images/student/pic_33.png';
+                imgbg.setAttribute('crossOrigin', 'anonymous');
+                // imgbg.src = $('#lamp').attr('src');
+                let that = this;
+                imgbg.onload = function() { //图片加载完成后，执行此方法
+                    // 图片
+                    mcontextBox.drawImage(imgbg, 0, 0, $(window).width(), $(window).height());
+                    // https://huashao.mx5918.com/huashao_h5/images/student/pic_smile.png
+                    // var mcanvas = document.getElementById("mcanvas");    //获得画布
+                    // var mcontext = mcanvas.getContext("2d");    //获得上下文
+                    // mcanvas.width = 345;     //重新设置标签的属性宽高
+                    // mcanvas.height = 472;   //千万不要用 canvas.style.height
+                    // mcanvas.style.background = "#ffffff";    //设置canvas的边
+                    // mcanvas.style.borderRadius = "10px";    //设置canvas的边
+                    // mcontextBox.globalAlpha = 0.5;
+
+                    // mcontextBox.fillStyle = "#fff";
+                    // mcontextBox.fillRect(15, 60, 345, 472);
+                    // mcontextBox.lineJoin = 'round';
+                    // mcontextBox.globalCompositeOperation="source-over";
+                    let w = ($(window).width() - 345) / 2;
+                    let w1 = w + 10;
+                    let h = ($(window).height() - 472) / 2;
+                    // let h1 = h + 40;
+                    that.fillRoundRect(mcontextBox, w, h, 345, 472, 10, '#fff');
+                    // that.fillRoundRect(mcontextBox, w, 60, 345, 472, 10, '#fff');
+                    // context.beginPath();
+                    // context.moveTo(239, 150);
+                    // context.lineTo(289, 50);
+                    // context.lineTo(339, 150);
+                    // context.lineJoin = 'round';
+                    // context.stroke();
+
+                    // mcanvas.style.boxShadow = "0px 0px 20px #fff";    //设置canvas的边
+                    // mcanvas.style.boxShadow = "0px 0px 20px #fff";    //设置canvas的边
+                    mcontextBox.font = '14px 微软雅黑';
+                    mcontextBox.fillStyle = '#000';
+                    mcontextBox.textBaseline = 'bottom';
+                    mcontextBox.fillText(val.student_name + '累计打卡', w1, (h + 40));
+                    // mcontextBox.fillText(val.student_name + '累计打卡', w1, 100);
+                    mcontextBox.globalCompositeOperation = "source-over";
+                    mcontextBox.font = 'bold 30px 微软雅黑';
+                    mcontextBox.fillStyle = 'red';
+                    mcontextBox.textBaseline = 'top';
+                    mcontextBox.fillText(val.punch_clock_all_days + '天', w1, (h + 60));
+                    // mcontextBox.fillText(val.punch_clock_all_days + '天', w1, 120);
+                    // mcontextBox.globalCompositeOperation="source-over";
+
+                    var img = new Image(); //这个就是 img标签的dom对象
+                    // img.crossOrigin = 'Anonymous';
+                    // img.src = $('#imgs').attr('src');
+                    // img.src = "https://huashao.mx5918.com/huashao_h5/images/student/pic_smile.png";
+                    // img.setAttribute('crossOrigin', 'anonymous');
+                    // https://huashao.mx5918.com/huashao_h5/images/student/pic_33.png
+                    // img.src = "../../images/student/pic_smile.png";
+                    img.src = 'https://miaoxing.oss-cn-beijing.aliyuncs.com/202008/13/d9e6bc8bf8b6dc6770627fbaddfc4fd8.jpg';
+                    // img.src = 'https://huashao.mx5918.com/huashao_h5/images/student/pic_smile.png';
+                    img.setAttribute('crossOrigin', 'anonymous');
+                    // img.src = $('#img').attr('src');
+                    img.onload = function() { //图片加载完成后，执行此方法
+                        // 图片
+                        mcontextBox.drawImage(img, 275, (h + 30), 70, 45);
+                    }
+
+
+                    // 直线
+                    mcontextBox.lineWidth = 0.2
+                        //开始路径：
+                    mcontextBox.beginPath();
+                    mcontextBox.moveTo(w1, (h + 100));
+                    mcontextBox.lineTo(350, (h + 100));
+                    //闭合路径：
+                    // mcontextBox.closePath();
+                    mcontextBox.stroke();
+                    // 文字
+                    mcontextBox.font = '14px 微软雅黑';
+                    mcontextBox.fillStyle = '#000';
+                    mcontextBox.textBaseline = 'bottom';
+                    mcontextBox.textAlign = 'center';
+                    // mcontextBox.fillText('[ 我正在参加“' + val.name + '”打卡活动 ]', 172.5, 210);
+                    that.drawText(mcontextBox, '[ 我正在参加“' + val.name + '”打卡活动 ]', ($(window).width() / 2), (h + 150), 325);
+                    // mcontextBox.globalCompositeOperation="source-over";
+                    var imgs = new Image(); //这个就是 img标签的dom对象
+                    // imgs.src = "https://huashao.mx5918.com/huashao_h5/images/student/pic_star01.png";
+                    // imgs.setAttribute('crossOrigin', 'anonymous');
+                    // imgs.src = "../../images/student/pic_star01.png";
+                    imgs.src = 'https://miaoxing.oss-cn-beijing.aliyuncs.com/202008/13/bdf11f8bc3edf4edca709481e6369da5.jpg';
+                    // imgs.src = 'https://huashao.mx5918.com/huashao_h5/images/student/pic_star01.png';
+                    imgs.setAttribute('crossOrigin', 'anonymous');
+                    // imgs.src = $('#imgs').attr('src');
+                    imgs.onload = function() { //图片加载完成后，执行此方法
+                        // 图片
+                        mcontextBox.drawImage(imgs, (($(window).width() - 87) / 2), (h + 180), 87, 85);
+                    }
+
+                    // 文字
+                    mcontextBox.font = '14px 微软雅黑';
+                    mcontextBox.fillStyle = '#000';
+                    mcontextBox.textBaseline = 'bottom';
+                    mcontextBox.textAlign = 'center';
+                    mcontextBox.fillText(val.end_date + '获得', ($(window).width() / 2), (h + 300));
+                    // mcontextBox.globalCompositeOperation="source-over";
+                    // 文字
+                    mcontextBox.font = '14px 微软雅黑';
+                    mcontextBox.textAlign = 'left';
+                    mcontextBox.textBaseline = 'bottom';
+                    mcontextBox.fillText('连续' + val.punch_clock_series_days + '天打卡', w1, (h + 350));
+                    // mcontextBox.globalCompositeOperation="source-over";
+                    // 直线
+                    mcontextBox.lineWidth = '1'
+                    mcontextBox.setLineDash([10, 2]);
+                    //开始路径：
+                    mcontextBox.beginPath();
+                    mcontextBox.moveTo(120, (h + 343));
+                    mcontextBox.lineTo(350, (h + 343));
+                    //闭合路径：
+                    // mcontextBox.closePath();
+                    mcontextBox.stroke();
+                    var img2 = new Image(); //这个就是 img标签的dom对象
+                    img2.src = 'https://huashao.mx5918.com/index.php/current/index/qrcode?qr_url=' + val.share.webpageUrl;
+                    img2.setAttribute("crossOrigin", 'Anonymous')
+                    img2.onload = function() { //图片加载完成后，执行此方法
+                            // 图片
+                            mcontextBox.drawImage(img2, w1, (h + 380), (20 * window.devicePixelRatio), (20 * window.devicePixelRatio));
+                        }
+                        // 文字
+                    mcontextBox.font = '12px 微软雅黑';
+                    mcontextBox.textAlign = 'left';
+                    mcontextBox.textBaseline = 'bottom';
+                    mcontextBox.fillText('长按识别二维码', (w1 + 10 + (20 * window.devicePixelRatio)), (h + 404));
+                    // 文字
+                    mcontextBox.font = '12px 微软雅黑';
+                    mcontextBox.textAlign = 'left';
+                    mcontextBox.textBaseline = 'bottom';
+                    mcontextBox.fillText('让口语能力成为孩子一生的竞争优势', (w1 + 10 + (20 * window.devicePixelRatio)), (h + 424));
+                }
+                var pat = mcontextBox.createPattern(imgbg, 'no-repeat');
+                mcontextBox.rect(0, 0, $(window).width(), $(window).height());
+                mcontextBox.fillStyle = pat;
+                mcontextBox.fill();
+                return mcanvasBox;
+            },
+            fillRoundRect(cxt, x, y, width, height, radius, /*optional*/ fillColor) {
+                //圆的直径必然要小于矩形的宽高          
+                if (2 * radius > width || 2 * radius > height) {
+                    return false;
+                }
+
+                cxt.save();
+                cxt.translate(x, y);
+                //绘制圆角矩形的各个边  
+                this.drawRoundRectPath(cxt, width, height, radius);
+                cxt.fillStyle = fillColor || "#000"; //若是给定了值就用给定的值否则给予默认值  
+                // cxt.globalCompositeOperation="source-atop";
+                cxt.fill();
+                cxt.restore();
+            },
+            drawRoundRectPath(cxt, width, height, radius) {
+                cxt.beginPath(0);
+                //从右下角顺时针绘制，弧度从0到1/2PI  
+                cxt.arc(width - radius, height - radius, radius, 0, Math.PI / 2);
+
+                //矩形下边线  
+                cxt.lineTo(radius, height);
+
+                //左下角圆弧，弧度从1/2PI到PI  
+                cxt.arc(radius, height - radius, radius, Math.PI / 2, Math.PI);
+
+                //矩形左边线  
+                cxt.lineTo(0, radius);
+
+                //左上角圆弧，弧度从PI到3/2PI  
+                cxt.arc(radius, radius, radius, Math.PI, Math.PI * 3 / 2);
+
+                //上边线  
+                cxt.lineTo(width - radius, 0);
+
+                //右上角圆弧  
+                cxt.arc(width - radius, radius, radius, Math.PI * 3 / 2, Math.PI * 2);
+
+                //右边线  
+                cxt.lineTo(width, height - radius);
+                cxt.closePath();
+            },
+            dataURItoBlob(base64Data) {
+                var byteString;
+                if (base64Data.split(',')[0].indexOf('base64') >= 0)
+                    byteString = atob(base64Data.split(',')[1]);
+                else
+                    byteString = unescape(base64Data.split(',')[1]);
+                var mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
+                var ia = new Uint8Array(byteString.length);
+                for (var i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                return new Blob([ia], {
+                    type: mimeString
+                });
+            },
+            // 文字换行
+            drawText(context, t, x, y, w) {
+                var chr = t.split("");
+                var temp = "";
+                var row = [];
+
+                context.font = "14px 微软雅黑";
+                context.fillStyle = "#000";
+                context.textBaseline = "bottom";
+                for (var a = 0; a < chr.length; a++) {
+                    if (context.measureText(temp).width < w && context.measureText(temp + (chr[a])).width <= w) {
+                        temp += chr[a];
+                    } //context.measureText(text).width  测量文本text的宽度
+                    else {
+                        row.push(temp);
+                        temp = chr[a];
+                    }
+                }
+                row.push(temp);
+                //测量文本text的宽度
+
+                //文字全部显示
+                /* for(var b = 0; b < row.length; b++){
+                       context.fillText(row[b],x,y+(b+1)*24);//字体20，间隔24。类似行高
+                } */
+
+                // 只显示2行，加...
+                // for (var b = 0; b < 2; b++) {
+                //     if (context.measureText(row[0]).width < 141 && row[1] == undefined) {
+                //         context.fillText(row[0], x, y + 1 * 24); //字体20，间隔24。类似行高
+                //     } else {
+                //         var str = row[b];
+                //         if (b == 1) {
+                //             //判断第二行是否大于宽度
+                //             if (context.measureText(row[1]).width > context.measureText(row[0]).width - 5) {
+                //                 str = str.substring(0, str.length - 1) + '...';
+                //             }
+                //         }
+                //         context.fillText(str, x, y + (b + 1) * 24);
+                //     }
+                // }
+                for (var b = 0; b < row.length; b++) {
+                    context.fillText(row[b], x, y + (b + 1) * 20);
+                }
+            }
+
+
+        }
+    });
+</script>
+
+</html>

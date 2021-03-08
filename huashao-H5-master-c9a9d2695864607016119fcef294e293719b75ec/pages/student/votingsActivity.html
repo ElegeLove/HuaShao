@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>分享页面-投票活动</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/votingsActivity.css">
+</head>
+
+<body>
+    <div id="votingsActivity" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" onclick="goBack()" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">投票活动</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="boxPadd mainTop">
+            <div class="mainTop_title">
+                <div class="mainTop_title_text">{{dataVal.title}}</div>
+                <div class="mainTop_title_tag">{{dataVal.a_type_text}}</div>
+            </div>
+            <div class="mainTop_text"><span>活动描述：</span>{{dataVal.content}}</div>
+            <div class="mainTop_footer">
+                <div>
+                    <div>参与时间：</div>
+                    <div class="mainTop_footer_time">
+                        {{dataVal.join_start_time}}&nbsp;<span>-</span>&nbsp;{{dataVal.join_end_time}}
+                    </div>
+                </div>
+                <div>
+                    <div>投票时间：</div>
+                    <div class="mainTop_footer_time">
+                        {{dataVal.vote_start_time }}&nbsp;<span>-</span>&nbsp;{{dataVal.vote_end_time}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="boxPadd list">
+            <div class="listBox">
+                <div class="item" v-for="(item,i) in dataList">
+                    <div class="item_top">
+                        <div class="item_top_left">{{i+1}}.{{item.full_name}}（{{item.vote_num}}票）</div>
+                        <div class="item_top_right" v-if="item.is_vote == 0">
+                            <div class="item_top_rightBox">
+                                <img src="../../images/student/Ic_thumbup.png" alt="">
+                                <div class="item_top_right_text" @click="goVote(item.vote_activity_join_id)">投票</div>
+                            </div>
+                        </div>
+                        <div class="item_top_rights" v-if="item.is_vote == 1">
+                            <div class="item_top_rightBox">
+                                <img src="../../images/student/Ic_thumbup.png" alt="">
+                                <div class="item_top_rights_text">已投票</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item_main">
+                        {{item.conent}}
+                    </div>
+                    <div class="item_img" v-if="item.attachment && item.attachment.path">
+                        <img :src="item.attachment.path" alt="">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            <a href="./downloadAPP.html"><img src="../../images/student/pic_24.png" alt=""></a>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        function goBack() {
+            window.history.go(-1);
+        }
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#votingsActivity',
+        data() {
+            return {
+                show: false,
+                dataVal: {},
+                dataList: [],
+                activetyId: ''
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("id");
+            this.activetyId = id;
+            this.$refs.loadings.openLoading();
+            this.getActivetyInfo(id);
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            goShare() {
+                this.show = true;
+            },
+            shareWayCacel() {
+                this.show = false;
+            },
+            getActivetyInfo(id) {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                let that = this;
+                webajax('student/share/vote', "POST", {
+                    vote_activity_id: id,
+                    share_url: pageUrl + 'huashao_h5/pages/student/votingsActivity.html?id=' + id
+                }, function(res) {
+                    if (res.code == 1) {
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        that.dataVal = res.data.result;
+                        that.dataList = res.data.list;
+                    }
+                })
+            },
+            goVote(id) {
+                // location.href = './shareLogin.html';
+                let that = this;
+                webajax('student/vote/student_vote', "POST", {
+                    vote_activity_join_id: id
+                }, function(res) {
+                    if (res.code == 1) {
+                        this.$refs.loadings.openLoading();
+                        this.getActivetyInfo(this.activetyId);
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                })
+            },
+            goPartake() {
+                location.href = './partakeActivities.html?id=' + this.dataVal.vote_activity_id;
+            }
+        }
+    });
+</script>
+
+</html>

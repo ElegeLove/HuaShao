@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>从作业库中选择</title>
+		<script src="../../../js/public/rem.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/teacher/homeDetails.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="th_top">
+			    <div class="th_topBox">
+			        <img class="th_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+			        <div class="th_topTitle">从作业库中选择</div>
+			        <div class="th_topImg"></div>
+			    </div>
+			</div>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					
+	            }
+	        },
+	        methods: {
+				goback(){
+					history.go(-1)
+				}
+	        }
+	    });
+	</script>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>作品详情-图文-分享</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/workDetailsImgText.css">
+</head>
+
+<body>
+    <div id="workDetailsImgText" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">图文作业</div>
+                <img class="topImgs" @click="cliDel" src="../../images/student/title_right.png" alt="">
+                <div class="delBox" v-if="isDel" @click="del">
+                    <div class="delTu"></div>
+                    删除
+                </div>
+                <!-- <div class="topImg"></div> -->
+            </div>
+        </div>
+        <van-popup v-model="delshow" round closeable>
+            <div class="popMain">
+                <div class="popMain_title">删除</div>
+                <div class="popMain_text">确认删除改作品？</div>
+                <div class="popBtnBox">
+                    <div class="popBtn" @click="popSure">确定</div>
+                </div>
+            </div>
+        </van-popup>
+        <div class="main">
+            <div class="main_top">
+                <div class="main_top_title">{{dataVal.opus_name}}</div>
+                <div class="main_top_icon">
+                    <div class="icon_left" @click="goPage(dataVal)">
+                        <img :src="dataVal.student_head" alt="">
+                        <div class="icon_left_text">{{dataVal.student_name}}</div>
+                    </div>
+                    <div class="icon_right">
+                        <div class="icon_right_item" @click="goThumbs(dataVal.student_task_opus_id)">
+                            <img v-if="dataVal.is_click == 0" src="../../images/student/Ic_thumbup_03.png" alt="">
+                            <img v-if="dataVal.is_click == 1" src="../../images/student/Ic_thumb_02.png" alt="">
+                            <div class="icon_right_item_text">{{dataVal.click_num}}</div>
+                        </div>
+                        <div class="icon_right_item" @click="goComment(dataVal.student_task_opus_id)">
+                            <img src="../../images/student/Ic_comments_03.png" alt="">
+                            <div class="icon_right_item_text">{{dataVal.comment_num}}</div>
+                        </div>
+                        <div class="icon_right_item" @click="goCollectio(dataVal.student_task_opus_id,dataVal.is_collection)">
+                            <img v-if="dataVal.is_collection == 0" src="../../images/student/Ic_collection_02.png" alt="">
+                            <img v-if="dataVal.is_collection == 1" src="../../images/student/Ic_collection_03.png" alt="">
+                            <div class="icon_right_item_text">{{dataVal.collection_num}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="main_content_title">{{dataVal.content}}</div>
+            <div v-for="item in dataVal.attachment">
+                <img class="main_content_img" :src="item.path" alt="">
+            </div>
+            <div class="main_icon" v-if="workTitle!=1" @click="goInfo()">
+                <img src="../../images/student/homeWolrk.png" alt="">
+            </div>
+            <div class="main_icons" v-if="dataVal.is_review==1" @click="goTeasInfo()">
+                <img src="../../images/student/teaPing.png" alt="">
+            </div>
+            <van-popup v-model="show" position="bottom" round>
+                <div class="pop_main">
+                    <div class="pop_title">评论</div>
+                    <img class="pop_icon" @click="close" src="../../images/student/Ic_closed.png" alt="">
+                    <div class="pop_content">
+                        <van-pull-refresh v-model="isLoading" v-if="commentList.length > 0" success-text="刷新成功" @refresh="onRefresh">
+                            <van-list v-model="isUpLoading" :finished="upFinished" @load="onupLoad" :offset="offset" :immediate-check='checks'>
+                                <div class="pop_item" v-for="item in commentList">
+                                    <div class="pop_item_top">
+                                        <div class="pop_item_top_icon">
+                                            <img :src="item.user_head" alt="">
+                                            <div>{{item.user_name}}</div>
+                                        </div>
+                                        <div class="pop_item_top_time">{{item.create_time}}</div>
+                                    </div>
+                                    <div class="pop_item_main">
+                                        <div class="pop_item_main_text">{{item.content}}</div>
+                                        <div class="pop_item_main_huifu" v-if="item.replay">
+                                            <span>
+                                                {{item.replay.replay_name}}：
+                                            </span>
+                                            <span>
+                                                {{item.replay.content}}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </van-list>
+                        </van-pull-refresh>
+                    </div>
+                    <div class="pop_footer">
+                        <div class="replayMain">
+                            <input type="text" ref='inputs' v-model="replayVal" placeholder="发表一下你的看法">
+                            <div @click="sunClick">发送</div>
+                        </div>
+                    </div>
+                </div>
+            </van-popup>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#workDetailsImgText',
+        data() {
+            return {
+                dataVal: {},
+                taskId: '',
+                show: false,
+                isDel: false,
+                delshow: false,
+                replayVal: '',
+                commentList: [],
+                pageNo: 1,
+                pageSize: 5,
+                total: '',
+                review: 0,
+                checks: false,
+                isLoading: false,
+                isUpLoading: false,
+                upFinished: false, //上拉加载完毕
+                offset: 100, //滚动条与底部距离小于 offset 时触发load事件
+                workTitle: '',
+                closeType: false,
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("id");
+            var review = GetQueryValue("review");
+            var workTitle = GetQueryValue("workTitle");
+            var closeType = GetQueryValue("closeType");
+            this.closeType = closeType;
+            // vant.Toast.loading({
+            //     message: '',
+            //     forbidClick: true,
+            //     loadingType: 'spinner',
+            //     duration: 0,
+            //     icon: "../../images/loading.gif"
+            // });
+            this.$refs.loadings.openLoading();
+            this.taskId = id;
+            this.workTitle = workTitle;
+            this.review = review;
+            this.getInfo(id)
+        },
+        methods: {
+            goBack() {
+                if (this.closeType) {
+                    AndroidRouter('closePage', "")
+                } else {
+                    history.go(-1);
+                }
+            },
+            //删除
+            cliDel() {
+                this.isDel = !this.isDel;
+            },
+            del() {
+                this.isDel = false;
+                this.delshow = true;
+            },
+            popSure() {
+                let that = this;
+                ajax('student/task/student_opus_delete', "POST", {
+                    student_task_opus_id: this.dataVal.student_task_opus_id
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.delshow = false;
+                        vant.Toast(res.msg);
+                        setTimeout(function() {
+                            history.go(-1);
+                        }, 1000)
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                })
+            },
+            //上拉刷新
+            onRefresh() {
+                this.isLoading = true;
+                this.upFinished = false;
+                this.pageNo = 1;
+                this.getComment(this.pageNo, this.pageSize, this.dataVal.student_task_opus_id)
+            },
+            onupLoad() { // 上拉调用此函数
+                // e.stopPropagation();
+                this.isUpLoading = false;
+                // this.upFinished = false;
+                this.pageNo++;
+                this.getComment(this.pageNo, this.pageSize, this.dataVal.student_task_opus_id)
+
+            },
+            getInfo(id) {
+                let that = this;
+                ajax('student/task/student_task_opus', "POST", {
+                    student_task_id: id
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.dataVal = res.data.result;
+                        that.getComment(that.pageNo, that.pageSize, res.data.result.student_task_opus_id)
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                })
+            },
+            //收藏
+            goCollectio(id, type) {
+                let that = this;
+                if (type == 0) {
+                    ajax('student/collection/collection_add', "POST", {
+                        student_task_opus_id: id
+                    }, function(res) {
+                        if (res.code == 1) {
+                            that.getInfo(that.taskId)
+                            vant.Toast(res.msg);
+                        } else {
+                            vant.Toast(res.msg)
+                        }
+                    })
+                } else {
+                    ajax('student/collection/collection_cancel', "POST", {
+                        student_task_opus_id: id
+                    }, function(res) {
+                        if (res.code == 1) {
+                            that.getInfo(that.taskId)
+                            vant.Toast(res.msg);
+                        } else {
+                            vant.Toast(res.msg)
+                        }
+                    })
+                }
+            },
+            // 评论
+            goComment() {
+                this.show = true;
+            },
+            getComment(pageNo, pageSize, id) {
+                let that = this;
+                ajax('student/task/student_opus_comment_list', "POST", {
+                    page_no: pageNo,
+                    page_size: pageSize,
+                    student_task_opus_id: id
+                }, function(res) {
+                    if (res.code == 1) {
+                        // that.commentList = res.data.list;
+                        let rows = res.data.list; //请求返回当页的列表
+                        that.isUpLoading = false;
+                        that.total = res.data.total;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        if (rows == null || rows.length === 0) {
+                            // 加载结束
+                            that.upFinished = true;
+                            return false;
+                        }
+                        if (pageNo == 1) {
+                            that.commentList = rows;
+                        } else {
+                            that.commentList = that.commentList.concat(rows);
+                        }
+                        if (that.commentList.length >= that.total) {
+                            that.upFinished = true;
+                        }
+                    }
+                    that.isLoading = false;
+                })
+            },
+            sunClick() {
+                let that = this;
+                ajax('student/task/student_opus_comment', "POST", {
+                    student_task_opus_id: that.dataVal.student_task_opus_id,
+                    content: that.replayVal
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.getInfo(that.taskId)
+                        vant.Toast(res.msg);
+                        that.replayVal = '';
+                        that.show = false;
+                    } else {
+                        vant.Toast(res.msg);
+                    }
+                })
+            },
+            close() {
+                this.show = false;
+            },
+            // 跳转其他或个人主页
+            goPage(val) {
+                if (val.is_own == 1) {
+                    location.href = './homePage.html?id=' + val.student_id + '&goBack=true';
+                } else {
+                    location.href = './otherPrincipalPage.html?id=' + val.student_id + '&type=0' + '&goback=true';
+                }
+            },
+            // 点赞
+            goThumbs(id) {
+                let that = this;
+                ajax('student/task/opus_click', "POST", {
+                    student_task_opus_id: id
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.getInfo(that.taskId)
+                        vant.Toast(res.msg);
+                    } else {
+                        vant.Toast(res.msg);
+                    }
+                })
+            },
+            goInfo() {
+                location.href = './workTopics.html?id=' + this.taskId + '&goback=true';
+            },
+            goTeasInfo() {
+                location.href = './teacherComments.html?id=' + this.dataVal.student_task_opus_id + '&goback=true';
+            }
+        }
+    });
+</script>
+
+</html>

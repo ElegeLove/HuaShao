@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>消息</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/tidings.css">
+</head>
+
+<body>
+    <div id="tidings" class="content" v-cloak>
+        <div class="top">
+            <div class="top_title">消息</div>
+            <div class="top_text">{{infoNum}}&nbsp;<span>条未读</span></div>
+        </div>
+        <van-pull-refresh v-model="refreshing" @refresh="onRefresh" v-cloak style="min-height:90%;">
+            <ul class="list">
+                <li v-for="item in dataVal" @click="goInfo(item.type)">
+                    <div>
+                        <div class="list_img">
+                            <img v-if="item.type == 0" src="../../images/student/Icon_job.png" alt="">
+                            <img v-if="item.type == 1" src="../../images/student/Icon_system.png" alt="">
+                            <img v-if="item.type == 2" src="../../images/student/Icon_comments.png" alt="">
+                            <!-- <img v-if="item.type == 3" src="../../images/student/Icon_wallet.png" alt=""> -->
+                            <img v-if="item.type == 3" src="../../images/student/Icon_focus.png" alt="">
+                        </div>
+                        <div class="list_right">
+                            <div class="list_right_top">
+                                <div class="list_right_top_left">{{item.type_text }}<span v-show="item.is_new == 1"></span></div>
+                                <div class="list_right_top_right">{{item.create_time}}</div>
+                            </div>
+                            <div class="list_right_text">{{item.title}}</div>
+                        </div>
+                    </div>
+                </li>
+                <!-- <li>
+                <a href="./jobNotice.html">
+                    <div class="list_img">
+                        <img src="../../images/student/Icon_job.png" alt="">
+                    </div>
+                    <div class="list_right">
+                        <div class="list_right_top">
+                            <div class="list_right_top_left">作业通知</div>
+                            <div class="list_right_top_right">2020.02.25 15:20</div>
+                        </div>
+                        <div class="list_right_text">口语传播青少年2班有新的作业</div>
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="./systemNotice.html">
+                    <div class="list_img">
+                        <img src="../../images/student/Icon_system.png" alt="">
+                    </div>
+                    <div class="list_right">
+                        <div class="list_right_top">
+                            <div class="list_right_top_left">系统通知</div>
+                            <div class="list_right_top_right">2020.02.25 15:20</div>
+                        </div>
+                        <div class="list_right_text">有新的系统消息</div>
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="./commentsLikes.html">
+                    <div class="list_img">
+                        <img src="../../images/student/Icon_comments.png" alt="">
+                    </div>
+                    <div class="list_right">
+                        <div class="list_right_top">
+                            <div class="list_right_top_left">评论点赞</div>
+                            <div class="list_right_top_right">2020.02.25 15:20</div>
+                        </div>
+                        <div class="list_right_text">有作品被小米点评</div>
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="./walletNotice.html">
+                    <div class="list_img">
+                        <img src="../../images/student/Icon_wallet.png" alt="">
+                    </div>
+                    <div class="list_right">
+                        <div class="list_right_top">
+                            <div class="list_right_top_left">钱包通知</div>
+                            <div class="list_right_top_right">2020.02.25 15:20</div>
+                        </div>
+                        <div class="list_right_text">购买口语课程消费1200元</div>
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="./followNotice.html">
+                    <div class="list_img">
+                        <img src="../../images/student/Icon_focus.png" alt="">
+                    </div>
+                    <div class="list_right">
+                        <div class="list_right_top">
+                            <div class="list_right_top_left">关注通知</div>
+                            <div class="list_right_top_right">2020.02.25 15:20</div>
+                        </div>
+                        <div class="list_right_text">有新用户关注了你</div>
+                    </div>
+                </a>
+            </li> -->
+            </ul>
+        </van-pull-refresh>
+        <loadings ref="loadings" />
+    </div>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#tidings',
+        data() {
+            return {
+                infoNum: '',
+                dataVal: [],
+                refreshing: false
+            }
+        },
+        mounted() {
+            this.$refs.loadings.openLoading();
+            // this.getInfoData();
+            AndroidRouter('getUserInfo', "", this.setUserInfo, "setUserInfo");
+            // iosReload();
+            // let url = 'student/tidings.html';
+            // AndroidRouter('refreshPage', url);
+            AndroidRouter('onClosePage', "tidings", this.newPage, 'get_closedCall')
+        },
+        methods: {
+            setUserInfo(res) {
+                localStorage.setItem("token", res)
+                this.getInfoData();
+                AndroidRouter('onBottomTabClick', 3, this.bottomTab, "setOnBottomTabClick")
+            },
+            bottomTab() {
+                // location.reload()
+                // this.$refs.loadings.openLoading();
+                this.getInfoData();
+                AndroidRouter('onBottomTabClick', 3, this.bottomTab, "setOnBottomTabClick")
+            },
+            newPage() {
+                this.getInfoData();
+            },
+            onRefresh() { //刷新
+                this.getInfoData()
+            },
+            getInfoData() {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                let that = this;
+                ajax('student/msg/msg_type_list', "POST", {}, function(res) {
+                    if (res.code == 1) {
+                        that.infoNum = res.data.no_read_num;
+                        that.dataVal = res.data.list;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        that.refreshing = false;
+                    }
+                })
+            },
+            goInfo(i) {
+                let url = '';
+                if (i == 0) {
+                    url = 'student/jobNotice.html?type=' + i;
+                    // location.href = './jobNotice.html?type=' + i;
+                } else if (i == 1) {
+                    url = 'student/systemNotice.html?type=' + i;
+                    // location.href = './systemNotice.html?type=' + i;
+                } else if (i == 2) {
+                    url = 'student/commentsLikes.html?type=' + i;
+                    // location.href = './commentsLikes.html?type=' + i;
+                } else if (i == 3) {
+                    url = 'student/followNotice.html?type=' + i;
+                    // location.href = './followNotice.html?type=' + i;
+                }
+                AndroidRouter('newPage', url);
+                this.dataVal[i].is_new = 0;
+            }
+        }
+    });
+</script>
+
+</html>

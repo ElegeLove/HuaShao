@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>注册</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/register.css">
+</head>
+
+<body>
+    <div id="register" class="content">
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">学生注册</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="inp main_phone">
+                <input type="number" maxlength="11" placeholder="请输入手机号" />
+            </div>
+            <div class="inp verCode">
+                <input type="number" placeholder="请输入验证码">
+                <button class="main_verCode" :disabled="disabled" @click="getCode">{{verCode}}</button>
+            </div>
+            <div class="inp birthday" @click="getBirthday">
+                <!-- <input type="text" placeholder="请选择出生日期"> -->
+                <div class="birthday_text">请选择出生日期</div>
+                <div class="birthday_img">
+                    <div>{{birthdayTime}}</div>
+                    <img src="../../images/student/ic_jt.png" alt="">
+                </div>
+            </div>
+            <van-popup v-model="show" position="bottom">
+                <van-datetime-picker v-model="currentDate" type="date" title="" confirm-button-text="完成"
+                    :min-date="minDate" :max-date="maxDate" :formatter="formatter" @confirm="suData" @cancel="cancel" />
+            </van-popup>
+            <div class="inp">
+                <input type="text" placeholder="请设置密码">
+            </div>
+            <div class="inp">
+                <input type="text" placeholder="再次输入密码">
+            </div>
+            <div class="inp">
+                <input type="text" placeholder="邀请码（选填）">
+            </div>
+            <div class="treaty">
+                <div class="treaty_left">
+                    注册即同意
+                </div>
+                <div class="treaty_right">
+                    《注册协议》
+                </div>
+            </div>
+            <div class="btn" @click="goDownload">立即注册</div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script>
+    new Vue({
+        el: '#register',
+        data() {
+            return {
+                disabled: false,
+                verCode: '获取验证码',
+                birthdayTime: '',
+                show: false,
+                minDate: new Date(1992, 03, 03),
+                maxDate: new Date(2025, 10, 1),
+                currentDate: new Date(),
+            }
+        },
+        mounted() {
+
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            getCode() {
+                this.disabled = true;
+                let num = 6;
+                let timer;
+                timer = setInterval(function(){
+                    num--;
+                    if (num <= 0) {
+                        clearInterval(timer)
+                        this.verCode = '获取验证码';
+                        this.disabled = false;
+                    } else {
+                        this.verCode = num;
+                    }
+                }, 1000)
+            },
+            getBirthday() {
+                this.show = true;
+            },
+            formatter(type, val) {
+                // console.log(type)
+                if (type === 'year') {
+                    return `${val}年`;
+                } else if (type === 'month') {
+                    return `${val}月`;
+                } else if (type === 'day') {
+                    return `${val}日`;
+                }
+                return val;
+            },
+            suData(data) {
+                const d = new Date(data)
+                //年月日
+                const resDate = d.getFullYear() + '-' + this.p((d.getMonth() + 1)) + '-' + this.p(d.getDate())
+                //时分秒
+                // const resTime = this.p(d.getHours()) + ':' + this.p(d.getMinutes()) + ':' + this.p(d.getSeconds())
+                console.log(resDate)
+                this.birthdayTime = resDate;
+                this.show = false;
+            },
+            p(s) {
+                return s < 10 ? '0' + s : s
+            },
+            cancel() {
+                this.show = false;
+            },
+            goDownload() {
+                location.href = './downloadAPP.html';
+            }
+        }
+    });
+</script>
+
+</html>

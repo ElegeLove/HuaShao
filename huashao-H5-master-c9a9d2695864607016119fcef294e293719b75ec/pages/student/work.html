@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>作业</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/work.css">
+</head>
+
+<body>
+    <div id="work" class="content" v-cloak>
+        <div class="top" v-if="type == 'true'">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">作业</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="list" v-cloak>
+            <van-pull-refresh v-model="isLoadings" success-text="刷新成功" @refresh="onRefreshs" style="min-height: 100%;">
+                <div class="item" v-for="(item,i) in list">
+                    <div :class="item.isOpen?'item_main':'item_mains'" @click="getOpen(item.isOpen,i)">
+                        <div class="item_main_top">
+                            <img src="../../images/student/Ic_class.png" alt="">
+                            <div class="item_main_top_text">{{item.name}}</div>
+                        </div>
+                        <div class="item_main_menu">
+                            <div>
+                                <div class="item_main_menu_title">{{item.task_num}}</div>
+                                <div class="item_main_menu_text">作业累计</div>
+                            </div>
+                            <div>
+                                <div class="item_main_menu_title">{{item.task_good_num}}</div>
+                                <div class="item_main_menu_text">优秀作业</div>
+                            </div>
+                        </div>
+                        <div class="item_main_btnBox">
+                            <div class="item_btn">
+                                <div class="item_btn_text" v-if="item.isOpen">展开</div>
+                                <div class="item_btn_text" v-if="!item.isOpen">收起</div>
+                                <img :src="item.isOpen?'../../images/student/Ic_unfolding.png':'../../images/student/ic_Packup.png'" alt="">
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="!item.isOpen" v-cloak>
+                        <div class="tabs">
+                            <div v-for="(itemChild,index) in item.tabArr" :class="item.active==index?'antives':'tabsText'" @click="check(index,item.classes_id,i)">
+                                {{itemChild}}</div>
+                        </div>
+                        <div class="listMain">
+                            <van-pull-refresh v-model="item.isLoading" v-if="item.list.length > 0" success-text="刷新成功" @refresh="onRefresh(i)">
+                                <van-list v-model="item.isUpLoading" :finished="item.upFinished" @load="onupLoad(i)" offset="10" immediate-check='false'>
+                                    <div class="listBoxs">
+                                        <div class="items" v-for="itemChildmain in item.list" @click="goDetails(itemChildmain.name,itemChildmain.student_task_id,itemChildmain.form,item.active,itemChildmain.is_review)">
+                                            <div class="items_top">
+                                                <!-- <img class="items_top_img" :src="itemChildmain.cover_img" alt=""> -->
+                                                <img class="items_top_img" :src="itemChildmain.cover_img" onerror="this.src = '../../images/teacher/error.png'" v-lazy="itemChildmain.cover_img" />
+                                                <img class="items_top_img_out" v-if="itemChildmain.is_overdue == 1" src="../../images/student/icon_outyear.png" alt="">
+                                                <img class="items_top_icon" v-if="itemChildmain.form == 1" src="../../images/student/Ic_pic_03.png" alt="">
+                                                <img class="items_top_icon" v-if="itemChildmain.form == 2" src="../../images/student/Ic_audio_03.png" alt="">
+                                                <img class="items_top_icon" v-if="itemChildmain.form == 3" src="../../images/student/Ic_video_03.png" alt="">
+                                            </div>
+                                            <div class="items_main">
+                                                {{itemChildmain.name}}
+                                            </div>
+                                            <div class="items_footer">
+                                                <img src="../../images/student/Ic_record.png" alt="">
+                                                <div class="items_footer_text">{{itemChildmain.end_date}}截止</div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </van-list>
+                            </van-pull-refresh>
+                            <div v-if="item.list.length < 1" class="nullData">
+                                <div>
+                                    <img src="../../images/student/null.png" alt="">
+                                    <div>暂无数据</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="list.length < 1" class="nullData">
+                    <div>
+                        <img src="../../images/student/null.png" alt="">
+                        <div>暂无数据</div>
+                    </div>
+                </div>
+            </van-pull-refresh>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+            $('.nullData').css('minHeight', $(window).height() - 100 + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#work',
+        data() {
+            return {
+                isOpen: true,
+                isLoadings: false,
+                tabArr: ["待完成", "已完成"],
+                active: 0,
+                listData: [{
+                    iconPath: '../../images/student/Ic_audio_03.png'
+                }, {
+                    iconPath: '../../images/student/Ic_pic_03.png'
+                }, {
+                    iconPath: '../../images/student/Ic_video_03.png'
+                }, {
+                    iconPath: '../../images/student/Ic_pic_03.png'
+                }],
+                list: [],
+                type: 'false'
+            }
+        },
+        mounted() {
+            var type = GetQueryValue("type");
+            this.type = type;
+            this.getClassList();
+            localStorage.removeItem('dataList');
+            if (localStorage.getItem('dataList')) {
+                this.list = JSON.parse(localStorage.getItem('dataList'))
+            } else {
+                this.$refs.loadings.openLoading();
+                AndroidRouter('getUserInfo', "", this.setUserInfo, "setUserInfo")
+            }
+        },
+        methods: {
+            setUserInfo(res) {
+                localStorage.setItem("token", res)
+                this.getClassList();
+                AndroidRouter('onBottomTabClick', 1, this.bottomTab, "setOnBottomTabClick")
+            },
+            bottomTab() {
+                // location.reload()
+                // this.$refs.loadings.openLoading();
+                this.getClassList();
+                AndroidRouter('onBottomTabClick', 1, this.bottomTab, "setOnBottomTabClick")
+            },
+            goBack() {
+                // history.go(-1);
+                localStorage.removeItem('dataList');
+                AndroidRouter('closePage', '')
+            },
+            onRefreshs() { //刷新
+                this.isLoadings = true;
+                this.getClassList();
+            },
+            getOpen(val, i) {
+                // val = !val;
+                let number;
+                if (val == true) {
+                    number = false;
+                } else {
+                    number = true
+                }
+                this.$refs.loadings.openLoading();
+                this.getworkList(this.list[i].pageNo, this.list[i].pageSize, this.list[i].classes_id, this.list[i].active, i);
+                let that = this;
+                setTimeout(function() {
+                    that.list[i].isOpen = number
+                }, 300);
+            },
+            check(index, id, i) {
+                this.list[i].list = [];
+                this.list[i].pageNo = 1;
+                this.list[i].upFinished = false;
+                this.$refs.loadings.openLoading();
+                this.getworkList(this.list[i].pageNo, this.list[i].pageSize, id, index, i)
+                this.list[i].active = index;
+            },
+            onRefresh(i) {
+                this.list[i].isLoading = true;
+                this.list[i].upFinished = false;
+                this.list[i].pageNo = 1;
+                this.list[i].list = [];
+                this.getworkList(this.list[i].pageNo, this.list[i].pageSize, this.list[i].classes_id, this.list[i].active, i);
+            },
+            onupLoad(i) { // 上拉调用此函数
+                this.list[i].isUpLoading = false;
+                this.list[i].pageNo++;
+                this.getworkList(this.list[i].pageNo, this.list[i].pageSize, this.list[i].classes_id, this.list[i].active, i);
+
+            },
+            getClassList() {
+                let that = this;
+                ajax('student/classes/classes_list', "POST", {}, function(res) {
+                    if (res.code == 1) {
+                        if (res.data.list.length > 1) {
+                            res.data.list.forEach(function(item) {
+                                item.isOpen = true;
+                                item.isLoading = false;
+                                item.isUpLoading = false;
+                                item.upFinished = false;
+                                item.list = [];
+                                item.tabArr = ["待完成", "已完成"];
+                                item.active = '0';
+                                item.pageNo = 1;
+                                item.pageSize = 6;
+                            });
+                            // that.list = res.data.list;
+                            that.getworkList(res.data.list[0].pageNo, res.data.list[0].pageSize, res.data.list[0].classes_id, res.data.list[0].active, 0, res.data.list);
+                        } else if (res.data.list.length == 1) {
+                            res.data.list.forEach(function(item) {
+                                item.isOpen = false;
+                                item.isLoading = false;
+                                item.isUpLoading = false;
+                                item.upFinished = false;
+                                item.pageNo = 1;
+                                item.pageSize = 6;
+                                item.tabArr = ["待完成", "已完成"];
+                                item.active = '0';
+                            });
+                            // that.list = res.data.list;
+                            that.getworkList(res.data.list[0].pageNo, res.data.list[0].pageSize, res.data.list[0].classes_id, res.data.list[0].active, 0, res.data.list);
+                        } else {
+                            that.isLoadings = false;
+                            that.list = [];
+                            that.$refs.loadings.closedLoading();
+                        }
+                        // that.loading = false;
+                    }
+                })
+            },
+            getworkList(pageNo, pageSize, classId, status, i, val) {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                let that = this;
+                ajaxs('student/classes/classes_task_list', "POST", {
+                    "page_no": pageNo,
+                    "page_size": pageSize,
+                    "classes_id": classId,
+                    "task_status": status
+                }, function(res) {
+                    if (res.code == 1) {
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        if (val) {
+                            val.filter(function(item) {
+                                return item.classes_id == classId
+                            }).map(function(item) {
+                                // item.list = res.data.list;
+                                let rows = res.data.list; //请求返回当页的列表
+                                // that.isUpLoading = false;
+                                // item.isUpLoading = true;
+                                item.total = res.data.total;
+                                if (rows == null || rows.length === 0) {
+                                    // 加载结束
+                                    item.upFinished = true;
+                                    item.list = [];
+                                    return false;
+                                }
+                                if (item.pageNo == 1) {
+                                    item.list = rows;
+                                } else {
+                                    item.list = item.list.concat(rows);
+                                }
+                                if (item.list.length >= item.total) {
+                                    item.upFinished = true;
+                                }
+                            });
+                            that.list = val;
+                        } else {
+                            // that.list[i].list = res.data.list;
+                            let rows = res.data.list; //请求返回当页的列表
+                            that.list[i].isUpLoading = false;
+                            that.list[i].total = res.data.total;
+                            if (rows == null || rows.length === 0) {
+                                // 加载结束
+                                that.list[i].upFinished = true;
+                                return false;
+                            }
+                            if (that.list[i].pageNo == 1) {
+                                that.list[i].list = rows;
+                            } else {
+                                that.list[i].list = that.list[i].list.concat(rows);
+                            }
+                            if (that.list[i].list.length >= that.list[i].total) {
+                                that.list[i].upFinished = true;
+                            }
+
+                        }
+                        that.isLoadings = false;
+                        that.list[i].isLoading = false;
+                    }
+                })
+            },
+            goDetails(name, id, i, active, i2) {
+                // localStorage.setItem('dataList', JSON.stringify(this.list))
+                // if(active == 1){
+
+                // }else{
+                //     location.href = './workTopics.html?id=' + id + '&active=' + active + '&goback=true';
+                // }
+                if (active == 1) {
+                    // location.href = './workDetailsImgText.html?id=' + id;
+                    if (i == 1) {
+                        if (this.type == 'true') {
+                            location.href = './workDetailsImgText.html?id=' + id + '&review=' + i2;
+                        } else {
+                            let url = 'student/workDetailsImgText.html?id=' + id + '&review=' + i2 + '&closeType=true';
+                            AndroidRouter('newPage', url)
+                        }
+                    } else {
+                        let type = '';
+                        if (i == 2) {
+                            type = 2;
+                        } else {
+                            type = 1;
+                        }
+                        // let is_show = 0;
+                        // if (this.isList) {
+                        //     is_show = 1;
+                        // }
+                        let data = {
+                            title: name, //'页面标题'
+                            student_task_id: id, //'服务器返回的student_task_id'
+                            work_type: type, //'1视频打卡,2音频打卡'
+                            // is_comment_work: i2,//'是否是点评作业，1是（界面上只显示点评作业的按钮，下面其它参数将无效）'
+                            has_delete_btn: 1, //'是否有删除按钮， 1显示（只对学生端有效，教师端不显示）'
+                            has_tea_comment_btn: i2, //'是否有教师点评按钮， 1显示'
+                            has_work_title_btn: 1, //'是否有作业题目按钮， 1显示'
+                            // is_show_student_list: is_show,//'是否显示已完成作业学员列表， 1显示'
+                        }
+                        AndroidRouter('goStuWorkDetail', JSON.stringify(data), this.workFilsh);
+                    }
+                } else {
+                    if (this.type == 'true') {
+                        location.href = './workTopics.html?id=' + id + '&active=' + active + '&goback=true';
+                    } else {
+                        let url = 'student/workTopics.html?id=' + id + '&active=' + active + '&goback=true&closeType=true';
+                        AndroidRouter('newPage', url)
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+</html>

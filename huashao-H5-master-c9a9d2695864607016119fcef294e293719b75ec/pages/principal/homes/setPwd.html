@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>设置密码</title>
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/teacher/setPwd.css">
+</head>
+
+<body>
+    <div id="setPwd" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../../images/student/icon_back.png" alt="">
+                <div class="topTitle">{{password==1?'修改':'设置'}}密码</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="inp main_phone">
+                <input type="password" v-model="pwd" placeholder="请输入密码" />
+            </div>
+            <div class="inp main_phone">
+                <input type="password" v-model="rePwd" placeholder="请再次输入密码" />
+            </div>
+			<van-button type="default" class="btn" @click="sureSub">确定</van-button>
+        </div>
+    </div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#setPwd',
+        data() {
+            return {
+                pwd:'',
+                rePwd:'',
+				password:"",
+				phone:"",
+				captcha:""
+            }
+        },
+        created() {
+        	var password = GetQueryValue("password")
+        	var phone = GetQueryValue("phone")
+        	var captcha = GetQueryValue("captcha")
+        	this.password = password
+        	this.phone = phone
+        	this.captcha = captcha
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            sureSub(){
+                if(this.pwd == this.rePwd){
+                    var that = this;
+                    ajax('school/school/school_edit', "POST", {
+						"captcha":that.captcha,
+                        "newpassword": that.pwd,
+                        "repassword": that.rePwd
+                    }, function(res){
+                        if (res.code == 1) {
+                           vant.Toast(res.msg);
+                           setTimeout(function(){
+                               localStorage.removeItem('token')
+                               AndroidRouter("loginOut", '')
+                           },500)
+                        }else{
+                            vant.Toast(res.msg);
+                        }
+                    })
+                }else{
+                    vant.Toast('两次密码不相等');
+                }
+            }
+        }
+    });
+</script>
+
+</html>

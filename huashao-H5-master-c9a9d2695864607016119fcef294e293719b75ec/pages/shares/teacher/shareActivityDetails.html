@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>投票活动</title>
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/teacher/activityDetails.css">
+</head>
+
+<body>
+    <div id="activityDetails" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack()" src="../../../images/student/icon_back.png" alt="">
+                <div class="topTitle">投票活动</div>
+                <p class="emptyssd"></p>
+                <!-- <img class="topImg" @click="goShare(true)" src="../../../images/student/Ic_share_02.png" alt=""> -->
+            </div>
+        </div>
+        <div class="boxPadd mainTop" v-if="allData!==''">
+            <div class="mainTop_title">
+                <div class="mainTop_title_text">{{allData.title}}
+                    <p class="mainTop_title_tag">{{allData.type_name}}活动</p>
+                </div>
+            </div>
+            <div class="mainTop_text">活动描述：{{allData.content}}</div>
+            <div class="mainTop_footer">
+                <div>
+                    <div>参与时间：</div>
+                    <div class="mainTop_footer_time">{{allData.join_start_time}}&nbsp;-&nbsp;{{allData.join_end_time}}
+                    </div>
+                </div>
+                <div>
+                    <div>投票时间：</div>
+                    <div class="mainTop_footer_time">{{allData.vote_start_time }}&nbsp;-&nbsp;{{allData.vote_end_time}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="boxPadd list">
+            <div class="listBox">
+                <div class="item" v-for="(item,i) in dataList">
+                    <div class="item_top">
+                        <div class="item_top_left">{{i+1}}.{{item.full_name}}（{{item.vote_num}}票）</div>
+                        <div class="item_top_right" v-if="item.is_vote == 0">
+                            <div class="item_top_rightBox">
+                                <img src="../../../images/student/Ic_thumbup.png" alt="">
+                                <div class="item_top_right_text" @click="goVote(item)">投票</div>
+                            </div>
+                        </div>
+                        <div class="item_top_rights" v-if="item.is_vote == 1">
+                            <div class="item_top_rightBox">
+                                <img src="../../../images/student/Ic_thumbup.png" alt="">
+                                <div class="item_top_rights_text">已投票</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item_main">
+                        {{item.conent}}
+                    </div>
+                    <div v-if="allData.a_type==1">
+                        <div class="audiosf align_items" v-if="item.attachment_list.length!==0">
+                            <div class="audiosBox" v-for="(it,ix) in item.attachment_list">
+                                {{it.duration}}"
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="allData.a_type==0">
+                        <div class="item_img" v-if="item.attachment_list.length!==0">
+                            <img :src="it.path" alt="" v-for="(it,ix) in item.attachment_list" onerror="this.src = '../../../images/teacher/error.png'" />
+                        </div>
+                    </div>
+                    <div v-if="allData.a_type==2">
+                        <div class="videoBox align_items" v-if="item.attachment_list.length!==0">
+                            <div v-for="(it,ix) in item.attachment_list" @click="autoVideo(it)">
+                                <img :src="it.other_path" onerror="this.src = '../../../images/teacher/error.png'" />
+                                <div>
+                                    <img src="../../../images/teacher/ic_bofang.png" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <img src="../../../images/teacher/pic_24.png" class="downds" @click="dowms" />
+    </div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#activityDetails',
+        data() {
+            return {
+                allData: "",
+                dataList: [],
+                vote_id: '',
+                u_type: ""
+            }
+        },
+        mounted() {
+            var u_types = localStorage.getItem("u_types")
+            if (u_types !== null) {
+                this.u_type = u_types
+            }
+            var id = GetQueryValue("id")
+                // var id = 7
+            this.vote_id = id
+            this.$refs.loadings.openLoading();
+            this.getDetails(id)
+        },
+        methods: {
+            autoVideo() {
+
+            },
+            dowms() { //下载App
+                location.href = "../../student/downloadAPP.html"
+            },
+            getDetails(id) {
+                var that = this;
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../../images/loading.gif"
+                // });
+                let obj = {
+                    vote_id: id,
+                    u_type: this.u_type
+                }
+                webajax("teacher/Share/voteShareDetail", 'POST', obj, function(res) {
+                    if (res.code == 1) {
+                        that.allData = res.data.vote_info
+                        that.dataList = res.data.join_list
+                    }
+                    // vant.Toast.clear();
+                    that.$refs.loadings.closedLoading();
+                })
+            },
+            goVote(item) { //投票
+                webajax("teacher/Share/doVote", 'POST', {
+                    vote_id: this.vote_id,
+                    join_id: item.join_id,
+                    u_type: this.u_type
+                }, function(res) {
+                    vant.Toast(res.msg)
+                    if (res.code == 1) {
+                        item.is_vote = 1
+                    }
+                })
+            },
+            goBack() {
+                history.go(-1);
+            },
+            goShare(bool) {
+                this.show = bool;
+            },
+            shareWayCacel() {
+                this.show = false;
+            },
+            goPartake() {
+                location.href = './partakeActivities.html?id=' + this.vote_id + "&type=" + this.allData.a_type
+            }
+        }
+    });
+</script>
+
+</html>

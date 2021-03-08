@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>我的收藏</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/myCollection.css">
+</head>
+
+<body>
+    <div id="myCollection" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">我的收藏</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="tabs">
+            <div v-for="(item,index) in tabArr" :class="active==index?'antives':'tabsText'" @click="chages(index)">
+                {{item}}</div>
+        </div>
+        <div class="main">
+            <van-pull-refresh v-model="isLoading" class="mainScoll" v-if="active == 0" success-text="刷新成功" @refresh="onRefresh">
+                <van-list v-model="isUpLoading" v-if="listData.length > 0" :finished="upFinished" @load="onupLoad" :offset="offset" :immediate-check='check'>
+                    <div class="listBoxs">
+                        <div class="items" v-for="item in listData">
+                            <!-- <div class="items" v-for="item in listData" @click="goDetail(item.student_task_id)"> -->
+                            <div class="items_top">
+                                <img class="items_top_img" :src="item.cover_img" alt="">
+                                <img class="items_top_icon" v-if="item.task_form == 1" src="../../images/student/Ic_pic_03.png" alt="">
+                                <img class="items_top_icon" v-if="item.task_form == 2" src="../../images/student/Ic_audio_03.png" alt="">
+                                <img class="items_top_icon" v-if="item.task_form == 3" src="../../images/student/Ic_video_03.png" alt="">
+                                <div class="start" v-if="item.isShow" :data-ids="item.student_task_opus_id" @click="delCellrction">
+                                    <img src="../../images/student/Ic_collection_03.png" alt="">
+                                </div>
+                                <div class="start" v-if="!item.isShow" :data-ids="item.student_task_opus_id" @click="addCellrction">
+                                    <img src="../../images/student/Ic_collection_02.png" alt="">
+                                </div>
+                            </div>
+                            <div class="items_main">
+                                {{item.name}}
+                            </div>
+                            <div class="items_footer">
+                                <div class="items_footerlist">
+                                    <img src="../../images/student/Ic_browsing.png" alt="">
+                                    <div>{{item.click_num}}</div>
+                                </div>
+                                <div class="items_footerlist">
+                                    <img src="../../images/student/Ic_thumb.png" alt="">
+                                    <div>{{item.collection_num}}</div>
+                                </div>
+                                <div class="items_footerlist">
+                                    <img src="../../images/student/Ic_comments.png" alt="">
+                                    <div>{{item.comment_num}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </van-list>
+                <div v-if="isShows" class="nullData">
+                    <div v-if="active == 0">
+                        <div>
+                            <img src="../../images/student/null.png" alt="">
+                            <div>暂无数据</div>
+                        </div>
+                    </div>
+                </div>
+            </van-pull-refresh>
+            <div v-if="active == 1" class="nullData">
+                <div>
+                    <img src="../../images/student/underDeve.png" alt="">
+                    <div>研发中，暂未开放......</div>
+                </div>
+            </div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.main').css('minHeight', $(window).height() - 101 + 'px');
+            $('.listBoxs').css('minHeight', $(window).height() - 150 + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#myCollection',
+        data() {
+            return {
+                tabArr: ["作业", "课程"],
+                active: 0,
+                listData: [],
+                studentId: '',
+                pageNo: 1,
+                pageSize: 5,
+                total: '',
+                check: false,
+                isShows: false,
+                isLoading: false,
+                isUpLoading: false,
+                upFinished: false, //上拉加载完毕
+                offset: 100, //滚动条与底部距离小于 offset 时触发load事件
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("id");
+            this.studentId = id;
+            this.$refs.loadings.openLoading();
+            this.getInfo(this.pageNo, this.pageSize, id)
+            this.getHeight();
+        },
+        updated() {
+            this.getHeight();
+        },
+        methods: {
+            goBack() {
+                // history.go(-1);
+                AndroidRouter('closePage', '')
+            },
+            getHeight() {
+                $('.mainScoll').css('minHeight', $(window).height() - 150 + 'px');
+            },
+            chages(i) {
+                this.active = i;
+                if (i == 1) {
+                    this.listData = [];
+                } else {
+                    this.upFinished = false;
+                    this.pageNo = 1;
+                    this.getInfo(this.pageNo, this.pageSize, this.studentId)
+                }
+            },
+            onRefresh() {
+                this.isLoading = true;
+                this.upFinished = false;
+                this.pageNo = 1;
+                this.listData = [];
+                this.getInfo(this.pageNo, this.pageSize, this.studentId);
+            },
+            onupLoad() { // 上拉调用此函数
+                // e.stopPropagation();
+                this.isUpLoading = false;
+                // this.upFinished = false;
+                this.pageNo++;
+                // this.$refs.loadings.openLoading();
+                this.getInfo(this.pageNo, this.pageSize, this.studentId)
+
+            },
+            getInfo(pageNo, pageSize, id) {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                let that = this;
+                ajax('student/collection/collection_list', "POST", {
+                    "page_no": pageNo,
+                    "page_size": pageSize,
+                    "student_id": id
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.isLoading = false;
+                        res.data.list.forEach(function(item) {
+                            item.isShow = true;
+                        });
+                        let rows = res.data.list; //请求返回当页的列表
+                        that.isUpLoading = false;
+                        that.total = res.data.total;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        if (rows == null || rows.length === 0) {
+                            // 加载结束
+                            this.upFinished = true;
+                            if (that.listData.length < 1) {
+                                that.isShows = true;
+                            } else {
+                                that.isShows = false;
+                            }
+                            return false;
+                        }
+                        if (pageNo == 1) {
+                            that.listData = rows;
+                        } else {
+
+                            that.listData = that.listData.concat(rows);
+                        }
+                        if (that.listData.length >= that.total) {
+                            that.upFinished = true;
+                        }
+                        if (that.listData.length < 1) {
+                            that.isShows = true;
+                        } else {
+                            that.isShows = false;
+                        }
+                    }
+                })
+            },
+            goDetail(id) {
+                location.href = './workTopics.html?id=' + id + '&isList=true' + '&goback=true';
+            },
+            delCellrction(e) {
+                e.stopPropagation();
+                let that = this;
+                ajax('student/collection/collection_cancel', "POST", {
+                    "student_task_opus_id": e.target.offsetParent.dataset.ids
+                }, function(res) {
+                    if (res.code == 1) {
+                        vant.Toast(res.msg);
+                        that.listData.filter(function(item) {
+                            return item.student_task_opus_id == e.target.offsetParent.dataset.ids
+                        }).map(function(item) {
+                            item.isShow = false
+                        });
+                    }
+                })
+            },
+            addCellrction(e) {
+                e.stopPropagation();
+                let that = this;
+                ajax('student/collection/collection_add', "POST", {
+                    "student_task_opus_id": e.target.offsetParent.dataset.ids
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.pageNo = 1;
+                        vant.Toast(res.msg);
+                        setTimeout(function() {
+                            that.getInfo(that.pageNo, that.pageSize, that.studentId);
+                        }, 1000)
+
+                    }
+                })
+            }
+        }
+    });
+</script>
+
+</html>

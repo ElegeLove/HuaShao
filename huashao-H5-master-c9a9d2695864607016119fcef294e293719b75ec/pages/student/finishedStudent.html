@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>已完成作业学员</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/finishedStudent.css">
+</head>
+
+<body>
+    <div id="finishedStudent" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">已完成作业学员</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="items" v-for="item in listData" @click="goInfo(item)">
+                <img :src="item.head" alt="">
+                <div class="items_text">{{item.student_name}}</div>
+            </div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#finishedStudent',
+        data() {
+            return {
+                listData: [],
+                type: '',
+                name: '',
+                isList: false
+            }
+        },
+        created() {
+
+        },
+        mounted() {
+            var id = GetQueryValue("id");
+            var type = GetQueryValue("type");
+            var name = GetQueryValue("name");
+            var isList = GetQueryValue("isList");
+            this.name = name;
+            this.isList = isList;
+            this.type = type;
+            // vant.Toast.loading({
+            //     message: '',
+            //     forbidClick: true,
+            //     loadingType: 'spinner',
+            //     duration: 0,
+            //     icon: "../../images/loading.gif"
+            // });
+            this.$refs.loadings.openLoading();
+            let that = this;
+            ajax('student/task/complete_task_student_list', "POST", {
+                task_publish_id: id
+            }, function(res) {
+                if (res.code == 1) {
+                    that.listData = res.data.list;
+                    // vant.Toast.clear();
+                    that.$refs.loadings.closedLoading();
+                }
+            })
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            // goInfo(id){
+            //     if (this.type == 1) {
+            //         location.href = './workDetailsImgText.html?id=' + id;
+            //     }
+            // },
+            //查看作业
+            goInfo(val) {
+                if (val.is_look == 1) {
+                    if (this.type == 1) {
+                        location.href = './workDetailsImgText.html?id=' + val.student_task_id + '&review=' + val.is_review;
+                    } else {
+                        let type = '';
+                        if (this.type == 2) {
+                            type = 2;
+                        } else {
+                            type = 1;
+                        }
+                        let is_show = 0;
+                        if (this.isList) {
+                            is_show = 1;
+                        }
+                        let data = {
+                            title: this.name, //'页面标题'
+                            student_task_id: val.student_task_id, //'服务器返回的student_task_id'
+                            work_type: type, //'1视频打卡,2音频打卡'
+                            // is_comment_work: val.is_review,//'是否是点评作业，1是（界面上只显示点评作业的按钮，下面其它参数将无效）'
+                            has_delete_btn: 1, //'是否有删除按钮， 1显示（只对学生端有效，教师端不显示）'
+                            has_tea_comment_btn: val.is_review, //'是否有教师点评按钮， 1显示'
+                            has_work_title_btn: 1, //'是否有作业题目按钮， 1显示'
+                            is_show_student_list: is_show, //'是否显示已完成作业学员列表， 1显示'
+                        }
+                        AndroidRouter('goStuWorkDetail', JSON.stringify(data), this.workFilsh);
+                    }
+                } else {
+                    vant.Toast(val.show_range_text)
+                }
+            },
+            workFilsh() {
+                this.getInfo(this.task_id);
+            }
+        }
+    });
+</script>
+
+</html>

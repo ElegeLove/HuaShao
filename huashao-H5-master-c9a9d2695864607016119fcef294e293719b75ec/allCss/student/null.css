@@ -1,0 +1,23 @@
+.content {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.main {
+    text-align: center;
+}
+
+.main img {
+    width: 3.68rem;
+    height: 3.82rem;
+}
+
+.main>div {
+    margin-top: 0.44rem;
+    font-size: 0.3rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(102, 102, 102, 1);
+}

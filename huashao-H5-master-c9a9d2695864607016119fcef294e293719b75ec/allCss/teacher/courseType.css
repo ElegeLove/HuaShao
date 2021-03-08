@@ -1,0 +1,113 @@
+#box {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding-top: 2rem;
+    overflow-y: scroll;
+    /* -webkit-overflow-scrolling: touch;
+	overflow-scrolling: touch; */
+}
+
+.fixed {
+    overflow: hidden;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 600;
+    background-color: white;
+}
+
+.fixed .ipts {
+    width: 100%;
+    height: 0.7rem;
+    background-color: #F5F5F5;
+    border-radius: 0.1rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.fixed .ipts>input {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    box-sizing: border-box;
+    padding: 0 0.2rem;
+    text-align: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 0.28rem;
+}
+
+.fixed .ipts>div {
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    font-size: 0.28rem;
+    color: #999999;
+}
+
+.fixed .ipts>div>img {
+    width: 0.6rem;
+    height: 0.6rem;
+}
+
+.padds {
+    box-sizing: border-box;
+    padding: 0 0.3rem;
+    padding-top: 0.29rem;
+    background-color: white;
+}
+
+.padds>div {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.seaBtn {
+    width: 1rem;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 0.3rem;
+    color: #666666;
+    margin-left: 0.2rem;
+}
+
+.checkTab {
+    box-sizing: border-box;
+    padding-top: 0.38rem;
+    border-bottom: 0.02rem solid #EEEEEE;
+}
+
+.checkTab .van-tabs--line .van-tabs__wrap {
+    height: 0.6rem;
+}
+
+.checkTab .van-tab {
+    font-size: 0.28rem;
+}
+
+.checkTab .van-ellipsis {
+    font-size: 0.28rem;
+    line-height: 0.35rem;
+}
+
+.lists>div {
+    width: 100%;
+    height: 1.16rem;
+    border-bottom: 0.02rem solid #F5F5F5;
+    line-height: 1.16rem;
+    font-size: 0.28rem;
+    color: #333333;
+}
+
+.clearEmpty {
+    padding-top: 2rem !important;
+}
+
+.gradeSele {
+    padding-top: 1rem !important;
+}

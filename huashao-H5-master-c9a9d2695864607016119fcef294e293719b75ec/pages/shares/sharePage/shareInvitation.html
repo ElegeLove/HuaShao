@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>花少教育</title>
+    <!-- head 中 -->
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/student/shareInvitation.css">
+</head>
+
+<body>
+    <div id="shareInvitation" class="content" v-cloak>
+        <!-- <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../../images/student/icon_back.png" alt="">
+                <div class="topTitle">花少教育</div>
+                <div class="topImg"></div>
+            </div>
+        </div> -->
+        <div class="ban">
+            <img src="../../../images/student/banner_02.png" alt="">
+        </div>
+        <div class="main">
+            <div class="items" v-for="(item,i) in listData" @click="goData(i)">
+                <img class="items_img" :src="item.imgPath" alt="">
+                <div class="items_text">{{item.text}}</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#shareInvitation',
+        data() {
+            return {
+                listData: [{
+                    imgPath: '../../../images/student/pic_stu.png',
+                    text: '我是学生'
+                }, {
+                    imgPath: '../../../images/student/pic_teacher.png',
+                    text: '我是老师'
+                }, {
+                    imgPath: '../../../images/student/pic_master.png',
+                    text: '我是校长'
+                }],
+                type: "",
+                inviteCode: "",
+            }
+        },
+        created() {
+            var type = GetQueryValue("type")
+            var inviteCode = GetQueryValue("invite_code")
+            this.type = type;
+            this.inviteCode = inviteCode;
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            goData(i) {
+                location.href = './shareInvitationData.html?index=' + i + '&type=' + this.type + '&inviteCode=' + this.inviteCode;
+            }
+        }
+    });
+</script>
+
+</html>

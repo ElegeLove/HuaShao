@@ -1,0 +1,353 @@
+.content {
+    width: 100%;
+    padding-top: 1rem;
+    box-sizing: border-box;
+	overflow-y: scroll;
+}
+
+.boxPadd {
+    width: 100%;
+    padding: 0 0.3rem;
+    box-sizing: border-box;
+}
+
+.top {
+    width: 100%;
+    padding: 0.265rem 0.3rem;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 111;
+    background: #ffffff;
+}
+
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topImg {
+    width: 0.4rem;
+    height: 0.4rem;
+}
+
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.mainTop {
+    padding-bottom: 0.3rem;
+    border-bottom: 0.2rem solid #F5F5F5;
+}
+
+.mainTop_title {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.mainTop_title_text {
+    font-size: 0.36rem;
+    font-family: 'miui';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+	line-height: 0.5rem;
+}
+
+.mainTop_title_tag {
+	display: inline-block !important;
+    width: 1.3rem;
+    height: 0.36rem;
+    border: 0.02rem solid rgba(46, 197, 224, 1);
+    margin-left: 0.18rem;
+    border-radius: 0.18rem;
+	text-align: center;
+	line-height: 0.36rem;
+    font-size: 0.24rem;
+    font-family: 'miui';
+    font-weight: 500;
+    color: rgba(46, 197, 224, 1);
+	flex-shrink: 0;
+	vertical-align: top;
+	margin-top: 0.03rem;
+	transform:scale(0.98);
+}
+
+.mainTop_text {
+    margin: 0.46rem 0 0 0;
+    font-size: 0.28rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+    line-height: 0.44rem;
+}
+
+.mainTop_footer {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.24rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(102, 102, 102, 1);
+    line-height: 0.36rem;
+}
+.mainTop_footer_time{
+    margin-top: 0.2rem;
+}
+
+.list {
+    padding-top: 0.26rem;
+    padding-bottom: 1.36rem;
+}
+
+.item_top {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item_top_left {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.item_top_right,
+.item_top_rights {
+    width: 1.7rem;
+    height: 0.56rem;
+     background-color: #FFBB03;
+    background-size: 100% 100%;
+    background-position: center center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+	border-radius: 0.25rem;
+}
+
+.item_top_rights {
+	 background: #CCCCCC;
+    border-radius: 0.25rem;
+    background-size: 100% 100%;
+    background-position: center center;
+}
+
+.item_top_right img,
+.item_top_rights img {
+    width: 0.28rem;
+    height: 0.28rem;
+    margin-right: 0.12rem;
+}
+
+.item_top_rightBox {
+    display: flex;
+    align-items: center;
+}
+
+.item_top_right_text,
+.item_top_rights_text {
+    font-size: 0.28rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(255, 255, 255, 1);
+}
+
+.item_top_rights_text {
+    font-weight: 500;
+}
+
+.item_main {
+    margin: 0.42rem 0 0.38rem;
+    font-size: 0.28rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(102, 102, 102, 1);
+    line-height: 0.44rem;
+}
+
+.item_img {
+    width: 2rem;
+    height: 2rem;
+    margin-bottom: 0.7rem;
+    border-radius: 0.1rem;
+}
+
+.item_img img {
+    width: 100%;
+    height: 100%;
+	border-radius: 0.1rem;
+	object-fit: cover;
+}
+
+.listBtn {
+    width: 100%;
+    padding: 0.15rem 0.3rem;
+    box-sizing: border-box;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    background-color: #ffffff;
+    z-index: 1;
+}
+
+.listBtn_main {
+    width: 100%;
+    height: 1.06rem;
+    background: url('../../images/student/Icon_button_register.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(255, 255, 255, 1);
+}
+.shareWay{
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	box-sizing: border-box;
+	padding: 0.4rem 0.3rem;
+}
+.shareWay>div{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+.shareWay>div>p{
+	font-size: 0.3rem;
+	color: #333333;
+}
+.shareWay img{
+	width: 1.2rem;
+	height: 1.2rem;
+	border-radius: 50%;
+	margin-bottom: 0.2rem;
+}
+.shareWay_Cacel{
+	padding: 0.3rem 0;
+	text-align: center;
+	font-size: 0.36rem;
+	font-weight: 500;
+	color: rgba(153,153,153,1);
+	border-top: 0.1rem solid #efefef;
+}
+.emptyssd{
+	width: 0.4rem;
+}
+.downds{
+	width: 100%;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	height: 1.2rem;
+}
+.listBox{
+	margin-bottom: 2rem;
+}
+.fotBtn_teath{
+	width: 100%;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	box-sizing: border-box;
+	padding: 0.15rem 0.3rem;
+	background-color: white;
+}
+.fotBtn_teath>.gon{
+	width: 100%;
+	height: 0.88rem;
+	background-color: #2EC5E0;
+	font-size: 0.36rem;
+	color: #FFFFFF;
+	text-align: center;
+	line-height: 0.88rem;
+	border-radius: 0.44rem;
+	box-shadow: 0 0.05rem 0 #15A9C3;
+	border: 0;
+}
+.audiosf{
+	margin-bottom: 0.76rem;
+	flex-wrap: wrap;
+}
+.audiosBox{
+	width: 2.47rem;
+	height: 0.66rem;
+	background: url(../../images/principal/Collection_voice.png) no-repeat;
+	background-size: 100%;
+	display: flex;
+	align-items: center;
+	padding-left: 0.64rem;
+	box-sizing: border-box;
+	font-size: 0.26rem;
+	color: #FFFFFF;
+	margin-right: 0.1rem;
+	margin-bottom: 0.1rem;
+}
+.videoBox{
+	flex-wrap: wrap;
+	margin-bottom: 0.75rem;
+}
+.videoBox>div{
+	width: 1.2rem;
+	height: 1.2rem;
+	border-radius: 0.1rem;
+	overflow: hidden;
+	position: relative;
+	margin-right: 0.1rem;
+	margin-bottom: 0.1rem;
+}
+.videoBox>div>img{
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.videoBox>div>div{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0,0,0,0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.videoBox>div>div>img{
+	width: 0.5rem;
+	height: 0.5rem;
+}
+.mads{
+	margin-top: 0.4rem;
+}
+.imgBoxsd{
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	margin-top: 0.2rem;
+	margin-bottom: 0.2rem;
+	width: 100%;
+	justify-content: space-between;
+}
+.imgBoxsd img{
+	width: 31%;
+	height: 2.14rem;
+	border-radius: 0.1rem;
+	margin-bottom: 0.2rem;
+}
+.imgBoxsd p{
+	width: 33%;
+}

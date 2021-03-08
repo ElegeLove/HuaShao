@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>作业详情</title>
+		<script src="../../js/public/rem.js"></script>
+		<script src="../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../allCss/public.css">
+		<link rel="stylesheet" href="../../allCss/teacher/studentList.css">
+		<link rel="stylesheet" href="../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="top">
+			    <div class="topBox">
+			        <img class="topImg" src="../../images/student/icon_back.png" alt="" @click="goback">
+			        <div class="topTitle">作业详情</div>
+			        <div class="topImg"></div>
+			    </div>
+			</div>
+			<div class="checkTab" v-if="allData!==''">
+				<van-tabs v-model="num"  line-width="30" :border="false" title-inactive-color="#999999" title-active-color="#333333" color="#2EC5E0" class="typeArrs"  @click="checkType">
+				  <van-tab v-for="(item,index) in typeArr" :key="index" :title="item.tit"></van-tab>
+				</van-tabs>
+			</div>
+			<div class="listBox">
+				<div class="list" v-for="(item,index) in peopleList" :key="index" v-if="peopleList.length!==0">
+					<div class="user" @click="goUserPage(item)">
+						<img :src="item.head" onerror="this.src = '../../images/teacher/error.png'"/>
+						<span class="danshen">{{item.name}}</span>
+					</div>
+					<div class="cpres" v-if="active==2">
+						<div v-if="item.is_good==1">
+							<img src="../../images/teacher/Ic_good.png" v-if=""/>
+						</div>
+						<p>{{item.task_score}}</p>
+					</div>
+					<div class="btns" @click="looks(item)" v-if="active!=3">
+						查看作业
+					</div>
+				</div>
+				<div v-if="peopleList.length==0&&nullEmptys" class="nullEmptys">
+					<img src="../../images/student/null.png" />
+					<p>什么都没有...</p>
+				</div>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+		
+	</body>
+	<script src="../../js/public/vue.js"></script>
+	<script src="../../js/public/vant.js"></script>
+	<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+				   active:1,
+	               typeArr:[],
+	               num:0,           //tab得选中目标
+				   peopleList:[],
+				   allData:"",
+				   nullEmptys:false
+	            }
+	        },
+			created(){
+				iosReload()
+			},
+			mounted(){
+				this.getLoads()
+			},
+	        methods: {
+				getLoads(){          //初始化数据
+					var datas = JSON.parse(localStorage.getItem('detailsObj'))
+					var id = datas.id
+					var order = datas.order
+					var classes_id = datas.classes_id
+					this.getDetails(id,order,classes_id)
+				},
+				goUserPage(item){        //跳转主页
+					var datas = JSON.parse(localStorage.getItem("detailsObj"))
+					datas.order = this.active
+					localStorage.setItem("detailsObj",JSON.stringify(datas))
+					location.href = "mys/outhPage.html?id="+item.id+"&u_type=0"
+				},
+				getDetails(id,order,classes_id){        //获取数据
+					var obj = {
+						task_publish_id:id,
+						classes_id:classes_id
+					}
+					var that = this;
+					this.$refs.loadings.openLoading()
+					ajax("teacher/Teachertask/publishTaskDetail",'POST',obj,function(res){
+						if(res.code==1){
+							that.nullEmptys = true
+							var datas = JSON.parse(JSON.stringify(res.data))
+							if(res.data.task_info.is_comment==1){
+								if(order==1){
+									that.num = 0
+								}else if(order==2){
+									that.num = 1
+								}else{
+									that.num = 2
+								}
+								that.typeArr = [{tit:"待点评("+res.data.student_list.not_comment_num+")",order:1},{tit:"已点评("+res.data.student_list.comment_num+")",order:2},{tit:"未完成("+res.data.student_list.undone_num+")",order:3}]
+							}else{
+								if(order==3){
+									that.num = 0
+								}else{
+									that.num = 1
+								}
+								that.typeArr = [{tit:"未完成("+res.data.student_list.undone_num+")",order:3},{tit:"已完成("+res.data.student_list.done_num+")",order:4},]
+							}
+							that.active = order
+							if(order==1){
+								that.peopleList = datas.student_list.not_comment_student
+							}else if(order==2){
+								that.peopleList = datas.student_list.comment_student
+							}else if(order==3){
+								that.peopleList = datas.student_list.undone_student
+							}else{
+								that.peopleList = datas.student_list.done_student
+							}
+							that.allData = datas
+						}else{
+							vant.Toast(res.msg)
+						}
+						that.$refs.loadings.closedLoading()
+					})
+				},
+				closeCall(){      //页面关闭回调
+					this.getLoads()
+				},
+	            looks(item) {
+					var datas = JSON.parse(localStorage.getItem("detailsObj"))
+					datas.order = this.active
+					localStorage.setItem("detailsObj",JSON.stringify(datas))
+					if(this.allData.task_info.form==1){     //图文
+						if(this.active==1){
+							location.href = "lookHomework.html?status=2&id="+item.student_task_id+"&post=2"
+						}else{
+							location.href = "lookHomework.html?status=3&id="+item.student_task_id+"&post=2"
+						}
+					}else{
+						var work_type = this.allData.task_info.form==2?2:1;
+						var obj = {
+							"title":this.allData.task_info.name,
+							"student_task_id":item.student_task_id,
+							"work_type":work_type,
+							"is_comment_work":1,
+							"has_delete_btn":0,
+							"has_tea_comment_btn":0,
+							"has_work_title_btn":0
+						}
+						AndroidRouter('goStuWorkDetail',JSON.stringify(obj),this.closeCall,'get_workDetails')
+					}
+	            },
+				goback(){
+					history.go(-1)
+				},
+				checkType(it){              //切换tab
+					var order = this.typeArr[it].order
+					this.active = order
+					if(order==1){
+						this.peopleList = this.allData.student_list.not_comment_student
+					}else if(order==2){
+						this.peopleList = this.allData.student_list.comment_student
+					}else if(order==3){
+						this.peopleList = this.allData.student_list.undone_student
+					}else{
+						this.peopleList = this.allData.student_list.done_student
+					}
+				}
+	        }
+	    });
+	
+	
+	</script>
+</html>

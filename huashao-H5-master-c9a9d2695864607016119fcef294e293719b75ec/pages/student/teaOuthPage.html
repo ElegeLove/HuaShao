@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>他人主页</title>
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/student/teaOuthPage.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+</head>
+
+<body>
+    <div id="teaOuthPage" v-cloak>
+        <div class="t_fixeds">
+            <div class="tops">
+                <div class="topBox">
+                    <img class="topImg" src="../../images/teacher/ic_return.png" alt="" @click="goback">
+                    <div class="topTitle danshen">TA的主页</div>
+                    <div class="topImg"></div>
+                </div>
+            </div>
+            <div class="th_padd allpads">
+                <div class="userMess align_items">
+                    <div class="align_items lefs">
+                        <img :src="allData.teacher.head" />
+                        <div>
+                            <p class="align_items"><span class="danshen">{{allData.teacher.name}}</span><span>ID:{{allData.teacher.id}}</span></p>
+                            <div class="align_items">
+                                <p class="danshen">{{allData.teacher.personal_sign}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rigs">
+                        <p @click="sendsMe">{{allData.teacher.is_mutual==0?'关注TA':allData.teacher.is_mutual==1?"已关注":"互相关注"}}</p>
+                    </div>
+                </div>
+                <div class="align_items fans">
+                    <div @click="goFans(allData.teacher.id,1)">
+                        <p>{{allData.followNum.attention_count}}</p>
+                        <p>关注</p>
+                    </div>
+                    <div @click="goFans(allData.teacher.id,0)">
+                        <p>{{allData.followNum.fans_count}}</p>
+                        <p>粉丝</p>
+                    </div>
+                    <div>
+                        <p>0</p>
+                        <p>获赞</p>
+                    </div>
+                </div>
+            </div>
+            <div class="checkTab">
+                <van-tabs v-model="num" line-width="30" :border="false" title-inactive-color="#999999" title-active-color="#333333" color="#2EC5E0" class="typeArrs" @click="checkType">
+                    <van-tab v-for="(item,index) in typeArr" :key="index" :title="item.tit"></van-tab>
+                </van-tabs>
+            </div>
+        </div>
+        <div class="listBox align_items">
+            <div class="list" v-for="(item,index) in list" :key="index" v-if="list.length > 0" @click="goDetails(item)">
+                <div class="top">
+                    <img :src="item.cover_img" />
+                    <div>
+                        <div>
+                            <!-- <img src="../../../images/teacher/Ic_audio.png" /> -->
+                            <img class="items_top_img" :src="item.cover_img" alt="">
+                            <img class="items_top_icon" v-if="item.task_form == 1" src="../../images/student/Ic_pic_03.png" alt="">
+                            <img class="items_top_icon" v-if="item.task_form == 2" src="../../images/student/Ic_audio_03.png" alt="">
+                            <img class="items_top_icon" v-if="item.task_form == 3" src="../../images/student/Ic_video_03.png" alt="">
+                        </div>
+                    </div>
+                </div>
+                <div class="bot">
+                    <p class="moreshen">表达天气的词汇，表达天气表达天气的词汇</p>
+                    <div class="align_items">
+                        <div class="align_items">
+                            <img src="../../images/student/Ic_browsing.png" />
+                            <span>25</span>
+                        </div>
+                        <div class="align_items">
+                            <img src="../../images/student/Ic_thumb.png" />
+                            <span>25</span>
+                        </div>
+                        <div class="align_items">
+                            <img src="../../images/student/Ic_comments.png" />
+                            <span>25</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="nullEmptys mads" v-if="list.length < 1" style="background-color: rgb(245, 245, 245);">
+                <img src="../../images/student/null.png" />
+                <p>什么都没有...</p>
+            </div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#teaOuthPage',
+        data() {
+            return {
+                typeArr: [{
+                    tit: "风采展示",
+                    order: 2
+                }],
+                num: 0, //tab得选中目标
+                teaPostData: {
+                    teacher_id: ""
+                },
+                allData: {
+                    teacher: {
+                        head: ''
+                    },
+                    followNum: {
+                        attention_count: 0
+                    }
+                },
+                u_type: "",
+                id: "",
+                list: []
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("id")
+            var u_type = GetQueryValue("type")
+            this.u_type = u_type
+            this.id = id
+                // this.teaPostData.teacher_id = id
+            this.getDetails(id)
+        },
+        methods: {
+            // goDetails(item){       //详情
+            // 	location.href = "../homeworkDetails.html?id="+item.task_id
+            // 	// location.href = './workTopic.html?id=' + id;
+            // },
+            goFans(id, i) { //粉丝/关注\
+                location.href = './fansAttention.html?id=' + id + "&active=" + i + '&type=1';
+                // location.href = "fans.html?type="+type+"&name="+this.allData.teacher.name+"&u_id="+this.allData.teacher.id+"&u_type="+this.u_type
+            },
+            sendsMe() { //关注/取消
+                var obj = {
+                    v_type: this.u_type,
+                    v_id: this.id
+                }
+                let that = this;
+                ajax("student/student/follow_add", 'POST', obj, function(res) {
+                    vant.Toast(res.msg);
+                    if (res.code == 1) {
+                        that.getDetails(that.id)
+                            // this.allData.teacher.is_attention==1?this.allData.teacher.is_attention=0:this.allData.teacher.is_attention=1
+                    }
+                })
+            },
+            getDetails(id) { //获取详情
+                let that = this;
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                // this.$refs.loadings.openLoading();
+                ajax('student/student/teacher_center', 'POST', {
+                    'teacher_id': id
+                }, function(res) {
+                    // vant.Toast.clear();
+                    // that.$refs.loadings.closedLoading();
+                    if (res.code == 1) {
+                        console.log(res.data)
+                        if (res.data.teacher.personal_sign == '') {
+                            res.data.teacher.personal_sign = '他很懒，什么都没有留下'
+                        }
+                        // allData.teacher.personal_sign
+                        that.allData = res.data;
+                    }
+                })
+            },
+            goback() {
+                history.go(-1)
+            },
+            checkType(it) { //切换tab
+                console.log(it)
+            }
+        }
+    });
+</script>
+
+</html>

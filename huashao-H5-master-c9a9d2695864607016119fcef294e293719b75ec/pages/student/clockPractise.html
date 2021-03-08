@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>打卡练习内容</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/clockPractise.css">
+</head>
+
+<body>
+    <div id="clockPractise" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">打卡练习内容</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="topPic" v-if="dataVal.cover_img && dataVal.cover_img != ''">
+            <img :src="dataVal.cover_img" onerror="this.src = '../../images/teacher/error.png'" v-lazy="dataVal.cover_img" alt="">
+            <div class="main_content_banner_right" v-if="dataVal.status == 2">今日打卡</div>
+            <div class="main_content_banner_rights" v-if="dataVal.status == 1">已打卡</div>
+            <div class="main_content_banner_rights" v-if="dataVal.status == 0">未打卡</div>
+            <div class="topPic_icon">
+                <div>
+                    <!-- <img src="../../images/student/Ic_audio_03.png" alt=""> -->
+                    <img v-if="dataVal.task_form == 1" src="../../images/student/Icon_pic.png" alt="">
+                    <img v-if="dataVal.task_form == 2" src="../../images/student/Icon_audio.png" alt="">
+                    <img v-if="dataVal.task_form == 3" src="../../images/student/Icon_video.png" alt="">
+                    <div>{{dataVal.form_text}}练习&nbsp;{{dataVal.end_date}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="main_title">
+            <!-- <div class="main_title_text">{{dataVal.name}}<p class="main_title_tag"
+                    v-if="dataVal.tag_name || dataVal.tag_name != ''">{{dataVal.tag_name}}</p>
+            </div> -->
+            <div>{{dataVal.name}}
+                <p v-if="dataVal.tag_name && dataVal.tag_name != ''">{{dataVal.tag_name}}</p>
+            </div>
+            <!-- <div>{{dataVal.name}}<p v-for="(it,ix) in allData.task_info.job_tag_list">{{it.tag_name}}</p></div> -->
+            <!-- <div class="main_title_tag" v-if="dataVal.tag_name || dataVal.tag_name != ''">{{dataVal.tag_name}}</div> -->
+        </div>
+        <div class="main_content">
+            <div class="main_content_title">{{dataVal.content}}</div>
+            <div v-if="dataVal.content_images && dataVal.content_images != ''">
+                <img class="main_content_video_img" v-for="item in dataVal.content_images" :src="item.path" v-lazy="item.path" alt="">
+            </div>
+            <div class="main_content_fu" v-for="item in dataVal.attachment">
+                <img v-if="item.other_path == ''" :src="item.path" alt="" v-lazy="item.path">
+                <div v-if="item.other_path != ''" class="main_content_video">
+                    <img class="main_content_video_img" :src="item.other_path" v-lazy="item.other_path" alt="">
+                    <img class="main_content_video_play" @click="playVideo(dataVal.name,item.path)" src="../../images/student/Icon_pause_02.png" alt="">
+                </div>
+            </div>
+            <!-- <div class="main_content_titles">点评标准：</div>
+            <div class="main_content_titles_text" v-if="dataVal.comment_standard != ''">{{dataVal.comment_standard}}
+            </div> -->
+        </div>
+        <div class="footer">
+            <div class="footer_text">
+                <div class="footer_text_left">
+                    此次的打卡内容是{{dataVal.form_text}}练习，快快训练起来吧，也可以分享给 自己的小伙伴一起来打卡哟~
+                </div>
+                <img @click="close" class="footer_text_right" src="../../images/student/ic_cancel.png" alt="">
+            </div>
+            <div class="footer_btn">
+                <div class="footer_btn_item" @click="share">一键分享</div>
+                <div class="footer_btn_items" @click="showClockIn(dataVal.name,dataVal.task_form,dataVal.student_task_id)" v-if="dataVal.status == 1">查看打卡</div>
+                <!-- <div class="footer_btn_itemsy" @click="showClockIn(dataVal.name,dataVal.task_form,dataVal.student_task_id)" v-if="dataVal.status == 1">查看打卡</div> -->
+                <div class="footer_btn_items" @click="goClock(dataVal)" v-else>立即打卡
+                </div>
+                <!-- <div class="footer_btn_items" @click="goClock(dataVal.student_task_id,dataVal.task_form,dataVal.time_length)" v-else>立即打卡
+                </div> -->
+            </div>
+        </div>
+        <van-popup v-model="show" position="bottom">
+            <div class="shareBox">
+                <div @click="goShareDetail('WEIXIN')">
+                    <img src="../../images/student/pic_chat.png" alt="">
+                    <div class="shareBox_text">微信</div>
+                </div>
+                <!-- <div @click="goShareDetail('QQ')">
+                    <img src="../../images/student/pic_qq.png" alt="">
+                    <div class="shareBox_text">QQ</div>
+                </div> -->
+                <div @click="goShareDetail('WEIXIN_CIRCLE')">
+                    <img src="../../images/student/pic_friend.png" alt="">
+                    <div class="shareBox_text">朋友圈</div>
+                </div>
+            </div>
+            <div class="cancel" @click="cancel">取消</div>
+        </van-popup>
+        <van-popup v-model="popShow" round closeable>
+            <div class="popMain">
+                <div class="popMain_title">提示</div>
+                <div class="popMain_text">{{tipsVal}}</div>
+                <div class="popBtnBox">
+                    <div class="popBtn" @click="popSure">确定</div>
+                </div>
+            </div>
+        </van-popup>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#clockPractise',
+        data() {
+            return {
+                show: false,
+                dataVal: {},
+                task_id: '',
+                tName: '',
+                tPhone: '',
+                task_id: 0,
+                tipsVal: '',
+                popShow: false
+            }
+        },
+        created() {
+            let that = this;
+            ajax('current/index/config', "POST", {
+                "identity": 'course_consultant_name'
+            }, function(res) {
+                if (res.code == 1) {
+                    that.tName = res.data.result.value;
+                }
+            });
+            ajax('current/index/config', "POST", {
+                "identity": 'course_consultant_phone'
+            }, function(res) {
+                if (res.code == 1) {
+                    that.tPhone = res.data.result.value;
+                }
+            });
+        },
+        mounted() {
+            // iosReload();
+            // vant.Toast.loading({
+            //     message: '',
+            //     forbidClick: true,
+            //     loadingType: 'spinner',
+            //     duration: 0,
+            //     icon: "../../images/loading.gif"
+            // });
+            this.$refs.loadings.openLoading();
+            var id = GetQueryValue("id");
+            var type = GetQueryValue("type");
+            this.type = type;
+            this.task_id = id;
+            this.getInfo(id, type);
+
+        },
+        methods: {
+            goBack() {
+                AndroidRouter('closePage', "")
+            },
+            newPage() {
+                // vant.Toast(1212)
+                this.getInfo(this.task_id, this.type);
+            },
+            close() {
+                $('.footer_text').hide();
+            },
+            getInfo(id, type) {
+                let that = this;
+                let data = {
+                    "student_task_id": id
+                };
+                if (type == 1) {
+                    data = {
+                        "task_id": id
+                    };
+                }
+                ajax('student/task/punch_clock_info', "POST", data, function(res) {
+                    // vant.Toast.clear();
+                    that.$refs.loadings.closedLoading();
+                    if (res.code == 1) {
+                        that.dataVal = res.data.result;
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                })
+            },
+            // 视频播放
+            playVideo(name, url) {
+                let data = {
+                    "title": name,
+                    "path": url
+                }
+                AndroidRouter('playVideo', JSON.stringify(data))
+            },
+            //分享
+            share() {
+                this.show = true;
+            },
+            goShareDetail(val) {
+                let that = this;
+                ajax('student/student/mine', "POST", {}, function(res) {
+                    if (res.code == 1) {
+                        ajax('current/share/punch_clock_achievement', "POST", {
+                            student_share_code: res.data.result.share_code,
+                            share_url: pageUrl + 'huashao_h5/pages/student/directShare.html'
+                        }, function(ress) {
+                            if (ress.code == 1) {
+                                let data = {
+                                    "content": ress.data.result.share.content,
+                                    "description": ress.data.result.share.description,
+                                    "platform": val,
+                                    "title": ress.data.result.share.title,
+                                    "url": ress.data.result.share.webpageUrl
+                                }
+                                AndroidRouter('share', JSON.stringify(data), this.setShare, "set_share");
+                            } else {
+                                vant.Toast(res.msg)
+                            }
+                        })
+                    }
+                })
+            },
+            setShare(res) {
+                this.show = false;
+                // if (res == -1) {
+                //     vant.Toast('分享失败')
+                // }
+                // if (res == 0) {
+                //     vant.Toast('取消分享')
+                // }
+                // if (res == 1) {
+                //     vant.Toast('分享成功')
+                // }
+            },
+            cancel() {
+                this.show = false;
+            },
+            showClockIn(name, i, student_task_id) {
+                if (i == 1) {
+                    location.href = './workDetailsImgText.html?id=' + student_task_id + '&review=' + 0 + '&workTitle=1';
+                } else {
+                    let type = '';
+                    if (i == 2) {
+                        type = 2;
+                    } else {
+                        type = 1;
+                    }
+                    // let is_show = 0;
+                    // if (this.isList) {
+                    //     is_show = 1;
+                    // }
+                    let data = {
+                            title: name, //'页面标题'
+                            student_task_id: student_task_id, //'服务器返回的student_task_id'
+                            work_type: type, //'1视频打卡,2音频打卡'
+                            // is_comment_work: i2,//'是否是点评作业，1是（界面上只显示点评作业的按钮，下面其它参数将无效）'
+                            has_delete_btn: 1, //'是否有删除按钮， 1显示（只对学生端有效，教师端不显示）'
+                            // has_tea_comment_btn: i2, //'是否有教师点评按钮， 1显示'
+                            // has_work_title_btn: 1, //'是否有作业题目按钮， 1显示'
+                            // is_show_student_list: is_show,//'是否显示已完成作业学员列表， 1显示'
+                        }
+                        // AndroidRouter('onClosePage', "homePage", this.newPage, 'get_closedCall')
+                    AndroidRouter('goStuWorkDetail', JSON.stringify(data), this.workFilsh);
+                }
+            },
+            workFilsh() {
+                this.getInfo(this.task_id, this.type);
+            },
+            // newPage() {
+            // this.getInfo(this.task_id, this.type);
+            // },
+            goClock(val) {
+                // dataVal.student_task_id,dataVal.task_form,dataVal.time_length
+                // id, status, time
+
+                // let val = '请联系课程顾问' + this.tName + this.tPhone;
+                this.tipsVal = '请联系课程顾问' + this.tName + this.tPhone;
+                if (this.dataVal.no_join_school == 1) {
+                    // vant.Dialog.alert({
+                    //     title: '暂无班级',
+                    //     message: val,
+                    // }).then(function() {
+                    //     // on close
+                    // });
+                    this.popShow = true;
+                } else {
+                    let dataVal = {};
+                    let num;
+                    if (val.task_form == 1) {
+                        // location.href = './todayClock.html?id=' + id;
+                        num = 3;
+                    } else if (val.task_form == 2) {
+                        num = 2;
+                    } else if (val.task_form == 3) {
+                        num = 1;
+                    }
+                    let imgPath = '';
+                    if (val.content_images && val.content_images[0].path) {
+                        imgPath = val.content_images[0].path;
+                    }
+                    dataVal = {
+                        "work_type": num,
+                        "student_task_id": val.student_task_id,
+                        "is_sign": 1,
+                        "max_duration": 100000,
+                        'cover': imgPath
+                            // "max_duration": val.time_length
+                    }
+                    AndroidRouter('onClosePage', "closePage2", this.newPage, 'get_closedCall')
+                    AndroidRouter('goStuWorkSign', JSON.stringify(dataVal), this.clockInFilsh, "set_goStuWorkSign");
+                    // this.dataVal.status = 1;
+                }
+            },
+            popSure() {
+                this.popShow = false;
+            },
+            clockInFilsh(res) {
+                this.getInfo(this.task_id, this.type);
+            }
+        }
+    });
+</script>
+
+</html>

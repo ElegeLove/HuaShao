@@ -1,0 +1,57 @@
+#box{
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	overflow-y: scroll;
+	padding-top: 1rem;
+}
+.heads_top {
+	position: fixed;
+	top: 0;
+	left: 0;
+    width: 100%;
+    padding: 0.265rem 0.25rem;
+    box-sizing: border-box;
+    background: #ffffff;
+}
+.heads_topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.heads_topImg {
+    width: 0.45rem;
+    height: 0.45rem;
+}
+.heads_topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+	margin-left: 0.1rem;
+	font-weight: 600;
+}
+.heads_rig{
+	font-size: 0.3rem;
+	color: #333333;
+}
+.listBox{
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0 0.3rem;
+}
+.listBox>div{
+	justify-content: space-between;
+	box-sizing: border-box;
+	padding: 0.45rem 0;
+	border-bottom: 0.02rem solid #F5F5F5;
+}
+.listBox>div>p{
+	font-size: 0.28rem;
+	color: #333333;
+}
+.listBox>div>div>img{
+	width: 0.36rem;
+	height: 0.36rem;
+}

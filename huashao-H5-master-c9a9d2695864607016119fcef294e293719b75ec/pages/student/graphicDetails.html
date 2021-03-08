@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>作品详情</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/graphicDetails.css">
+</head>
+
+<body>
+    <div id="graphicDetails" class="content" v-cloak :class="dataVal.task_form == 1?'':'contentMain'">
+        <!-- <div :class="dataVal.task_form == 1?'top':'tops'">
+            <div class="topBox">
+                <img v-if="dataVal.task_form == 1" class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <img v-else class="topImg" @click="goBack" src="../../images/student/ic_back_white.png" alt="">
+                <div class="topTitle">{{dataVal.tag_name}}</div>
+                <div class="topImg"></div>
+            </div>
+        </div> -->
+        <div class="main" v-if="dataVal.task_form == 1">
+            <div>{{dataVal.content}}</div>
+            <div v-if="dataVal.attachment && dataVal.attachment.length > 0">
+                <img class="main_top_img" v-for="item in dataVal.attachment" :src="item.path" alt="">
+            </div>
+        </div>
+        <div class="main baMain" v-if="dataVal.task_form == 2">
+            <div v-for="item in  dataVal.attachment">
+                <!-- <div v-if="dataVal.attachment && dataVal.attachment.length > 0">
+                </div> -->
+                <div class="main_top_box">
+                    <img class="main_top" :src="item.other_path" alt="">
+                    <img class="playBtn" @click="play" v-if="isPlay" src="../../images/student/Icon_play_02.png" alt="">
+                    <img class="playBtn" @click="play" v-if="!isPlay" src="../../images/student/Icon_pause_02.png" alt="">
+                </div>
+                <audio class="audio" id="audios">
+                    <source :src="item.path" type="audio/ogg">
+                    <source :src="item.path" type="audio/mpeg">
+                    <source :src="item.path" type="audio/wav">
+                </audio>
+                <div class="press">
+                    <div>
+                        <input type="range" @input="chageAudio" id="btntime" v-model="audioVal" :max="item.duration">
+                        <div>{{dataTime}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="main baMain" v-if="dataVal.task_form == 3">
+            <div class="main_top_box">
+                <img class="playBtn" @click="play" v-if="isPlay" src="../../images/student/Icon_play_02.png" alt="">
+                <img class="playBtn" @click="play" v-if="!isPlay" src="../../images/student/Icon_pause_02.png" alt="">
+                <video id="videos" class="main_top" v-for="item in  dataVal.attachment" :poster="item.other_path">
+                    <source :src="item.path" type="video/mp4">
+                    <source :src="item.path" type="video/ogg">
+                    <source :src="item.path" type="video/webm">
+                </video>
+                <!-- <div class="press">
+                    <div>
+                        <input type="range" @input="chageAudio" id="btntime" v-model="audioVal" :max="item.duration">
+                        <div>12:12</div>
+                    </div>
+                </div> -->
+            </div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#graphicDetails',
+        data() {
+            return {
+                dataVal: {},
+                audioVal: 0,
+                dataTime: '',
+                dataMinus: 0,
+                isPlay: false,
+                num: 0
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("id");
+            let that = this;
+            // vant.Toast.loading({
+            //     message: '',
+            //     forbidClick: true,
+            //     loadingType: 'spinner',
+            //     duration: 0,
+            //     icon: "../../images/loading.gif"
+            // });
+            this.$refs.loadings.openLoading();
+            ajax('current/share/student_task_opus', "POST", {
+                student_task_id: id
+            }, function(res) {
+                if (res.code == 1) {
+                    // vant.Toast.clear();
+                    that.$refs.loadings.closedLoading();
+                    that.dataVal = res.data.result;
+                    let timer = parseInt(res.data.result.attachment[0].duration);
+                    that.dataMinus = timer;
+                    let d = 0;
+                    let m = 0;
+                    if (timer > 60) {
+                        d = Math.floor(timer / 60);
+                        m = timer - (d * 60);
+                    } else {
+                        m = timer;
+                    }
+                    that.dataTime = that.p(d) + ':' + that.p(m);
+
+                }
+            })
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            p(s) {
+                return s < 10 ? '0' + s : s
+            },
+            chageAudio(e) {
+                this.audioVal = e.target.value;
+            },
+            // 播放
+            play() {
+                let vide;
+                if (this.dataVal.task_form == 2) {
+                    vide = document.getElementById("audios");
+                } else {
+                    vide = document.getElementById("videos");
+                }
+                let num = 0;
+                if (parseInt(this.audioVal) == parseInt(this.dataMinus)) {
+                    num = 0;
+                } else {
+                    num = parseInt(this.audioVal);
+                }
+                var timer, status;
+                if (vide.paused) {
+                    vide.play();
+                    this.isPlay = true;
+                    if (num >= parseInt(this.dataMinus)) {
+                        vide.pause();
+                        this.isPlay = false;
+                        clearInterval(timer)
+                    } else {
+                        status = true;
+                        this.timeOut(num, vide, status);
+                    }
+                } else if (vide.play) {
+                    status = false;
+                    this.timeOut(num, vide, status);
+                }
+            },
+            timeOut(num, vide, status) {
+                // clearInterval(timer)
+                let that = this;
+                if (status) {
+                    timer = setInterval(function() {
+                        num = num + 1;
+                        that.audioVal = num;
+                        if (num >= parseInt(that.dataMinus)) {
+                            clearInterval(timer)
+                            vide.pause();
+                            that.isPlay = false;
+                        }
+                    }, 1000);
+                } else {
+                    vide.pause();
+                    that.isPlay = false;
+                    clearInterval(timer)
+                }
+            }
+        }
+    });
+</script>
+
+</html>

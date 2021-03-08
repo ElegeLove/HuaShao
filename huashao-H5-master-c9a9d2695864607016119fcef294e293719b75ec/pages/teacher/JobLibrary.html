@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>作业库</title>
+		<script src="../../js/public/rem.js"></script>
+		<script src="../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../allCss/public.css">
+		<link rel="stylesheet" href="../../allCss/teacher/JobLibrary.css">
+		<link rel="stylesheet" href="../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" :class="{'newAdd':status=='add'}" v-cloak @touchstart.stop="scolls" ref="boxsd">
+			<div class="search">
+				<div class="ths_top" v-if="status=='add'">
+				    <div class="ths_topBox">
+				        <img class="ths_topImg" src="../../images/student/icon_back.png" alt="" @click="goback">
+				        <div class="ths_topTitle">从作业库中添加</div>
+				        <div class="ths_topImg"></div>
+				    </div>
+				</div>
+				<div class="th_padd julis" @click="checkSearchs" v-if="seachBoxCheck">
+					<div class="ipts">
+						<div class="align_items">
+							<img src="../../images/teacher/ic_search.png" />
+							<p>{{postData.keyword==""?'课程名称搜索':postData.keyword}}</p>
+						</div>
+					</div>
+				</div>
+				<div class="searchBox" v-if="!seachBoxCheck">
+					<div class="ipts">
+						<div class="align_items alitemLef">
+							<img src="../../images/teacher/ic_search.png" />
+							<input v-model="postData.keyword"  ref="inputs" 
+							placeholder="课程名称搜索"
+							class="iptLefts"
+							/>
+						</div>
+					</div>
+					<span class="serBtn" @click="xingCheck">搜索</span>
+				</div>
+				<div class="tabbox">
+					<van-dropdown-menu active-color="#2EC5E0">
+						<van-dropdown-item v-model="homework" :options="homeworkData" @change="AllsCheck" />
+					</van-dropdown-menu>
+					<van-dropdown-menu active-color="#2EC5E0">
+						 <van-dropdown-item :title="typeTxt" ref="item">
+						    <div class="thressList">
+						    	<div>
+						    		<div class="onece scollOne">
+										<p @click="checkAlls" :class="{'actives':checkAllcl,'danshen':true}">全部课程</p>
+						    			<p 
+										v-for="(it,ix) in classType.onece" 
+										@click="chekcs(it,'twoce','onece',ix,'scollOne')" 
+										:key="ix"
+										:class="{'actives':it.check,'danshen':true}"
+										>{{it.name}}</p>
+						    		</div>
+						    		<div class="onece scollTwo">
+						    			<p 
+										v-for="(it,ix) in classType.twoce" 
+										@click="chekcs(it,'Threece','twoce',ix,'scollTwo')"
+										:class="{'actives':it.check,'danshen':true}"
+										>{{it.name}}</p>
+						    		</div>
+						    		<div class="onece scollThree">
+						    			<p 
+										v-for="(it,ix) in classType.Threece" 
+										:class="{'actives':it.check,'danshen':true}"
+										@click="chekcs(it,'forece','Threece',ix,'scollThree')">{{it.name}}</p>
+						    		</div>
+						    		<div class="onece scollFore">
+						    			<p 
+										:class="{'actives':it.check,'danshen':true}"
+										v-for="(it,ix) in classType.forece" @click="chekcs(it,'','forece',ix,'scollFore')">{{it.name}}</p>
+						    		</div>
+						    	</div>
+						    </div>
+						  </van-dropdown-item>
+					</van-dropdown-menu>
+					<van-dropdown-menu active-color="#2EC5E0" >
+						<van-dropdown-item v-model="postData.form" :options="curriculumData" @change="xingCheck"/>
+					</van-dropdown-menu>
+				</div>
+			</div>
+			<van-pull-refresh v-model="refreshing" @refresh="onRefresh" style="min-height: 90%;"  v-cloak v-if="allList.length!==0">
+				<van-list
+				  v-model="loading"
+				  :finished="finished"
+				   :offset="10"
+				   :immediate-check="false"
+				    finished-text="已加载完毕"
+				  @load="onLoad">
+					<div class="listbox">
+						<div class="list" v-for="(item,index) in allList" @click.stop="goDetails(item)" :key="index">
+							<div class="top">
+								<img :src="item.cover_img" onerror="this.src = '../../images/teacher/error.png'"  v-lazy="item.cover_img"/>
+								<div>
+									<div>
+										<img src="../../images/teacher/Ic_audio.png" v-if="item.form==2"/>
+										<img src="../../images/teacher/Ic_pic_03.png" v-if="item.form==1"/>
+										<img src="../../images/teacher/Ic_video_03.png" v-if="item.form==3"/>
+									</div>
+									<span :class="{'add':true,'overads':item.is_join_school==0?false:true}"
+									 @click.stop="addStuoll(item)"
+									 v-if="postData.is_teacher==1">{{item.is_join_school==0?'添加至学校作业库':'已添加至学校作业库'}}</span>
+									<p class="danshen" v-else>使用{{item.use_num}}次</p>
+								</div>
+							</div>
+							<div class="bot">
+								<p class="moreshen">{{item.task_name}}</p>
+								<div class="align_items">
+									<img src="../../images/teacher/ic_book.png" />
+									<p class="danshen">{{item.course_chain_name}}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+			</van-list>
+		</van-pull-refresh>
+		<div class="sendFix align_items" @click="sendCheck(true)" v-if="status!='add'">
+			<img src="../../images/principal/Ic_new.png" />
+			<span>新增作业</span>
+		</div>
+		<div class="sends">
+			<van-action-sheet
+			  v-model="show"
+			  :actions="actions"
+			  cancel-text="取消"
+			  @cancel="sendCheck(false)"
+			  @select="onSelect"
+			/>
+		</div>
+		<div v-if="allList.length==0&&nullEmptys" class="nullEmptys margins">
+			<img src="../../images/student/null.png" />
+			<p>什么都没有...</p>
+		</div>
+		 <loadings ref="loadings"/>
+		</div>
+	</body>
+	
+	<script src="../../js/public/vue.js"></script>
+	<script src="../../js/public/vant.js"></script>
+	<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					show:false,
+					actions: [             //发布练习数据
+					   { name: '从作业库中添加' },
+					   { name: '从收藏中添加' },
+					   { name: '自主新增' }
+					],
+					homeworkData: [
+					        { text: '全部作业库', value: 0 },
+					        { text: '学校作业库(学校课程体系)', value: 2 },
+					        { text: '系统作业库', value: 3 },
+					        { text: '个人作业库', value: 4 },
+					      ],
+					curriculumData:[
+					        { text: '作业形式', value: 0 }
+					      ],
+					homework:0,
+					postData:{
+						keyword:"",
+						page:1,
+						form:0,
+						course_id:"",
+						is_main:9999,
+						is_school:9999,
+						is_teacher:9999,
+						is_system:9999
+					},
+					classDatas:{            //获取全部课程
+						pid:"",
+						is_system:""
+					},
+					status:"",             //判断是否从作业库添加进入
+					classType:{              //多级联动
+						onece:[],
+						twoce:[],
+						Threece:[],
+						forece:[]
+					},
+					checkAllcl:true,         //全部课程显示
+					allList:[],           //列表数据
+					typeTxt:"全部课程",
+					//下拉刷新与加载
+					loading: false,
+					finished: false,
+					refreshing: false,
+					nullEmptys:false,
+					primordial:"",
+					seachBoxCheck:true        //搜索框切换Bool值
+	            }
+	        },
+			created(){
+				iosReload()
+			},
+			mounted(){
+				localStorage.removeItem("sendData")
+				AndroidRouter('getUserInfo',"",this.setUserInfo,"setUserInfo")
+				// this.setUserInfo()
+				var status = GetQueryValue("status")
+				var primordial = GetQueryValue("primordial")
+				this.primordial = primordial
+				this.status = status
+			},
+	        methods: {
+				checkSearchs(){           //切换搜索框
+					this.seachBoxCheck = false;
+					var that = this;
+					this.$nextTick(()=>{
+					   this.$refs.inputs.focus()
+					})
+				},
+				setOnBottomTabClick(){             //原生tab监听
+					this.postData.page = 1
+					var that = this;
+					this.loading = false
+					this.finished = false
+					this.refreshing = false
+					window.scrollTo (0, 0);
+					this.$refs.boxsd.scrollTop = 0
+					setTimeout(function(){
+						that.getList("noLoading")
+					},100)
+					 
+					AndroidRouter('onBottomTabClick',2,this.setOnBottomTabClick,"setOnBottomTabClick")
+				},
+				sendCheck(bool) {       //发布弹框取消
+				  this.show = bool;
+				},
+				onSelect(item,index){          //发布弹框选择
+					this.show = false
+					// localStorage.setItem('primordial',"yes")
+				    if(index==0){             //从作业库中添加
+						AndroidRouter("newPage","teacher/JobLibrary.html?status=add&primordial=yes")
+					}else if(index==1){       //从收藏中添加
+						AndroidRouter("newPage","teacher/home/addCollection.html?primordial=yes")
+					}else if(index==2){		//自主新增作业
+						AndroidRouter("newPage","teacher/home/createJob.html?primordial=yes")
+					}
+				},
+				addStuoll(item){         //添加至学校作业库
+					if(item.is_join_school==1){
+						return false;
+					}
+					var that = this;
+					ajax("teacher/Teachertask/taskJoinSchool",'POST',{task_id:item.task_id},function(res){
+						vant.Toast(res.msg)
+						if(res.code==1){
+							item.is_join_school = 1
+						}
+					})
+				},
+				setUserInfo(res){         //获取token回调
+					localStorage.setItem("token",res)
+					this.getHomeForm()
+					this.getClassType("","onece")
+					this.getList()
+					AndroidRouter('onBottomTabClick',2,this.setOnBottomTabClick,"setOnBottomTabClick")
+				},
+				scolls(){
+					var that = this;
+					this.$nextTick(function(){
+						if(that.$refs.inputs!==undefined){
+							that.$refs.inputs.blur()
+						}
+					})
+				},
+				setIpts(e){
+					this.postData.keyword = e.target.value
+				},
+				onLoad() {        //上拉加载
+				  this.postData.page++
+				  this.getList()
+				},
+				onRefresh() {           //刷新
+				  this.finished = false;
+				  this.loading = true;
+				  this.xingCheck()
+				},
+				xingCheck(){
+					this.seachBoxCheck = true;
+					this.postData.page = 1;
+					this.getList()
+				},
+				AllsCheck(ix){        //选择作业库
+				  if(ix==1){
+					  this.emptySans()
+					  this.classDatas.is_system = 1
+					  this.setkeys(1,1,9999,9999)
+					  this.getClassType("","onece")
+				  }else if(ix==2){
+					  this.emptySans()
+					  this.classDatas.is_system = 0
+					  this.setkeys(0,1,9999,9999)
+					  this.getClassType("","onece")
+				  }else if(ix==3){
+					  this.emptySans()
+					  this.classDatas.is_system = 1
+					  this.getClassType("","onece")
+					  this.setkeys(9999,9999,9999,1)
+				  }else if(ix==4){
+					  this.emptySans()
+					  this.classDatas.is_system = ""
+					  this.getClassType("","onece")
+					   this.setkeys(9999,9999,1,9999)
+				  }else if(ix==0){
+					  this.emptySans()
+					  this.classDatas.is_system = ""
+					  this.getClassType("","onece")
+					  this.setkeys(9999,9999,9999,9999)
+				  }
+				  this.allList = []
+				  this.xingCheck()
+				},
+				setkeys(main,school,teacher,system){
+					this.postData.is_main = main
+					this.postData.is_school = school
+					this.postData.is_teacher = teacher
+					this.postData.is_system = system
+				},
+				emptySans(){         //清空多级联动
+					this.postData.course_id = ""
+					this.typeTxt = "全部课程"
+					this.classDatas.pid = ""
+					this.classType.twoce = []
+					this.classType.Threece = []
+					this.classType.forece = []
+				},
+				getHomeForm(){         //获取作业形式
+					var that = this;
+					ajax("teacher/Task/getForm",'POST',"",function(res){
+						if(res.code==1){
+							res.data.form.forEach(function(it){
+								that.curriculumData.push({text:it.form_name,value:it.value})
+							})
+						}
+					})
+				},
+				getClassType(pid,arr,callback){          //课程类型
+					var that = this;
+					ajax("teacher/Course/getCourseListByPid",'POST',this.classDatas,function(res){
+						if(res.code==1){
+							if(callback!==undefined){
+								callback(res.data.list)
+							}
+							that.classType[arr] = res.data.list
+						}
+					})
+				},
+				getList(status){           //请求列表
+					var that = this;
+					if(this.postData.page==1){
+						this.loading = false
+						this.finished = false
+						this.refreshing = false
+					}
+					if(this.postData.page==1&&status!='noLoading'){
+						this.$refs.loadings.openLoading()
+					}
+					ajax("teacher/Task/courseLibrary",'POST',this.postData,function(res){
+						that.loading = false
+						if(that.postData.page==1&&status!='noLoading'){
+							that.$refs.loadings.closedLoading()
+						}
+						if(res.code==1){
+							that.nullEmptys = true
+							that.loading = false
+							that.refreshing = false
+							if(res.data.list.length==0){
+							  that.finished = true
+							  if(that.postData.page==1){
+								   that.allList = []
+							  }
+							  return false
+							}
+							if(that.postData.page==1){
+							  that.allList = res.data.list
+							}else{
+							  that.allList = that.allList.concat(res.data.list)
+							}
+						}else{
+							vant.Toast(res.msg)
+						}
+					})
+				},
+				goback(){            //返回
+					if(this.primordial=="yes"){
+						AndroidRouter("closePage","")
+					}else{
+						history.go(-1)
+					}
+				},
+				chekcs(it,keys,emptyArr,ix,scolls){         //多级联动选择
+					var childHeight = parseFloat($("."+scolls+" p").css("height")),parentNodeHeight = parseFloat($("."+scolls).css("height"));
+					$("."+scolls).stop().animate({
+						scrollTop : childHeight * ( ix + 1 ) - parentNodeHeight / 2 // 核心代码
+					},300);
+					var that = this;
+					if(emptyArr=="onece"){
+						this.checkAllcl = false
+						this.classType.Threece = []
+						this.classType.forece = []
+					}else if(emptyArr=="twoce"){
+						this.classType.forece = []
+					}
+					this.classType[emptyArr].forEach(function(item){
+						item.check = false
+					})
+					it.check = true
+					this.classDatas.pid = it.id
+					this.getClassType(it.id,keys,function(list){
+						if(list.length==0){
+							that.typeTxt = it.name
+							that.postData.course_id = it.id
+							that.$refs.item.toggle();
+							that.xingCheck()
+						}
+					})
+				},
+				checkAlls(){       //全部课程
+					this.typeTxt = "全部课程"
+					this.classType.onece.forEach(function(item){
+						item.check = false
+					})
+					this.classType.Threece = []
+					this.classType.forece = []
+					this.classType.twoce = []
+					this.checkAllcl = true
+					this.postData.course_id = ""
+					this.$refs.item.toggle();
+					this.xingCheck()
+				},
+				goDetails(item){    //作业详情
+					if(this.status!='add'){
+						localStorage.removeItem("primordial")
+					}
+					var urlsOne = "teacher/homeworkDetails.html?status=add&id="+item.task_id+"&phone=yes&post=3"
+					var urlsTwo = "teacher/homeworkDetails.html?status=1&id="+item.task_id+"&phone=yes&post=3&primordial=yes"
+					var urlsThree = "teacher/homeworkDetails.html?status=2&id="+item.task_id+"&phone=yes&post=3&primordial=yes"
+					if(this.status=="add"){
+						// AndroidRouter("newPage",urlsOne)
+						location.href = "homeworkDetails.html?status=add&id="+item.task_id+"&post=3&primordial="+this.primordial
+					}else{
+						if(this.postData.is_teacher==1){     //个人作业库详情 
+						   AndroidRouter("newPage",urlsTwo)
+							// location.href = "homeworkDetails.html?status=1&id="+item.task_id+"&post=3"
+						}else{          //作业库详情
+							AndroidRouter("newPage",urlsThree)
+							// location.href = "homeworkDetails.html?status=2&id="+item.task_id+"&post=3"
+						}
+					}
+				}
+	        }
+	    });
+	
+	
+	</script>
+</html>

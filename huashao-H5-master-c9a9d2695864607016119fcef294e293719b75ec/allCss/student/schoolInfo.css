@@ -1,0 +1,80 @@
+#schoolInfo {
+    width: 100%;
+    padding-top: 1rem;
+    box-sizing: border-box;
+}
+
+.top {
+    width: 100%;
+    padding: 0.265rem 0.3rem;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 111;
+    background: #ffffff;
+    border-bottom: 0.01rem solid #efefef;
+}
+
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topImg {
+    width: 0.4rem;
+    height: 0.4rem;
+}
+
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.main {
+    width: 100%;
+    padding: 0.2rem 0.3rem;
+    box-sizing: border-box;
+}
+
+.schoolInfo_top {
+    font-size: 0.3rem;
+    color: #333333;
+    font-weight: bold;
+    border-bottom: 0.01rem solid #efefef;
+}
+
+.schoolInfo_top>div {
+    width: 100%;
+    font-size: 0.3rem;
+    margin-bottom: 0.3rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 0.5rem !important;
+}
+
+.schoolInfo_main {
+    margin-top: 0.3rem;
+}
+
+.schoolInfo_main>div:first-child {
+    font-size: 0.3rem;
+    color: #333333;
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+    line-height: 0.5rem !important;
+}
+
+.schoolInfo_main>div:last-child {
+    /* font-size: 0.28rem; */
+    /* color: #666666; */
+}
+
+.schoolInfo_main>div:last-child img {
+    max-width: 100% !important;
+}

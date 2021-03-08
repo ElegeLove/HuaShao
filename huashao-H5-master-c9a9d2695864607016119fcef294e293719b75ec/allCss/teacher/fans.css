@@ -1,0 +1,110 @@
+#box{
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	padding-top: 2rem;
+	/* overflow-y: scroll; */
+	-webkit-overflow-scrolling: touch;
+	overflow-scrolling: touch;
+	 background:white;
+}
+.t_fixed{
+	width: 100%;
+	position: fixed;
+	 top: 0;
+	 left: 0;
+}
+.top {
+    width: 100%;
+    padding: 0.265rem 0.25rem;
+    box-sizing: border-box;
+
+    z-index: 111;
+    background: #ffffff;
+	border-bottom: 0.02rem solid #F5F5F5;
+}
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.topImg {
+    width: 0.5rem;
+    height: 0.5rem;
+}
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+	font-weight: bold;
+	max-width: 4rem;
+	line-height: 0.6rem;
+}
+.checkTab{
+	box-sizing: border-box;
+	padding-top: 0.35rem;
+	border-bottom: 0.02rem solid #EEEEEE;
+	background: #fff;
+}
+.checkTab .van-tabs--line .van-tabs__wrap{
+	height: 0.6rem;
+}
+.checkTab .van-tab{
+	font-size: 0.28rem;
+}
+.checkTab .van-ellipsis{
+	font-size: 0.28rem;
+	line-height: 0.35rem;
+}
+.listBox{
+	box-sizing: border-box;
+	padding: 0.3rem 0.3rem 0 0.3rem;
+}
+.listBox>div{
+	justify-content: space-between;
+	margin-bottom: 0.44rem;
+	box-sizing: border-box;
+	padding-top: 0.22rem;
+}
+.listBox>div>.lef>img{
+	width: 1rem;
+	height: 1rem;
+	margin-right: 0.18rem;
+	border-radius: 50%;
+}
+.listBox>div>.lef>div>p:nth-of-type(1){
+	font-size: 0.32rem;
+	color: #444444;
+	width: 3rem;
+	line-height: 0.4rem;
+}
+.listBox>div>.lef>div>p:nth-of-type(2){
+	font-size: 0.24rem;
+	color: #999999;
+	margin-top: 0.22rem;
+	width: 3rem;
+	line-height: 0.4rem;
+}
+.listBox>div>.rig{
+	width: 1.4rem;
+	box-sizing: border-box;
+	height: 0.5rem;
+}
+.listBox>div>.rig>p{
+	width: 100%;
+	height: 0.5rem;
+	background-color: #2EC5E0;
+	font-size: 0.24rem;
+	color: #FFFFFF;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 0.44rem;
+	box-shadow: 0 0.05rem 0 #15A9C3;
+}
+.maeings{
+	margin-top: 0.4rem;
+}

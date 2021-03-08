@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>从收藏中添加</title>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/teacher/addCollection.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="th_top">
+			    <div class="th_topBox">
+			        <img class="th_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+			        <div class="th_topTitle">从收藏中添加</div>
+			        <div class="th_topImg"></div>
+			    </div>
+			</div>
+			<van-pull-refresh v-model="refreshing" @refresh="onRefresh" style="min-height: 90%;"  v-cloak>
+				<van-list
+				  v-model="loading"
+				  :finished="finished"
+				   :offset="10"
+				   :immediate-check="false"
+				  @load="onLoad">
+				<div class="listbox" v-cloak>
+					<div class="list" v-for="(item,index) in list" @click="goNext(item)" :key="index" v-if="list.length!==0">
+						<div class="top">
+							<img :src="item.cover_img" onerror="this.src = '../../../images/teacher/error.png'"/>
+							<div>
+								<div>
+									<img src="../../../images/teacher/Ic_audio.png" v-if="item.form==2"/>
+									<img src="../../../images/teacher/Ic_pic_03.png" v-if="item.form==1"/>
+									<img src="../../../images/teacher/Ic_video_03.png" v-if="item.form==3"/>
+									<!-- <img src="../../../images/teacher/Ic_audio.png" /> -->
+								</div>
+								<p class="danshen">使用{{item.use_num}}次</p>
+								<!-- <span class="add">添加至学校作业库</span> -->
+							</div>
+						</div>
+						<div class="bot">
+							<p class="moreshen">{{item.task_name}}</p>
+							<div class="align_items">
+								<img src="../../../images/teacher/ic_book.png" />
+								<p class="danshen">{{item.course_chain_name}}</p>
+							</div>
+						</div>
+					</div>
+					<div v-if="list.length==0&&allLoad" class="nullEmptys">
+						<img src="../../../images/student/null.png" />
+						<p>什么都没有...</p>
+					</div>
+				</div>
+			</van-list>
+			</van-pull-refresh>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script src="../../../js/public/vant.js"></script>
+	<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					page:1,
+					list:[],
+					//下拉刷新与加载
+					loading: false,
+					finished: false,
+					refreshing: false,
+					allLoad:false,
+					primordial:""
+	            }
+	        },
+			mounted(){
+				this.getList()
+				var primordial = GetQueryValue("primordial")
+				this.primordial = primordial
+			},
+	        methods: {
+				onRefresh() {           //刷新
+				  this.finished = false;
+				  this.loading = true;
+				  this.page = 1
+				  this.getList()
+				},
+				onLoad() {        //上拉加载
+				  this.loading = false
+				  this.page++
+				  this.getList()
+				},
+				getList(){              //请求
+					if(this.page==1){
+						this.$refs.loadings.openLoading()
+					}
+					var that = this;
+					ajax("teacher/Teachertask/collectionList",'POST',{page:this.page},function(res){
+						that.$refs.loadings.closedLoading()
+						if(res.code==1){
+							that.allLoad = true
+							that.loading = false
+							that.refreshing = false
+							if(res.data.list.length==0){
+							  that.finished = true
+							  if(that.page==1){
+								   that.list = []
+							  }
+							  return false
+							}
+							if(that.page==1){
+							  that.list = res.data.list
+							}else{
+							  that.list = that.list.concat(res.data.list)
+							}
+						}else{
+							vant.Toast(res.msg)
+						}
+					})
+				},
+				goback(){
+					if(this.primordial=="yes"){
+						AndroidRouter("closePage","")
+					}else{
+						history.go(-1)
+					}
+				},
+				goNext(item){           //作业详情
+					location.href = "../homeworkDetails.html?status=add"+"&id="+item.task_id+"&primordial="+this.primordial
+				}
+	        }
+	    });
+	</script>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>花少教育</title>
+    <!-- head 中 -->
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/student/shareInvitationData.css">
+</head>
+
+<body>
+    <div id="shareInvitationData" class="content" v-cloak>
+        <!-- <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../../images/student/icon_back.png" alt="">
+                <div class="topTitle">花少教育</div>
+                <div class="topImg"></div>
+            </div>
+        </div> -->
+        <div class="ban">
+            <img src="../../../images/student/banner_02.png" alt="">
+        </div>
+        <div class="main">
+            <div class="inp main_phone" v-if="userId == 2">
+                <input type="text" v-model="organName" placeholder="请输入您的机构名称" />
+            </div>
+            <div class="inp main_phone">
+                <input type="tel" onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')" oninput="if(value.length>11)value=value.slice(0,11)" v-model="phoneVal" placeholder="请输入手机号" />
+            </div>
+            <div class="inp verCode">
+                <input type="number" v-model="verifiCode" placeholder="请输入验证码">
+                <button class="main_verCode" :disabled="disabled" @click="getCode">{{verCode}}</button>
+            </div>
+            <div class="inp birthday" @click="getBirthday" v-if="userId == 0">
+                <!-- <input type="text" placeholder="请选择出生日期"> -->
+                <div class="birthday_text">请选择出生日期</div>
+                <div class="birthday_img">
+                    <div>{{birthdayTime}}</div>
+                    <img src="../../../images/student/ic_jt.png" alt="">
+                </div>
+            </div>
+            <van-popup v-model="show" position="bottom">
+                <van-datetime-picker v-model="currentDate" type="date" title="选择年月日" :min-date="minDate" :max-date="maxDate" @confirm="suData" @cancel="cancel" />
+            </van-popup>
+            <div class="inp">
+                <input type="password" v-model="pwdVal" placeholder="请设置密码">
+            </div>
+            <div class="inp">
+                <input type="password" v-model="repwdVal" placeholder="再次输入密码">
+            </div>
+            <div class="inp" v-if="userId != 2">
+                <input type="text" v-model="invitaCode" placeholder="邀请码（选填）">
+            </div>
+            <div class="treaty">
+                <div class="treaty_left">
+                    注册即同意
+                </div>
+                <div class="treaty_right" @click="goSel">
+                    《注册协议》
+                </div>
+            </div>
+            <div class="btn" @click="goDownload">立即注册</div>
+        </div>
+    </div>
+    <!--  <script>
+        $(document).ready(function () {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script> -->
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#shareInvitationData',
+        data() {
+            return {
+                userId: '',
+                organName: '',
+                type: '',
+                phoneVal: '',
+                verifiCode: '',
+                pwdVal: '',
+                repwdVal: '',
+                invitaCode: '',
+                disabled: false,
+                verCode: '获取验证码',
+                birthdayTime: '',
+                show: false,
+                minDate: new Date(1992, 03, 03),
+                maxDate: new Date(2025, 10, 1),
+                currentDate: new Date(),
+            }
+        },
+        mounted() {
+            var userId = GetQueryValue("index")
+            var type = GetQueryValue("type")
+            var inviteCode = GetQueryValue("inviteCode")
+            this.userId = userId;
+            this.type = type;
+            this.invitaCode = inviteCode;
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            getCode() {
+                let that = this;
+                if (this.userId == 0) {
+                    ajax('student/login/get_sms_captcha', "POST", {
+                        "mobile": that.phoneVal,
+                        "scene": 6
+                    }, function(res) {
+                        if (res.code == 1) {
+                            that.disabled = true;
+                            let num = parseInt(res.data.sms_time);
+                            let timer;
+                            timer = setInterval(function() {
+                                num--;
+                                if (num <= 0) {
+                                    clearInterval(timer)
+                                    that.verCode = '获取验证码';
+                                    that.disabled = false;
+                                } else {
+                                    that.verCode = num;
+                                }
+                            }, 1000)
+                        } else {
+                            vant.Toast(res.msg)
+                        }
+                    })
+                } else if (this.userId == 1) {
+                    ajax('teacher/login/get_sms_captcha', "POST", {
+                        "mobile": that.phoneVal,
+                        "scene": 2
+                    }, function(res) {
+                        if (res.code == 1) {
+                            that.disabled = true;
+                            let num = parseInt(res.data.sms_time);
+                            let timer;
+                            timer = setInterval(function() {
+                                num--;
+                                if (num <= 0) {
+                                    clearInterval(timer)
+                                    that.verCode = '获取验证码';
+                                    that.disabled = false;
+                                } else {
+                                    that.verCode = num;
+                                }
+                            }, 1000)
+                        } else {
+                            vant.Toast(res.msg)
+                        }
+                    })
+                } else {
+                    ajax('school/login/get_sms_captcha', "POST", {
+                        "mobile": that.phoneVal,
+                        "scene": 10
+                    }, function(res) {
+                        if (res.code == 1) {
+                            that.disabled = true;
+                            let num = parseInt(res.data.sms_time);
+                            let timer;
+                            timer = setInterval(function() {
+                                num--;
+                                if (num <= 0) {
+                                    clearInterval(timer)
+                                    that.verCode = '获取验证码';
+                                    that.disabled = false;
+                                } else {
+                                    that.verCode = num;
+                                }
+                            }, 1000)
+                        } else {
+                            vant.Toast(res.msg)
+                        }
+                    })
+                }
+            },
+            getBirthday() {
+                this.show = true;
+            },
+            suData(data) {
+                const d = new Date(data)
+                    //年月日
+                const resDate = d.getFullYear() + '-' + this.p((d.getMonth() + 1)) + '-' + this.p(d.getDate())
+                    //时分秒
+                    // const resTime = this.p(d.getHours()) + ':' + this.p(d.getMinutes()) + ':' + this.p(d.getSeconds())
+                this.birthdayTime = resDate;
+                this.show = false;
+            },
+            p(s) {
+                return s < 10 ? '0' + s : s
+            },
+            cancel() {
+                this.show = false;
+            },
+            goDownload() {
+                console.log(this.type)
+                if (this.userId == 0) {
+                    let that = this;
+                    ajax('student/login/register', "POST", {
+                        "mobile": that.phoneVal,
+                        "captcha": that.verifiCode,
+                        "birth": that.birthdayTime,
+                        "password": that.pwdVal,
+                        "repassword": that.repwdVal,
+                        "invite_code": that.invitaCode,
+                    }, function(res) {
+                        vant.Toast(res.msg)
+                        if (res.code == 1) {
+                            localStorage.setItem("u_id", res.data.u_id)
+                            localStorage.setItem("token", res.data.key)
+                            localStorage.setItem('u_types', 0)
+                            if (that.type == 1) {
+                                location.href = '../../student/downloadAPP.html';
+                            } else {
+                                history.go(-2);
+                            }
+                        }
+                    })
+                } else if (this.userId == 1) {
+                    let that = this;
+                    ajax('teacher/login/register', "POST", {
+                        "mobile": that.phoneVal,
+                        "captcha": that.verifiCode,
+                        "password": that.pwdVal,
+                        "repassword": that.repwdVal,
+                        "invite_code": that.invitaCode,
+                    }, function(res) {
+                        vant.Toast(res.msg)
+                        if (res.code == 1) {
+                            localStorage.setItem("u_id", res.data.u_id)
+                            localStorage.setItem("token", res.data.key)
+                            localStorage.setItem('u_types', 1)
+                            if (that.type == 1) {
+                                location.href = '../../student/downloadAPP.html';
+                            } else {
+                                history.go(-2);
+                            }
+                        }
+                    })
+                } else {
+                    let that = this;
+                    ajax('school/login/register', "POST", {
+                        "name": that.organName,
+                        "mobile": that.phoneVal,
+                        "captcha": that.verifiCode,
+                        "password": that.pwdVal,
+                        "repassword": that.repwdVal,
+                        "invite_code": that.invitaCode,
+                    }, function(res) {
+                        if (res.code == 1) {
+                            localStorage.setItem("u_id", res.data.u_id)
+                            localStorage.setItem("token", res.data.key)
+                            localStorage.setItem('u_types', 2)
+                            if (that.type == 1) {
+                                location.href = '../../student/downloadAPP.html';
+                            } else {
+                                history.go(-2);
+                            }
+                        } else {
+                            vant.Toast(res.msg)
+                        }
+                    })
+                }
+            },
+            goSel() {
+                var keys = this.userId == 0 ? 'student_login_agreement' : this.userId == 1 ? 'teacher_login_agreement' : 'school_login_agreement';
+                location.href = "../../teacher/mys/rules.html?title=注册协议&key=" + keys + '&type=1'
+            }
+        }
+    });
+</script>
+
+</html>

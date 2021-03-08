@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>作业详情</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="../../../../js/public/rem.js"></script>
+		<script src="../../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../../allCss/teacher/homeworkDetails.css">
+		<link rel="stylesheet" href="../../../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="head_top"  v-cloak v-if="allData!==''">
+			    <div class="head_topBox">
+			        <img class="head_topImg" src="../../../../images/student/icon_back.png" alt="" @click="goback">
+			        <div class="head_topTitle">图文作业</div>
+			        <div class="head_topImgss">
+						
+					</div>
+			    </div>
+			</div>
+			<div v-if="allData!==''"  v-cloak>
+				<div class="bannres">
+					<img :src="allData.cover_img" onerror="this.src = '../../../../images/teacher/error.png'"/>
+					<div>
+						<img src="../../../../images/teacher/laba.png" v-if="allData.form==2"/>
+						<img src="../../../../images/teacher/Icon_pic.png" v-if="allData.form==1"/>
+						<img src="../../../../images/teacher/Icon_video.png" v-if="allData.form==3"/>
+						<span>{{allData.form_text}}练习</span>
+					</div>
+				</div>
+				<div class="all_titles">
+					<div>{{allData.task_name}}<p>{{allData.form_text}}</p></div>
+				</div>
+				<div class="all_detailsty">
+					<p>{{allData.content}}</p>
+					
+					<div v-if="allData.content_images!==''">
+						<div v-for="(it,ix) in allData.content_images" :key="ix" class="bgBoxs">
+							<img :src="it.path" class="bg" onerror="this.src = '../../../../images/teacher/error.png'"/>
+						</div>
+					</div>
+					<div v-if="allData.attachment!==''">
+						<div v-for="(it,ix) in allData.attachment" :key="ix" @click="autoVideo(it)">
+							<img :src="it.other_path" class="bg" onerror="this.src = '../../images/teacher/error.png'"/>
+							<img class="videos"  src="../../../../images/teacher/Ic_suspended.png"/>
+						</div>
+					</div>
+				
+				</div>
+				<div class="fotBtns">
+					<p @click="lookProduct">查看作业作品</p>
+				</div>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	
+	<script src="../../../../js/public/vue.js"></script>
+	<script src="../../../../js/public/vant.js"></script>
+	<script src="../../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../../js/public/index.js"></script>
+	<script>
+		new Vue({
+		    el: '#box',
+		    data() {
+		        return {
+					allData:"",         //数据请求
+					show:false,          //确定移除弹窗
+					status:0,   //从不同入口进入  1是作业库详情进入 2是个人作业库 3是从练习库中选择进入  4是练习库进入    56是作业题目进入
+					task_id:"",
+					edIdt:{},          //编辑时，发布选择的班级还是学生数据
+		        }
+		    },
+			mounted(){
+				var status = GetQueryValue("status")
+				this.status = status
+				var id = GetQueryValue("id")
+				this.task_id = id
+				this.getDetails(id)
+			},
+		    methods: {
+				autoVideo(item){        //播放视频
+					var obj = {
+						title:this.allData.task_name,
+						path:item.path
+					}
+					AndroidRouter('playVideo',JSON.stringify(obj))
+				},
+				lookProduct(){          //查看作业作品
+					history.go(-1)
+				},
+				getDetails(id){
+					var that = this;
+					var postObj = {
+						task_id:id
+					}
+					this.$refs.loadings.openLoading()
+					ajax("school/task/school_task",'POST',postObj,function(res){
+						if(res.code==1){
+							that.allData = JSON.parse(JSON.stringify(res.data.result))
+						}
+						that.$refs.loadings.closedLoading()
+					})
+				},
+				goback(){
+					history.go(-1)
+				},
+				coolection(){         //收藏
+					var that = this;
+					ajax("teacher/Teachertask/collectionTask",'POST',{task_id:this.task_id},function(res){
+						vant.Toast(res.msg)
+						if(res.code==1){
+							if(that.allData.task_info.is_collection==1){
+								that.allData.task_info.is_collection = 0
+							}else{
+								that.allData.task_info.is_collection = 1
+							}
+						}
+					})
+				}
+		    }
+		});
+	</script>
+</html>

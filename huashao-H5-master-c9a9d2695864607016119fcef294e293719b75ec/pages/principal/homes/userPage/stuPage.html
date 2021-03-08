@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>他人主页</title>
+		<script src="../../../../js/public/rem.js"></script>
+		<script src="../../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../../allCss/teacher/outhPage.css">
+		<link rel="stylesheet" href="../../../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="t_fixeds">
+				<div class="tops">
+				    <div class="topBox">
+				        <img class="topImg" src="../../../../images/teacher/ic_return.png" alt="" @click="goback">
+				        <div class="topTitle">TA的主页</div>
+				        <div class="topImg"></div>
+				    </div>
+				</div>
+				<div class="th_padd allpads" v-if="allData!==''">
+					<div class="userMess align_items">
+						<div class="align_items lefs">
+							<img :src="allData.head" onerror="this.src = '../../../../images/teacher/error.png'"/>
+							<div>
+								<p class="align_items"><span class="danshen">{{allData.name}}</span><span>ID:{{u_type==0?allData.student_id:allData.id}}</span></p>
+								<div class="align_items">
+									<img src="../../../../images/teacher/Ic_edi.png" />
+									<p class="scollQian moreshen">{{allData.personal_sign==""?'这个人很懒，什么也没写~':allData.personal_sign}}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="align_items fans">
+						<div  @click="goFans(1)">
+							<p>{{allData.follow_num}}</p>
+							<p>关注</p>
+						</div>
+						<div @click="goFans(0)">
+							<p>{{allData.fans_num}}</p>
+							<p>粉丝</p>
+						</div>
+						<div>
+							<p>{{allData.click_all_num}}</p>
+							<p>获赞</p>
+						</div>
+					</div>
+				</div>
+				<div class="checkTab" v-if="allData!==''">
+					<van-tabs v-model="num"  line-width="30" :border="false" title-inactive-color="#999999" title-active-color="#333333" color="#2EC5E0" class="typeArrs"  @click="checkType">
+					  <van-tab v-for="(item,index) in typeArr" :key="index" :title="item.tit"></van-tab>
+					</van-tabs>
+				</div>
+			</div>
+			<van-list
+			      v-model="loading"
+			      :finished="finished"
+			      :immediate-check="false"
+			      @load="onLoad"
+			      v-if="list.length!==0"
+				  :offset="10"
+			    >
+			<div class="listBox align_items" v-if="allData!==''">
+				<div class="list" v-for="(item,index) in list" :key="index" @click="goDetails(item)">
+					<div class="top">
+						<img :src="item.cover_img"  onerror="this.src = '../../../images/teacher/error.png'"/>
+						<div>
+							<div>
+								<img src="../../../../images/teacher/Ic_audio.png" v-if="item.task_form==2"/>
+								<img src="../../../../images/teacher/Ic_pic_03.png" v-if="item.task_form==1"/>
+								<img src="../../../../images/teacher/Ic_video_03.png" v-if="item.task_form==3"/>
+							</div>
+							<!-- <p class="danshen">使用20次</p> -->
+						</div>
+					</div>
+					<div class="bot">
+						<p class="moreshen">{{item.name}}</p>
+						<div class="align_items">
+							<div class="align_items">
+								<img src="../../../../images/teacher/Ic_browsing.png" />
+								<span>{{item.see_num}}</span>
+							</div>
+							<div class="align_items">
+								<img src="../../../../images/teacher/Ic_love.png" />
+								<span>{{item.click_num}}</span>
+							</div>
+							<div class="align_items">
+								<img src="../../../../images/teacher/Ic_pl.png" />
+								<span>{{item.comment_num}}</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			 </van-list>
+			 <div class="nullEmptys mads" v-if="list.length==0&&loadsAll" style="background-color: rgb(245, 245, 245);">
+			 	<img src="../../../../images/student/null.png" />
+			 	<p>什么都没有...</p>
+			 </div>
+			 <loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../../../js/public/vue.js"></script>
+	<script src="../../../../js/public/vant.js"></script>
+	<script src="../../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+			  return {
+				typeArr:[{tit:"作业展示",order:1},{tit:"风采展示",order:2}],
+				num:0,           //tab得选中目标
+				stuPostData:{
+					page_no:1,
+					page_size:6,
+					student_id:""
+				},
+				allData:"",
+				u_type:"",
+				id:"",
+				list:[],
+				loadsAll:false,
+				loading:false,
+				finished:false,
+			  }
+	        },
+			mounted(){
+				iosReload()
+				var id = GetQueryValue("id")
+				var u_type = GetQueryValue("u_type")
+				this.u_type = u_type
+				this.id = id
+				this.stuPostData.student_id = id
+				this.getDetails(id,u_type)
+			},
+	        methods: {
+				closeCall(){
+					this.stuPostData.page_no = 1
+					this.getDetails()
+				},
+				goDetails(item){
+					if(item.task_form==1){
+						location.href = "lookHomework.html?id="+item.student_task_id+"&opus_id="+item.student_task_opus_id
+					}else{
+						AndroidRouter('onClosePage',"prDetails",this.closeCall,"get_closedCall")
+						var work_type = item.task_form==2?2:1;
+						var obj = {
+							"title":item.task_name,
+							"student_task_id":item.student_task_id,
+							"work_type":work_type,
+							"is_comment_work":0,
+							"has_delete_btn":0,
+							"has_tea_comment_btn":0,
+							"has_work_title_btn":0
+						}
+						AndroidRouter('goStuWorkDetail',JSON.stringify(obj))
+					}
+				},
+				goFans(type){     //粉丝/关注
+					location.href = "fans.html?type="+type+"&name="+this.allData.name+"&u_id="+this.allData.student_id+"&u_type=0"
+				},
+				onLoad(){      //上拉加载
+				  this.loading = false
+				  this.stuPostData.page_no++
+				  this.getDetails()
+				},
+			   getDetails(){        //获取详情
+					if(this.stuPostData.page_no==1){
+						this.$refs.loadings.openLoading()
+					}
+					var that = this;
+				   ajax('school/student/student_center','POST',this.stuPostData,function(res){
+						that.$refs.loadings.closedLoading()
+						if(res.code==1){
+							that.loadsAll = true
+							var numData = JSON.parse(JSON.stringify(res.data))
+							that.allData = numData.result
+							if(numData.list.length==0){
+							  that.finished = true
+							  return false
+							}
+							if(numData.list.length<that.stuPostData.page_size){
+							  that.finished = true
+							}
+							if(that.stuPostData.page_no==1){
+							  that.list = numData.list
+							}else{
+							  that.list = that.list.concat(numData.list)
+							}
+							that.loading = false
+						}
+				   })
+			  },
+			  goback(){
+				 history.go(-1)
+			  },
+			  checkType(it){              //切换tab
+			  	if(it==0){
+					this.loading = false
+					this.finished = false
+					this.loadsAll = false
+					this.stuPostData.page_no = 1
+					this.list = []
+					this.getDetails()
+				}else{
+					this.list = []
+				}
+			  }
+	        }
+	    });
+	
+	
+	</script>
+</html>

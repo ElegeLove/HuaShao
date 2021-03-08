@@ -1,0 +1,103 @@
+#loginRole {
+    width: 100%;
+    padding-top: 1rem;
+    box-sizing: border-box;
+}
+
+/* .top {
+    width: 100%;
+    padding: 0.265rem 0.3rem;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 111;
+    background: #ffffff;
+}
+
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topImg {
+    width: 0.4rem;
+    height: 0.4rem;
+}
+
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+} */
+
+.main {
+    width: 100%;
+    padding: 0.2rem 0.3rem;
+    box-sizing: border-box;
+}
+
+.main_title {
+    font-size: 0.48rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+    margin-bottom: 1rem;
+}
+
+.items {
+    width: 100%;
+    padding: 0.34rem;
+    margin-top: 0.4rem;
+    box-sizing: border-box;
+    box-shadow: 0 0 0.2rem 0 rgba(183, 183, 183, 0.2);
+    border-radius: 0.1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.items img{
+    width: 0.48rem;
+    height: 0.32rem;
+}
+.items_left {
+    display: flex;
+    align-items: center;
+}
+
+.items_left img {
+    width: 1.32rem;
+    height: 1.32rem;
+    border-radius: 50%;
+    margin-right: 0.3rem;
+}
+
+.items_text {
+    font-size: 0.34rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+}
+.footer{
+    width: 100%;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+}
+.btn {
+    width: 3.8rem;
+    height: 1.04rem;
+    background: url('../../images/student/Icon_button.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.4rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(255, 255, 255, 1);
+}

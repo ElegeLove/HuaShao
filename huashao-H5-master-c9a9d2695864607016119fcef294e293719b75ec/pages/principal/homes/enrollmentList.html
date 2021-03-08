@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>报名列表</title>
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/principal/l_enrollmentList.css">
+</head>
+
+<body>
+    <div id="enrollmentList" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../../images/principal/icon_back.png" alt="">
+                <div class="topTitle">报名列表</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="tabs">
+            <div v-for="(item,index) in tabArr" :class="active==index?'antives':'tabsText'" @click="check(index)">
+                {{item}}</div>
+        </div>
+        <div class="listBoxs">
+            <van-pull-refresh v-model="isLoading" class="listBoxss" success-text="刷新成功" @refresh="onRefresh">
+                <van-list v-model="isUpLoading" v-if="listData.length > 0" :finished="upFinished" @load="onupLoad" :offset="offset" immediate-check='false' finished-text="我是有底线的">
+                    <div class="items" v-for="(item,i) in listData">
+                        <div class="items_left">
+                            <img class="items_left_img" :src="item.head" alt="">
+                            <div>
+                                <div class="items_left_title">
+                                    <div>{{item.student_name}}</div>
+                                    <div>{{item.age}}<span>岁</span></div>
+                                </div>
+                                <div class="items_left_text" @click="phone(item.phone)">
+                                    <img src="../../../images/principal/ic_phone.png" alt="">
+                                    <div><span>{{item.phone}}</span>&nbsp;&nbsp;&nbsp;<span>{{item.province}}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-if="active==0" class="item_active" @click="selectItem(i)">
+                            <div>标记联系</div>
+                            <!-- <img src="../../../images/principal/xq_yuan.png" v-if="item.status == 0" alt="">
+                            <img src="../../../images/principal/xq_yuan2.png" v-else alt=""> -->
+                        </div>
+                    </div>
+                </van-list>
+                <div v-if="listData.length < 1" class="nullData">
+                    <div>
+                        <img src="../../../images/principal/null.png" alt="">
+                        <div>暂无数据</div>
+                    </div>
+                </div>
+            </van-pull-refresh>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+
+</body>
+<script>
+    $(document).ready(function() {
+        $('.listBoxss').css('minHeight', $(window).height() - 120 + 'px');
+    })
+</script>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#enrollmentList',
+        data() {
+            return {
+                tabArr: [],
+                active: 0,
+                listData: [],
+                pageNo: 1,
+                pageSize: 10,
+                total: '',
+                isLoading: false,
+                isUpLoading: false,
+                upFinished: false, //上拉加载完毕
+                offset: 100, //滚动条与底部距离小于 offset 时触发load事件
+            }
+        },
+        mounted() {
+            this.$refs.loadings.openLoading();
+            this.getInfo(this.pageNo, this.pageSize, this.active)
+        },
+        methods: {
+            goBack() {
+                AndroidRouter('closePage', '');
+            },
+            check(i) {
+                this.active = i;
+                this.pageNo = 1;
+                this.listData = [];
+                this.getInfo(this.pageNo, this.pageSize, i)
+            },
+            phone(val) {
+                AndroidRouter('callPhone', val);
+            },
+            selectItem(i) {
+                this.listData[i].status = 1;
+                var that = this;
+                ajax("school/school/sing_up_record", 'POST', {
+                    school_student_id: that.listData[i].id,
+                    status: that.listData[i].status
+                }, function(res) {
+                    if (res.code == 1) {
+                        vant.Toast(res.msg)
+                        that.pageNo = 1;
+                        that.getInfo(that.pageNo, that.pageSize, that.active);
+                    } else {
+                        that.listData[i].status = 0;
+                        vant.Toast(res.msg)
+                    }
+                })
+            },
+            onRefresh() {
+                this.isLoading = true;
+                this.upFinished = false;
+                this.pageNo = 1;
+                this.getInfo(this.pageNo, this.pageSize, this.active);
+            },
+            onupLoad() { // 上拉调用此函数
+                // e.stopPropagation();
+                this.isUpLoading = false;
+                // this.upFinished = false;
+                this.pageNo++;
+                this.getInfo(this.pageNo, this.pageSize, this.active)
+
+            },
+            getInfo(pageNo, pageSize, status) {
+                let that = this;
+                ajax('school/school/sign_up_list', "POST", {
+                    "page_no": pageNo,
+                    "page_size": pageSize,
+                    "status": status
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.isLoading = false;
+                        let rows = res.data.list; //请求返回当页的列表
+                        that.tabArr = ["未联系 (" + res.data.no_contact_num + ")", "已联系 (" + res.data.contacted_num + ")", "已缴费 (" + res.data.paid_num + ")"],
+                            that.isUpLoading = false;
+                        that.total = res.data.total;
+                        that.$refs.loadings.closedLoading();
+                        if (rows == null || rows.length === 0) {
+                            // 加载结束
+                            this.upFinished = true;
+                            if (pageNo == 1) {
+                                that.listData = []
+                            }
+                            return false;
+                        }
+                        if (pageNo == 1) {
+                            that.listData = rows;
+                        } else {
+
+                            that.listData = that.listData.concat(rows);
+                        }
+                        if (that.listData.length >= that.total) {
+                            that.upFinished = true;
+                        }
+                    }
+                })
+            },
+        }
+    });
+</script>
+
+
+</html>

@@ -1,0 +1,157 @@
+#videoDetails {
+    width: 100%;
+    padding-top: 1rem;
+    box-sizing: border-box;
+    background-color: #000;
+}
+
+.top {
+    width: 100%;
+    padding: 0.265rem 0.3rem;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 111;
+    background: #ffffff;
+}
+
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topImg {
+    width: 0.4rem;
+    height: 0.4rem;
+}
+
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.main,
+.main_video {
+    width: 100%;
+}
+.main{
+    position: relative;
+    z-index: 0;
+}
+
+/* .video_img{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 11111;
+
+} */
+#video{
+    /* position: absolute; */
+    /* z-index: 1; */
+    /* left: 0; */
+    /* top: 0; */
+}
+.video_img{
+    width: 1.6rem;
+    height: 1.6rem;
+    position: absolute;
+    left: 2.95rem;
+    top: 5.2rem;
+    z-index: 2;
+}
+
+/*全屏*/
+video::-webkit-media-controls-fullscreen-button {
+    display: none !important;
+}
+
+/*播放*/
+video::-webkit-media-controls-play-button {
+    display: none !important;
+}
+
+/*更多*/
+/* video::-internal-media-controls-overflow-button {
+    display: none !important;
+}
+
+video::-internal-media-controls-overflow-button {
+    display: none !important;
+}
+
+video::-internal-media-controls-overflow-menu-list-item {
+    display: none !important;
+} */
+
+/*进度条*/
+/* video::-webkit-media-controls-timeline{ display: none !important; } */
+/*video默认setting按钮*/
+/* video::-internal-media-controls-overflow-button {
+    display: none !important;
+} */
+
+/* 声音 */
+video::-webkit-media-controls-mute-button {
+    display: none !important;
+}
+/*
+
+video::-internal-media-controls-scrubbing-message {
+    display: none !important;
+}
+
+video::-internal-media-controls-button-panel {
+    width: 100px !important;
+}
+
+video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-button-panel"i] {
+    width: 200px !important;
+}
+
+input[pseudo="-webkit-media-controls-timeline"i]::-internal-track-segment-highlight-after {
+    width: 300px !important;
+}
+
+video::-webkit-media-controls.sizing-small input[pseudo="-webkit-media-controls-timeline"i] {
+    width: 300px !important;
+} */
+
+
+/* video::-webkit-media-controls-current-time-display {
+    display: none;
+} */
+/* video::-webkit-media-controls-time-remaining-display{
+    display: none;
+} */
+
+
+/* video::-internal-media-controls-button-panel{
+    width: 10px !important;
+    margin-left: 8000px;
+    display: none;
+}
+video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-button-panel" i] {
+    width: 10px !important;
+}
+
+video::-webkit-media-controls.sizing-small div[pseudo="-internal-media-controls-button-panel" i]{
+    width: 200px !important;
+} */
+
+video::-webkit-media-controls-panel {
+    flex-direction: row-reverse;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+}

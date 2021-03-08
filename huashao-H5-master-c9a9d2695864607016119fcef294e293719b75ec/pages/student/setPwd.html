@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>设置密码</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/setPwd.css">
+</head>
+
+<body>
+    <div id="setPwd" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">设置密码</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="inp main_phone">
+                <input type="password" v-model="pwd" placeholder="请输入密码" />
+            </div>
+            <div class="inp main_phone">
+                <input type="password" v-model="rePwd" placeholder="请再次输入密码" />
+            </div>
+            <div class="btn" @click="sureSub">确定</div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script>
+    new Vue({
+        el: '#setPwd',
+        data() {
+            return {
+                pwd: '',
+                rePwd: '',
+                codeVal: ''
+            }
+        },
+        mounted() {
+            this.codeVal = GetQueryValue("codeVal");
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            sureSub() {
+                if (this.pwd == this.rePwd) {
+                    let that = this;
+                    ajax('student/student/student_edit', "POST", {
+                        "password": that.pwd,
+                        "repassword": that.rePwd,
+                        "captcha": that.codeVal,
+                    }, function(res) {
+                        if (res.code == 1) {
+                            vant.Toast(res.msg);
+                            setTimeout(function() {
+                                AndroidRouter('loginOut', '');
+                            }, 1000)
+                        } else {
+                            vant.Toast(res.msg);
+                        }
+                    })
+                } else {
+                    vant.Toast('两次密码不相等');
+                }
+            }
+        }
+    });
+</script>
+
+</html>

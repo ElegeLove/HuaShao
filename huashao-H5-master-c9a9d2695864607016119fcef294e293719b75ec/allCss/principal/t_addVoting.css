@@ -1,0 +1,209 @@
+#box{
+	width: 100%;
+	box-sizing: border-box;
+	overflow-y: scroll;
+	padding-top: 1rem;
+}
+.yidongs{
+	margin-left: 0.3rem;
+}
+.marginfgs{
+	min-width: 1.6rem;
+}
+.conts{
+	box-sizing: border-box;
+	padding:  0.3rem;
+}
+.divs{
+	border-bottom: 0.015rem solid #EEEEEE;
+	box-sizing: border-box;
+	padding-bottom: 0.29rem;
+	margin-bottom: 0.45rem;
+}
+.divs>p{
+	font-size: 0.3rem;
+	color: #333333;
+}
+.divs>input{
+	font-size: 0.3rem;
+	margin-top: 0.73rem;
+}
+.divs>textarea{
+	margin-top: 0.25rem;
+	box-sizing: border-box;
+	font-size: 0.3rem;
+	color:  #666666 !important;
+	background-color: none;
+	border: 0;
+	padding-top: 0.2rem;
+}
+.clearBot{
+	border: 0;
+}
+.clearMar{
+	margin: 0;
+}
+.uploadBox{
+	box-sizing: border-box;
+	padding: 0.38rem 0 0rem 0;
+	border-bottom: 0.02rem solid #EEEEEE;
+}
+.uploadBox>div{
+	display: flex;
+	flex-wrap: wrap;
+	margin-top: 0.37rem;
+}
+.uploadBox>div>div{
+	width: 1.54rem;
+	height: 1.54rem;
+	position: relative;
+	margin: 0 0.39rem 0.3rem 0;
+}
+.uploadBox>div>div .imgs{
+	width: 100%;
+	height: 100%;
+	border-radius: 0.1rem;
+}
+.uploadBox>div>div .dele{
+	width: 0.4rem;
+	height: 0.4rem;
+	position: absolute;
+	top: -0.2rem;
+	right: -0.2rem;
+}
+.marginTp{
+	margin-top: 0.47rem;
+	padding-top: 0 !important;
+}
+input::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+    color: #999999;
+}
+input:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+   color: #999999;
+}
+input::-moz-placeholder { /* Mozilla Firefox 19+ */
+   color: #999999;
+}
+input:-ms-input-placeholder { /* Internet Explorer 10-11 */
+   color:#999999;
+}
+input::-ms-input-placeholder { /* Microsoft Edge */
+   color:#999999;
+}
+textarea::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+    color: #999999;
+}
+textarea:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+   color: #999999;
+}
+textarea::-moz-placeholder { /* Mozilla Firefox 19+ */
+   color: #999999;
+}
+textarea:-ms-input-placeholder { /* Internet Explorer 10-11 */
+   color:#999999;
+}
+textarea::-ms-input-placeholder { /* Microsoft Edge */
+   color:#999999;
+}
+.divBox{
+	justify-content: space-between;
+	width: 100%;
+	box-sizing: border-box;
+	height: 1.19rem;
+	border-bottom: 0.02rem solid #EEEEEE;
+}
+.divBox>p{
+	font-size: 0.3rem;
+	color: #323232;
+}
+.divBox>div{
+	flex: 1;
+}
+.divBox>div>p{
+	font-size: 0.26rem;
+	color: #666666;
+	flex: 1;
+	text-align: right;
+	width: 1rem;
+	margin-left: 0.2rem;
+}
+.divBox>div>img{
+	width: 0.17rem;
+	height: 0.30rem;
+	margin-left: 0.1rem;
+}
+.divBox>div>input{
+	height: 0.6rem;
+	line-height: 0.6rem;
+	text-align: right;
+	box-sizing: border-box;
+	padding-left: 0.4rem;
+	font-size: 0.3rem;
+	color: #666666;
+	background-color: none;
+	border: 0;
+	display: flex;
+	align-items: center;
+}
+.timBox{
+	box-sizing: border-box;
+	padding-top: 0.4rem;
+}
+.timBox>p{
+	font-size: 0.3rem;
+	color: #323232;
+}
+.timBox>div>input{
+	font-size: 0.3rem;
+	text-align: center;
+}
+.timBox>div>span{
+	font-size: 0.3rem;
+	color: #666666;
+}
+.timBox>div{
+	border-bottom: 0.015rem solid #EEEEEE;
+	box-sizing: border-box;
+	justify-content: space-between;
+	padding-bottom: 0.32rem;
+	margin-top: 0.63rem;
+}
+.fotBtn{
+	width: 100%;
+	/* position: fixed; */
+	bottom: 0;
+	left: 0;
+	margin-top: 0.5rem;
+	box-sizing: border-box;
+	padding: 0.15rem 0.3rem;
+	background-color: white;
+}
+.fotBtn>.gon{
+	width: 100%;
+	height: 0.88rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #2EC5E0;
+	font-size: 0.36rem;
+	color: #FFFFFF;
+	text-align: center;
+	border-radius: 0.44rem;
+	box-shadow: 0 0.05rem 0 #15A9C3;
+	border: 0;
+}
+.timePop .van-picker__toolbar{
+	align-items: center;
+}
+.timePop .van-picker__frame{
+	top: 44% !important;
+}
+.timePop .van-popup--bottom{
+	border-radius: 0.5rem 0.5rem 0 0;
+}
+.van-picker__cancel{
+	color: #2EC5E0  !important;
+}
+.van-picker__confirm{
+	color: #2EC5E0 !important;
+}

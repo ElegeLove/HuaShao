@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>打卡练习管理</title>
+		<script src="../../js/public/rem.js"></script>
+		<script src="../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../allCss/public.css">
+		<link rel="stylesheet" href="../../allCss/teacher/punchPractice.css">
+		<link rel="stylesheet" href="../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak  @touchstart.stop="scolls">
+			<div>
+				<div class="fixed">
+					<div class="head_top" style="position: relative;">
+					    <div class="head_topBox">
+					        <img class="head_topImg" src="../../images/student/icon_back.png" alt="" @click="goback">
+					        <div class="head_topTitle">打卡练习管理</div>
+					        <div class="head_topImg"></div>
+					    </div>
+					</div>
+					<div class="align_items checks">
+						<div :class="{'actives':check==0}" @click="checks(0)">
+							<p>练习库管理</p>
+							<span v-if="check==0"></span>
+						</div>
+						<div :class="{'actives':check==1}" @click="checks(1)">
+							<p>我发布的练习</p>
+							<span v-if="check==1"></span>
+						</div>
+					</div>
+					<div class="padds" v-if="seachBoxCheck" @click="checkSearchs">
+						<div class="ipts">
+							<div class="align_items">
+								<img src="../../images/teacher/ic_search.png" />
+								<p>{{postData.keyword==""?'练习名称搜索':postData.keyword}}</p>
+							</div>
+						</div>
+					</div>
+					<div class="searchBox" v-else>
+						<div class="ipts">
+							<div class="align_items alitemLef">
+								<img src="../../images/teacher/ic_search.png" />
+								<input v-model="postData.keyword" ref="inputs" 
+								placeholder="练习名称搜索"
+								class="iptLefts"
+								/>
+							</div>
+						</div>
+						<span class="serBtn" @click="xingCheck">搜索</span>
+					</div>
+				</div>
+				<div class="align_items typeArr">
+					<van-dropdown-menu active-color="#2EC5E0">
+						<van-dropdown-item v-model="homework" :options="homeworkData"  @change="homeCheck"/>
+					</van-dropdown-menu>
+					<van-dropdown-menu active-color="#2EC5E0">
+						<van-dropdown-item v-model="TypePunch" :options="TypePunchData"  @change="leisCheck"/>
+					</van-dropdown-menu>
+					<van-dropdown-menu active-color="#2EC5E0">
+						<van-dropdown-item v-model="PunchForm" :options="PunchFormData" @change="typeCheck"/>
+					</van-dropdown-menu>
+					<van-dropdown-menu active-color="#2EC5E0">
+						<van-dropdown-item v-model="grade" :options="gradeData" @change="classCheck"/>
+					</van-dropdown-menu>
+				</div>
+			</div>
+			<van-pull-refresh v-model="refreshing" @refresh="onRefresh" style="min-height: 70%;"  v-cloak v-if="allList.length!==0">
+				<van-list
+				  v-model="loading"
+				  :finished="finished"
+				   :offset="10"
+				   :immediate-check="false"
+				   finished-text="已加载完毕"
+				  @load="onLoad">
+					<div class="listbox">
+						<div class="list" v-for="(item,index) in allList" @click.stop="goDetails(item)" :key="index">
+							<div class="top">
+								<img :src="item.cover_img"  onerror="this.src = '../../images/teacher/error.png'"/>
+								<div>
+									<div>
+										<img src="../../images/teacher/Ic_audio.png" v-if="item.form==2"/>
+										<img src="../../images/teacher/Ic_pic_03.png" v-if="item.form==1"/>
+										<img src="../../images/teacher/Ic_video_03.png" v-if="item.form==3"/>
+									</div>
+									<p class="danshen" v-if="check==0">使用{{item.use_num}}次</p>
+									<span 
+									@click.stop="addKus(item)"
+									:class="{'add':true,'overads':item.is_join_school==0?false:true}" v-if="check==1">{{item.is_join_school==0?'添加至学校练习库':'已添加至学校练习库'}}</span>
+								</div>
+							</div>
+							<div class="bot">
+								<p class="moreshen">{{item.task_name}}</p>
+								<div class="align_items">
+									<img src="../../images/teacher/ic_book.png" />
+									<p class="danshen">{{item.tag_name}}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+			</van-list>
+			</van-pull-refresh>
+			<div v-if="allList.length==0&&nullEmptys" class="nullEmptys marginsd">
+				<img src="../../images/student/null.png" />
+				<p>什么都没有...</p>
+			</div>
+			<div class="sendFix align_items" @click="sendCheck(true)">
+				<img src="../../images/teacher/Ic_release.png" />
+				<span>发布练习内容</span>
+			</div>
+			<div class="sends">
+				<van-action-sheet
+				  v-model="show"
+				  :actions="actions"
+				  cancel-text="取消"
+				  @cancel="sendCheck(false)"
+				  @select="onSelect"
+				/>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../js/public/vue.js"></script>
+	<script src="../../js/public/vant.js"></script>
+	<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					check:0,
+					postData:{
+						keyword:"",
+						is_teacher:9999,
+						is_school:9999,
+						form:"",
+						grade_id:"",
+						page:1,
+						is_system:9999,
+						task_tag_id:"",
+						my_publish:""
+					},
+					homeworkData: [
+					        { text: '全部练习库', value: 0 },
+					        { text: '学校练习库', value: 1 },
+					        { text: '系统练习库', value: 2 },
+					        { text: '个人练习库', value: 3 }
+					 ],
+					TypePunchData: [
+					         { text: '打卡类型', value: "" }
+					],
+					PunchFormData:[
+					        { text: '打卡形式', value: "" }
+					],
+					gradeData:[
+					        { text: '年级', value: "" }
+					],
+					homework:0,
+					TypePunch:"",
+					PunchForm:"",
+					grade:"",
+					show: false,     //控制发布练习弹窗
+					actions: [             //发布练习数据
+					   { name: '从练习库中发布' },
+					   { name: '自主新增' }
+				    ],
+					loading: false,
+					finished: false,
+					refreshing: false,
+					allList:[],
+					nullEmptys:false,
+					seachBoxCheck:true
+	            }
+	        },
+			created(){
+			  iosReload()
+			  this.getTaskType()
+			  this.getHomeForm()
+			  this.getClass()
+			  var checks = localStorage.getItem("check")
+			  if(checks!==null){
+				  this.check = checks
+			  }
+			  localStorage.removeItem("sendData")
+			},
+			mounted(){
+				this.getList()
+			},
+	        methods: {
+				checkSearchs(){           //切换搜索框
+					this.seachBoxCheck = false;
+					var that = this;
+					this.$nextTick(()=>{
+					   this.$refs.inputs.focus()
+					})
+				},
+				scolls(){
+					var that = this;
+					this.$nextTick(function(){
+					   that.$refs.inputs.blur()
+					})
+				},
+				addKus(item){         //添加至学校练习库
+					var that = this;
+					if(item.is_join_school==1){
+						return false
+					}
+					ajax("teacher/Teachertask/taskJoinSchool",'POST',{task_id:item.task_id},function(res){
+						vant.Toast(res.msg)
+						if(res.code==1){
+							item.is_join_school=1
+						}
+					})	
+				},
+				homeCheck(ix){            //练习库选择
+					if(ix==0){
+						this.setkeys(9999,9999,9999)
+					}else if(ix==1){
+						this.setkeys(1,9999,9999)
+					}else if(ix==2){
+						this.setkeys(9999,9999,1)
+					}else if(ix==3){
+						this.setkeys(9999,1,9999)
+					}
+					this.allList = []
+					this.xingCheck()
+				}, 
+				setkeys(school,teacher,system){
+					this.postData.is_school = school
+					this.postData.is_teacher = teacher
+					this.postData.is_system = system
+				},
+				typeCheck(ix){           //打卡形式
+					this.postData.form = ix
+					this.xingCheck()
+				},
+				leisCheck(ix){           //打卡类型
+					this.postData.task_tag_id = ix
+					this.xingCheck()
+				},
+				classCheck(ix){             //年级选择
+					this.postData.grade_id = ix
+					this.xingCheck()
+				},
+				onLoad() {        //上拉加载
+				  this.postData.page++
+				  this.getList()
+				},
+				onRefresh() {           //刷新
+				  this.finished = false;
+				  this.loading = true;
+				  this.xingCheck()
+				},
+				xingCheck(){
+					this.seachBoxCheck = true
+					this.postData.page = 1;
+					this.getList()
+				},
+				checks(ix){        //切换练习库与我的练习
+					this.check = ix
+					this.allList = []
+					this.xingCheck()
+				},
+				getList(type){
+					var that = this;
+					if(this.postData.page==1){
+						this.$refs.loadings.openLoading()
+						this.loading = false
+						this.finished = false
+						this.refreshing = false
+					}
+					var urls = this.check==0?'teacher/Task/practiceLibrary':'teacher/Task/myPublishTask'
+					ajax(urls,'POST',this.postData,function(res){
+						localStorage.removeItem("check")
+						that.loading = false
+						that.$refs.loadings.closedLoading()
+						if(res.code==1){
+							that.nullEmptys = true
+							that.loading = false
+							that.refreshing = false
+							if(res.data.list.length==0){
+							  that.finished = true
+							  if(that.postData.page==1){
+								   that.allList = []
+							  }
+							  return false
+							}
+							if(that.postData.page==1){
+							  that.allList = res.data.list
+							}else{
+							  that.allList = that.allList.concat(res.data.list)
+							}
+						}else{
+							vant.Toast(res.msg)
+						}
+					})
+				},
+				
+				getTaskType(){        //获取打卡类型
+					var that = this;
+					ajax("teacher/Task/getTaskTagList",'POST',{type:1},function(res){
+						if(res.code==1){
+							res.data.list.forEach(function(it){
+								that.TypePunchData.push({text:it.tag_name,value:it.id})
+							})
+						}
+					})
+				},
+				getClass(){        //获取年级数据
+					var that = this;
+					ajax("teacher/Task/gradeList",'POST',{},function(res){
+						if(res.code==1){
+							res.data.list.forEach(function(it){
+								that.gradeData.push({text:it.name,value:it.id})
+							})
+						}
+					})
+				},
+				getHomeForm(){         //获取作业形式
+					var that = this;
+					ajax("teacher/Task/getForm",'POST',"",function(res){
+						if(res.code==1){
+							res.data.form.forEach(function(it){
+								that.PunchFormData.push({text:it.form_name,value:it.value})
+							})
+						}
+					})
+				},
+				
+				
+				goback(){
+					AndroidRouter("closePage","")
+					// history.go(-1)
+				},
+				sendCheck(bool) {       //发布弹框取消
+				  this.show = bool;
+				},
+				onSelect(item,index){          //发布弹框选择
+				    if(index==0){          //从练习库中发布
+						location.href = "librarySelection.html"
+					}else{            //自主新增
+						location.href = "mys/IndependentAddition.html"
+					}
+					this.show = false
+				},
+				goDetails(item){            //练习库详情
+					if(this.check==0){
+						location.href = "exerciseDetails.html?status=4&id="+item.task_id+"&post=888&type=details"
+					}else{          //我发布的练习
+						if(item.is_publish==1){                 //当天
+							location.href = "mySendDetails.html?id="+item.task_publish_id
+						}else{          //未到当天
+							location.href = "exerciseDetails.html?status=88&id="+item.task_publish_id+"&post=999&type=edit"
+						}
+					}
+				}
+			}
+	    });
+	
+	
+	</script>
+</html>

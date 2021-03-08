@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>新增学员</title>
+		<script src="../../js/public/rem.js"></script>
+		<script src="../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../allCss/public.css">
+		<link rel="stylesheet" href="../../allCss/teacher/newStudents.css">
+		<link rel="stylesheet" href="../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak  @touchstart.stop="scolls">
+			<div class="topFixd">
+				<div class="heads_top">
+				   <div class="head_topBox">
+				       <img class="head_topImg" src="../../images/student/icon_back.png" alt="" @click="goback">
+				       <div class="head_topTitle">新增学员</div>
+				       <div class="head_topImg"></div>
+				   </div>
+				</div>
+				<!-- <form @submit.prevent="return false;">
+					<div class="searchBox">
+						<div class="ipts">
+							<input v-model="postData.keyword"  @keyup.enter="getStudentList" @input="setIpts" ref="inputs"/>
+							<div class="align_items" v-show="postData.keyword==''">
+								<img src="../../images/teacher/ic_search.png" />
+								<p>学生ID或手机号搜索</p>
+							</div>
+						</div>
+					</div>
+				</form> -->
+				<div class="searchBox">
+					<div class="ipts">
+						<div class="align_items alitemLef">
+							<img src="../../images/teacher/ic_search.png" />
+							<input v-model="postData.keyword" @input="setIpts" ref="inputs" 
+							placeholder="手机号搜索"
+							class="iptLefts"
+							oninput = "value=value.replace(/[^\d]/g,'')"
+							/>
+						</div>
+					</div>
+					<span class="serBtn" @click="getStudentList">搜索</span>
+				</div>
+			</div>
+			<div class="listBox">
+				<div class="align_items lists" v-for="(item,index) in list" :key="index" v-if="list.length!==0">
+					<div class="align_items tops">
+						<img :src="item.head" onerror="this.src = '../../images/teacher/error.png'"/>
+						<div>
+							<p class="danshen">{{item.name}}</p>
+							<div>手机号:{{item.mobile}}</div>
+						</div>
+					</div>
+					<div class="fotBtn">
+						<p @click="addClass(item)">添加至班级</p>
+					</div>
+				</div>
+				<p v-if="list.length==0&&overLoads">无该用户</p>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../js/public/vue.js"></script>
+	<script src="../../js/public/vant.js"></script>
+	<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					postData:{
+						keyword:""
+					},
+					activeName: '1',
+					status:"",
+					list:[],
+					overLoads:false
+	            }
+	        },
+			created(){
+				var status = GetQueryValue("status")
+				this.status = status
+			},
+	        methods: {
+				scolls(){
+					var that = this;
+					this.$nextTick(function(){
+					   that.$refs.inputs.blur()
+					})
+				},
+				setIpts(e){
+					this.postData.keyword = e.target.value
+				},
+				getStudentList(){
+					this.$refs.loadings.openLoading()
+					var that = this;
+					ajax("teacher/Student/searchStudent",'POST',this.postData,function(res){
+						that.$refs.loadings.closedLoading()
+						if(res.code==1){
+							that.list = res.data.list
+							that.overLoads = true
+							if(res.data.list.length==0){
+								vant.Toast("该学生不存在哦")
+							}
+						}else{
+							vant.Toast(res.msg)
+						}
+					})
+				},
+				goback(){
+					history.go(-1)
+				},
+				addClass(item){          //添加至班级
+					localStorage.setItem("userMess",JSON.stringify(item))
+					location.href = "AddClass.html?id="+item.id+"&status="+this.status
+				}
+			}
+	    });
+	
+	
+	</script>
+</html>

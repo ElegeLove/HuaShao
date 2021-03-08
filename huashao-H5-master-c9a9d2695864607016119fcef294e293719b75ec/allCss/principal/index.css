@@ -1,0 +1,276 @@
+.content {
+    width: 100%;
+	height: 100%;
+	overflow-y: scroll;
+}
+
+.top {
+    width: 100%;
+    padding: 0.265rem 0.3rem;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 111;
+    background: #ffffff;
+}
+.van-pull-refresh__head{
+	top: -0.6rem;
+}
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topImg {
+    width: 0.4rem;
+    height: 0.4rem;
+}
+
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.header {
+    width: 100%;
+    height: 4.54rem;
+    background: url('../../images/principal/index_top_bg.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header>div {
+    text-align: center;
+}
+
+.header_img {
+    width: 1.7rem;
+    height: 1.7rem;
+	border: 0.05rem solid rgba(255,255,255,0.5);
+    border-radius: 50%;
+}
+
+.header_text {
+    font-size: 0.34rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(255, 255, 255, 1);
+	line-height: 0.45rem;
+	margin-top: 0.24rem;
+	margin-bottom: 0.6rem;
+	width: 5.5rem;
+}
+
+.menuBox {
+    width: 100%;
+    padding: 0 0.3rem;
+    box-sizing: border-box;
+    margin-top: -0.9rem;
+}
+
+.menuList {
+    width: 100%;
+    height: 1.8rem;
+    background-color: #ffffff;
+    box-shadow: 0 0.05rem 0.2rem 0 rgba(225, 225, 225, 0.4);
+    border-radius: 0.2rem;
+    display: flex;
+    align-items: center;
+}
+
+.menuList_item {
+    width: 2.3rem;
+    text-align: center;
+}
+
+.menuList_item_num {
+    font-size: 0.4rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+    line-height: 0.8rem;
+}
+
+.menuList_item_text {
+    font-size: 0.26rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(153, 153, 153, 1);
+    border-right: 0.01rem solid #E5E5E5;
+}
+
+.menuList_item:last-child .menuList_item_text {
+    border: none;
+}
+
+.iconList {
+    margin-top: 0.5rem;
+}
+
+.iconList {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.iconList_item {
+    text-align: center;
+}
+
+.iconList_item_img {
+    width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+}
+
+.iconList_item_text {
+    font-size: 0.24rem;
+    color: rgba(102, 102, 102, 1);
+    line-height: 1rem;
+}
+
+.main {
+    width: 100%;
+    padding: 0 0.3rem;
+    box-sizing: border-box;
+    margin-top: 0.7rem;
+}
+
+.main_top {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.main_top_left {
+    font-size: 0.4rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.main_top_right {
+    display: flex;
+    align-items: center;
+}
+
+.main_top_right_text {
+    font-size: 0.24rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(153, 153, 153, 1);
+}
+
+.main_top_right_img {
+    width: 0.3rem;
+    height: 0.3rem;
+	margin-right: -0.1rem;
+}
+
+.main_list {
+    width: 100%;
+    margin-top: 0.4rem;
+}
+
+.main_list_item {
+    width: 100%;
+    margin: 0.3rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.main_list_item_left {
+    display: flex;
+    align-items: center;
+}
+
+.main_list_item_left>img {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    margin-right: 0.2rem;
+}
+
+.main_list_top {
+    display: flex;
+    align-items: center;
+}
+
+.main_list_name {
+    font-size: 0.34rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(68, 68, 68, 1);
+    margin-right: 0.3rem;
+	max-width: 3rem;
+	line-height: 0.45rem;
+}
+
+.main_list_adrss {
+    font-size: 0.24rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(153, 153, 153, 1);
+}
+
+.main_list_bottom {
+    margin-top: 0.24rem;
+}
+
+.main_list_bottom>div {
+    font-size: 0.24rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(153, 153, 153, 1);
+}
+
+.main_list_item_right {
+    width: 0.36rem;
+    height: 0.36rem;
+    border-radius: 50%;
+}
+
+.main_list_bottom {
+    display: flex;
+    align-items: center;
+}
+
+.main_list_bottom img {
+    width: 0.24rem;
+    height: 0.24rem;
+    margin-right: 0.1rem;
+}
+.emptysd{
+	text-align: center;
+	font-size: 0.30rem;
+	color: rgba(153, 153, 153, 1);
+	margin-top: 0.8rem;
+}
+.btns{
+	width: 1.5rem;
+	box-sizing: border-box;
+	height: 0.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #FFFFFF;
+	text-align: center;
+	border-radius: 0.44rem;
+	box-shadow: 0 0.05rem 0 #15A9C3;
+	background-color: #2EC5E0;
+	border: 0;
+	font-size: 0.24rem;
+	white-space: nowrap;
+	font-family: 'miui';
+}

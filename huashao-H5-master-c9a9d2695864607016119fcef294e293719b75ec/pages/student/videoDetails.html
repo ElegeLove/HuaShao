@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>视频详情</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/student/videoDetails.css">
+</head>
+
+<body>
+    <div id="videoDetails">
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">表达天气的词汇</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main">
+            <video id="video" ref="video" class="main_video content" controlslist="nofullscreen nodownload noremoteplayback"
+                poster="../../images/student/pic_11.png" @ended="endShow" src="../../images/student/video.mp4" controls>
+            </video>
+            <img class="video_img" v-if="isShow" @click="play" src="../../images/student/Icon_pause_02.png" alt="">
+            <!-- <div class="video_img">
+                <img @click="play" src="../../images/student/Icon_pause_02.png" alt="">
+            </div> -->
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('.content').css('minHeight', $(window).height() - 60 + 'px');
+            var video = $('#video');
+            video[0]["disablePictureInPicture"] = true;
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script>
+    new Vue({
+        el: '#videoDetails',
+        data() {
+            return {
+                mainText: '<div>团的分类主要有两种，即热力分类和地理分类法。  1.气团热力分类 根据气团离开原地后与其经过的地面之间的温度对比进行分类，把气团分为冷气团和暖气团。一般地来说，由高纬度移到低纬度地区的气团为冷气团， 反之为暖气团，前者使到达地区变冷，后者使到达地区变暖。冬季由海洋移到大陆的气团是暖气团，由大陆移到海洋的气团是冷气团，夏季则相反。 当暖气团移到某地时，一方面引起地面增温，天气比较稳定，多半出现层状云，降雨常为小雨或毛毛雨。冬季暖气团因湿度大，常出现雾。 冷气团影响某地，除了地面降温之外，因季节不同会出现不同的天气特点。 夏季，冷气团内水汽较多，会出现积状云，形成阵雨或雷雨。冬季冷气团干燥， 出现少云碧空的天气，干冷，易生成雾。我国大部分地区处于中纬度，冷暖气团交绥频繁，缺少气团形成的下垫面和环流条件，因而在我国境内活动的气团是外来的变性气团，主要是变性的极地大陆气团与变性的热带海洋气团。  气团的地理分类 气团是在一定地理环境中形成的，它的物理属性留下了地域的烙印。依据气团源地的特点，气团分为下面几类。</div>',
+                isShow:true
+            }
+        },
+        mounted() {
+
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            endShow(){
+                this.isShow = true;
+            },
+            play(){
+                this.isShow = false;
+                this.$refs.video.play();
+            }
+        }
+    });
+</script>
+
+</html>

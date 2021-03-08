@@ -1,0 +1,165 @@
+#fansAttention {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding-top: 1rem;
+}
+
+.top {
+    width: 100%;
+    padding: 0.265rem 0.25rem;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 111;
+    background: #ffffff;
+}
+
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topImg {
+    width: 0.45rem;
+    height: 0.45rem;
+}
+
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+    max-width: 3.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: break-all;
+    line-height: 0.5rem;
+    /* text-align: center; */
+}
+
+.tabs {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    box-sizing: border-box;
+    border-bottom: 0.02rem solid #EEEEEE;
+}
+
+.tabs>div {
+    font-size: 0.28rem;
+    position: relative;
+    height: 0.99rem;
+    display: flex;
+    align-items: center;
+}
+
+.tabsText {
+    color: #999999;
+}
+
+.antives::after {
+    position: absolute;
+    content: '';
+    width: 0.5rem;
+    height: 0.06rem;
+    background-color: #2EC5E0;
+    color: #333333;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.listBoxs {
+    width: 100%;
+    padding: 0 0.3rem;
+    box-sizing: border-box;
+}
+
+.items {
+    width: 100%;
+    padding: 0.22rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.items_left {
+    display: flex;
+    align-items: center;
+}
+
+.items_left_img {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    margin-right: 0.18rem;
+}
+
+.items_left_title {
+    font-size: 0.32rem;
+    line-height: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(68, 68, 68, 1);
+    width: 4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: break-all;
+}
+
+.items_left_text {
+    font-size: 0.24rem;
+    line-height: 0.3rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(153, 153, 153, 1);
+    margin-top: 0.2rem;
+    width: 4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    word-break: break-all;
+}
+
+.items_right {
+    width: 1.4rem;
+    height: 0.56rem;
+    background: url('../../images/student/butten_editsdata.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.24rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(255, 255, 255, 1);
+}
+
+.nullData {
+    width: 100%;
+    height: 90%;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.nullData img {
+    width: 3.68rem;
+    height: 3.82rem;
+}
+
+.nullData>div>div {
+    margin-top: 0.44rem;
+    font-size: 0.3rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(102, 102, 102, 1);
+}

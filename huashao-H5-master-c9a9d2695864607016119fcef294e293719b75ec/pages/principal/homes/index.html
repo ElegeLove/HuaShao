@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>首页</title>
+    <!-- head 中 -->
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+	<link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/principal/index.css">
+</head>
+
+<body>
+    <div id="index" class="content" v-cloak>
+		<van-pull-refresh v-model="refreshing" @refresh="onRefresh"  v-cloak style="min-height:98%;">
+        <div class="header">
+            <div @click="goRouter('schoolInformation')">
+                <img class="header_img" :src="allData.head" alt="" onerror="this.src = '../../../images/teacher/error.png'">
+                <div class="header_text danshen" v-if="allData!==''">{{allData.name}} ></div>
+            </div>
+        </div>
+        <div class="menuBox">
+            <div class="menuList">
+                <div class="menuList_item" @click="goRouter('studentList')">
+                    <div class="menuList_item_num">{{allData.student_num}}</div>
+                    <div class="menuList_item_text">学生</div>
+                </div>
+                <div class="menuList_item" @click="goRouter('teacherList')">
+                    <div class="menuList_item_num">{{allData.teacher_num}}</div>
+                    <div class="menuList_item_text">老师</div>
+                </div>
+                <div class="menuList_item" @click="goRouter('enrollmentList')">
+                    <div class="menuList_item_num">{{allData.sign_up_num}}</div>
+                    <div class="menuList_item_text">报名</div>
+                </div>
+            </div>
+        </div>
+        <div class="iconList">
+            <div class="iconList_item" @click="goRouter('votingManagement')">
+                <img class="iconList_item_img" src="../../../images/principal/Ic_vote.png" alt="">
+                <div class="iconList_item_text">投票管理</div>
+            </div>
+            <div class="iconList_item" @click="closed">
+                <img class="iconList_item_img" src="../../../images/principal/Ic_live.png" alt="">
+                <div class="iconList_item_text">直播间</div>
+            </div>
+            <div class="iconList_item" @click="goRouter('operationSystem/index')">
+                <img class="iconList_item_img" src="../../../images/principal/Ic_work.png" alt="">
+                <div class="iconList_item_text">作业体系</div>
+            </div>
+            <div class="iconList_item" @click="closed">
+                <img class="iconList_item_img" src="../../../images/principal/Ic_course.png" alt="">
+                <div class="iconList_item_text">课程订单</div>
+            </div>
+            <div class="iconList_item" @click="goRouter('classManagement')">
+                <img class="iconList_item_img" src="../../../images/principal/ic_peng.png" alt="">
+                <div class="iconList_item_text">班级管理</div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="main_top">
+                <div class="main_top_left">最近报名</div>
+                <div class="main_top_right" @click="goRouter('enrollmentList')">
+                    <span class="main_top_right_text">查看全部</span>
+                    <img class="main_top_right_img" src="../../../images/teacher/ic_more.png" alt="">
+                </div>
+            </div>
+            <div class="main_list">
+                <div class="main_list_item" v-for="(item,i) in listData" v-if="listData.length!==0">
+                    <div class="main_list_item_left">
+                        <img :src="item.head" alt="" onerror="this.src = '../../../images/teacher/error.png'">
+                        <div>
+                            <div class="main_list_top">
+                                <div class="main_list_name danshen">{{item.student_name}}</div>
+                                <div class="main_list_adrss">{{item.province}}</div>
+                            </div>
+                            <div class="main_list_bottom" @click="callPhones(item)">
+                                <img src="../../../images/principal/ic_phone.png" alt="">
+                                <div>{{item.phone}}</div>
+                            </div>
+                        </div>
+                    </div>
+					<div class="btns" @click="checkDi(item,i)">
+						标记联系
+					</div>
+					<!-- <div @click="checkDi(item,i)">
+						<img class="main_list_item_right" src="../../../images/principal/xq_yuan.png" alt="">
+					</div> -->
+                </div>
+				<p class="emptysd" v-if="listData.length==0">暂无数据</p>
+            </div>
+        </div>
+		</van-pull-refresh>
+		<loadings ref="loadings"/>
+    </div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#index',
+        data() {
+            return {
+                listData:[],
+				allData:"",
+				refreshing: false
+            }
+        },
+        mounted(){
+			AndroidRouter('getUserInfo',"",this.setUserInfo,"setUserInfo")
+			// this.setUserInfo()
+        },
+        methods: {
+			setOnBottomTabClick(){
+				window.scrollTo (0, 0);
+				var that = this;
+				setTimeout(function(){
+					that.getLists(2)
+				},100)
+				AndroidRouter('onBottomTabClick',1,this.setOnBottomTabClick,"setOnBottomTabClick")
+			},
+			callPhones(item){        //拨打电话
+				AndroidRouter('callPhone',item.phone)
+			},
+			setUserInfo(res){        //获取token回调
+				localStorage.setItem("token",res)
+				this.getLists()
+				AndroidRouter('onBottomTabClick',1,this.setOnBottomTabClick,"setOnBottomTabClick")
+			},
+			closeCall(){       //原生关闭页面回调
+				this.getLists(1)
+			},
+			closed(){
+				vant.Toast("功能暂未开放")
+			},
+			onRefresh() {           //刷新
+			  this.getLists()
+			},
+			getLists(status){
+				if(status!==2&&status!==1){
+					this.$refs.loadings.openLoading()
+				}
+				var that = this;
+				ajax("school/school/index",'POST',{status:0},function(res){
+					that.refreshing = false;
+					if(status!==2){
+						that.$refs.loadings.closedLoading()
+					}
+					if(res.code==1){
+						if(status!==2){
+							that.allData = res.data.result
+						}
+						that.allData.sign_up_num = res.data.result.sign_up_num
+						that.allData.student_num = res.data.result.student_num
+						that.allData.teacher_num = res.data.result.teacher_num
+						that.listData = res.data.list
+					}
+				})
+			},
+            goBack() {
+                history.go(-1);
+            },
+			goRouter(route){         //路由跳转
+				// location.href = "./"+route+'.html'
+				var urls = "principal/homes/"+route+".html"
+				AndroidRouter('onClosePage',"homesd",this.closeCall,"get_closedCall")
+				AndroidRouter("newPage",urls)
+			},
+			checkDi(item,ix){        //标记
+				var that = this;
+				ajax("school/school/sing_up_record",'POST',{school_student_id:item.id,status:1},function(res){
+					vant.Toast(res.msg)
+					if(res.code==1){
+						that.getLists(2)
+					}
+				})
+			}
+        }
+    });
+</script>
+
+</html>

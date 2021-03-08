@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>练习详情</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script src="../../js/public/rem.js"></script>
+		<script src="../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../allCss/public.css">
+		<link rel="stylesheet" href="../../allCss/teacher/homeworkDetails.css">
+		<link rel="stylesheet" href="../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="head_top"  v-cloak v-if="allData!==''">
+			    <div class="head_topBox">
+			        <img class="head_topImg" src="../../images/student/icon_back.png" alt="" @click="goback">
+			        <div class="head_topTitle">{{type=='edit'?'打卡详情':'练习详情'}}</div>
+			        <div class="head_topImgss">
+						<p v-if="type=='edit'" @click="eqdios">编辑</p>
+					</div>
+			    </div>
+			</div>
+			<div v-if="allData!==''"  v-cloak>
+				<div class="bannres">
+					<img :src="allData.task_info.cover_img" onerror="this.src = '../../images/teacher/error.png'"/>
+					<div>
+						<img src="../../images/teacher/laba.png" v-if="allData.task_info.form==2"/>
+						<img src="../../images/teacher/Icon_pic.png" v-if="allData.task_info.form==1"/>
+						<img src="../../images/teacher/Icon_video.png" v-if="allData.task_info.form==3"/>
+						<span>{{allData.task_info.form_name}}练习</span>
+					</div>
+				</div>
+				<div class="all_titles">
+					<div>{{type=='edit'?allData.task_info.name:allData.task_info.task_name}}
+						<p>{{allData.task_info.tag_name}}</p>
+					</div>
+				</div>
+				<div class="all_details">
+					<p>{{allData.task_info.content}}</p>
+					<div v-for="(it,ix) in allData.task_info.content_images" :key="ix" class="bgBoxs">
+						<img :src="it.path" class="bg" onerror="this.src = '../../images/teacher/error.png'"/>
+					</div>
+					<div v-for="(it,ix) in allData.task_info.attachment"
+						:key="ix"
+						v-if="type=='edit'"
+						@click="autoVideo(it)">
+						<img :src="it.other_path" class="bg" onerror="this.src = '../../images/teacher/error.png'"/>
+						<img class="videos"  src="../../images/teacher/Ic_suspended.png"/>
+					</div>
+					<div v-for="(it,ix) in allData.task_info.attachment_list"
+						:key="ix" 
+						v-if="type!='edit'"  
+						@click="autoVideo(it)">
+						<img :src="it.other_path" class="bg" onerror="this.src = '../../images/teacher/error.png'"/>
+						<img class="videos"  src="../../images/teacher/Ic_suspended.png"/>
+					</div>
+				</div>
+				<div class="students" v-if="type=='details'">
+					<div v-if="allData.good_list.length!==0">
+						<div class="tits align_items">
+							<span class="lingsd"></span>
+							<p>优秀学生作业展示</p>
+						</div>
+						<div class="user_people">
+							<div>
+								<div v-for="(item,index) in allData.good_list" :key="index"  @click="excellent(item)">
+									<img :src="item.student_head" onerror="this.src = '../../images/teacher/error.png'"/>
+									<span class="danshen">{{item.student_name}}</span>
+								</div>
+							</div>
+							<img src="../../images/teacher/ic_more.png" />
+						</div>
+					</div>
+				</div>
+				<div class="commentse" v-if="allData.task_info.comment_standard!==''">
+					<div class="commentse_tit">
+						<span></span>
+						<p>点评标准：</p>
+					</div>
+					<div class="commentse_cont">
+						{{allData.task_info.comment_standard}}
+					</div>
+				</div>
+				<div class="fotBtns" v-if="type!='edit'">
+					<p @click="goNext">使用该练习</p>
+				</div>
+				<div class="fotBtns" v-if="type=='edit'">
+					<p @click="delets">删除</p>
+				</div>
+				<div class="alertBox">
+					<van-overlay :show="show" @click="removes(false)" z-index="9999">
+						<div class="wrapper" @click.stop>
+						    <div class="alerts">
+								<div class="hearts align_items">
+									<span></span>
+									<p>确定移除</p>
+									<img src="../../images/teacher/ic_cancle.png" @click="removes(false)"/>
+								</div>
+								<div class="cont">是否确定删除该练习？</div>
+								<div class="fotBtn">
+									<p @click="deleOver">确定</p>
+								</div>
+							</div>
+					    </div>
+					</van-overlay>
+				</div>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	
+	<script src="../../js/public/vue.js"></script>
+	<script src="../../js/public/vant.js"></script>
+	<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../js/public/index.js"></script>
+	<script>
+		new Vue({
+		    el: '#box',
+		    data() {
+		        return {
+					allData:"",         //数据请求
+					show:false,          //确定移除弹窗
+					status:0,   //从不同入口进入  3是从练习库中选择进入  4是练习库进入  
+					task_id:"",
+					post:"",
+					phone:"",
+					edIdt:{},          //编辑时，发布选择的班级还是学生数据
+					type:""         //details是练习详情           edit是我发布的练习详情    adddetails从练习库发布进入详情
+		        }
+		    },
+			mounted(){
+				var type = GetQueryValue("type")
+				this.type = type
+				
+				var status = GetQueryValue("status")
+				var phone = GetQueryValue("phone")
+				this.phone = phone
+				this.status = status
+				var post = GetQueryValue("post")          //999是我发布的练习未到当天进入
+				this.post = post
+				var id = GetQueryValue("id")
+				if(type=="edit"){
+					this.getSendMess(id)
+				}
+				this.task_id = id
+				this.getDetails(id)
+			},
+		    methods: {
+				excellent(item){         //优秀作业详情
+					if(this.allData.task_info.form==1){      //图文
+						location.href = "lookHomework.html?id="+item.student_task_opus_id+"&status=88&post="+this.post
+					}else{
+						var work_type = this.allData.task_info.form==2?2:1
+						var obj = {
+							title:this.type=='edit'?this.allData.task_info.name:this.allData.task_info.task_name,
+							student_task_id:item.student_task_id,
+							work_type:work_type,
+							is_comment_work:0,
+							has_delete_btn:0,
+							has_tea_comment_btn:0,
+							has_work_title_btn:0
+						}
+						AndroidRouter('goStuWorkDetail',JSON.stringify(obj))
+					}
+				},
+				autoVideo(item){        //播放视频
+					var obj = {
+						title:this.type=='edit'?this.allData.task_info.name:this.allData.task_info.task_name,
+						path:item.path
+					}
+					AndroidRouter('playVideo',JSON.stringify(obj))
+				},
+				getDetails(id){
+					var that = this;
+					var postObj = {
+						task_id:id
+					}
+					var postObjTwo = {
+						task_publish_id:id
+					}
+					this.$refs.loadings.openLoading()
+					var urls = this.type=="edit"?'teacher/Teachertask/publishTaskDetail':'teacher/Task/taskDetail'
+					ajax(urls,'POST',this.type=='edit'?postObjTwo:postObj,function(res){
+						that.$refs.loadings.closedLoading()
+						if(res.code==1){
+							that.allData = JSON.parse(JSON.stringify(res.data))
+							if(that.type!="edit"){
+								that.allData.good_list = that.allData.good_list.slice(0,6)
+							}
+						}else{
+							vant.Toast(res.msg)
+						}
+					})
+				},
+				getSendMess(id){         //某个练习的 发布的学生和班级信息   -编辑用
+					var that = this;
+					ajax("teacher/Teachertask/getTaskPublisObj",'POST',{task_publish_id:id},function(res){
+						if(res.code==1){
+							that.edIdt = res.data
+						}
+					})
+				},
+				goback(){
+					if(this.phone=="yes"){
+						AndroidRouter("closePage","")
+					}else{
+						history.go(-1)
+					}
+				},
+				goNext(){         //发布打卡
+					var datas = this.allData.task_info
+					var postData = {
+						task_id:datas.task_id,
+						check:1,
+						is_comment:0,
+						end_date:"",
+						classes_ids:[],
+						classes_ids_name:[],
+						students:[],
+						students_name:[],
+						task_list:[{txt:this.allData.task_info.task_name,end_date:""}]
+					}
+					localStorage.setItem('sendData',JSON.stringify(postData))
+					location.href = "IssuePunch.html?status_type="+this.status
+				},
+				delets(){             //删除
+					this.show = true
+				},
+				removes(bool){          
+					this.show = bool
+				},
+				deleOver(){			//确定移除
+					this.removes(false)
+					var urls = 'teacher/Teachertask/deletePracticePublish'
+					var objs = {
+						task_publish_id:this.task_id
+					}
+					var that = this;
+					ajax(urls,'POST',objs,function(res){
+						vant.Toast(res.msg)
+						if(res.code==1){
+							if(that.phone=="yes"){
+								setTimeout(function(){
+									AndroidRouter("closePage","")
+								},700)
+							}else{
+								setTimeout(function(){
+									history.go(-1)
+								},700)
+							}
+						}
+					})
+				},
+				eqdios(){      //编辑
+					var datass = this.allData.task_info
+					var postData = {
+						task_name:datass.name,
+						form:datass.form,
+						form_name:datass.form_name,
+						is_system:datass.is_system,
+						is_main:datass.is_main,
+						cover_img:datass.cover_img_id,
+						cover_imgss:datass.cover_img,
+						content:datass.content,
+						content_images:[],
+						content_images_arr:[],
+						task_tag_id:datass.task_tag_id,
+						task_tag_name:datass.tag_name,
+						end_date:datass.end_date,
+						is_comment:datass.is_comment,
+						syn_school:datass.syn_school,
+						attachment:[],
+						attachment_arr:[],
+						grade_id:datass.grade_id,
+						grade_name:datass.grade_name,
+						task_list:[{txt:datass.name,end_date:datass.end_date}],
+						check:1,
+						task_publish_id:this.task_id,
+						classes_ids:[],
+						classes_ids_name:[],
+						students:[],
+						students_name:[]
+					}
+					datass.content_images.forEach(function(it){
+						postData.content_images.push(it.id)
+						postData.content_images_arr.push({url:it.path})
+					})
+					datass.attachment.forEach(function(it){
+						postData.attachment.push(it.id)
+						postData.attachment_arr.push({coverPath:it.other_path,url:it.id,videoPath:it.path})
+					})
+					if(this.edIdt.student_or_class==1){          //发布时选择的班级
+						postData.check = 1
+						this.edIdt.classes_arr.forEach(function(it){
+							postData.classes_ids.push(it.class_id)
+							postData.classes_ids_name.push(it.class_name)
+						})
+					}else{										 //发布时选择的学生
+						postData.check = 2
+						this.edIdt.student_arr.forEach(function(it){
+							postData.students.push(it.classes_student_id)
+						})
+						postData.students_name = this.edIdt.student_arr
+					}
+					localStorage.setItem("sendData",JSON.stringify(postData))
+					location.href = "mys/IndependentAddition.html?status_type=edit"
+				}
+		    }
+		});
+	</script>
+</html>

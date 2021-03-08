@@ -1,0 +1,194 @@
+.content {
+    width: 100%;
+    padding-top: 1rem;
+    box-sizing: border-box;
+}
+
+.boxPadd {
+    width: 100%;
+    padding: 0 0.3rem 1.2rem;
+    box-sizing: border-box;
+}
+
+.top {
+    width: 100%;
+    padding: 0.265rem 0.3rem;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 111;
+    background: #ffffff;
+}
+
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topImg {
+    width: 0.4rem;
+    height: 0.4rem;
+}
+
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.mainTop {
+    padding-bottom: 0.3rem;
+    border-bottom: 0.2rem solid #F5F5F5;
+}
+
+.mainTop_title {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.mainTop_title_text {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.mainTop_title_tag {
+    width: 1.3rem;
+    height: 0.36rem;
+    border: 1px solid rgba(46, 197, 224, 1);
+    margin-left: 0.18rem;
+    border-radius: 0.18rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.24rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(46, 197, 224, 1);
+    line-height: 0.36rem;
+    font-family: 'miui';
+    flex-shrink: 0;
+	vertical-align: top;
+	margin-top: 0.03rem;
+	transform:scale(0.98);
+}
+
+.mainTop_text {
+    margin: 0.46rem 0 0.54rem;
+    font-size: 0.28rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+    line-height: 0.44rem;
+}
+
+.mainTop_footer {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.24rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(102, 102, 102, 1);
+    line-height: 0.36rem;
+}
+
+.list {
+    padding-top: 0.26rem;
+}
+
+.item_top {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.item_top_left {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.item_top_right,
+.item_top_rights {
+    width: 1.7rem;
+    height: 0.56rem;
+    background: url('../../images/student/pic_vote_02.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.item_top_rights {
+    background: url('../../images/student/pic_voted_02.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+}
+
+.item_top_right img,
+.item_top_rights img {
+    width: 0.28rem;
+    height: 0.28rem;
+    margin-right: 0.12rem;
+}
+
+.item_top_rightBox {
+    display: flex;
+    align-items: center;
+}
+
+.item_top_right_text,
+.item_top_rights_text {
+    font-size: 0.28rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(255, 255, 255, 1);
+}
+
+.item_top_rights_text {
+    font-weight: 500;
+}
+
+.item_main {
+    margin: 0.42rem 0 0.38rem;
+    font-size: 0.28rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(102, 102, 102, 1);
+    line-height: 0.44rem;
+}
+
+.item_img {
+    width: 2rem;
+    height: 2rem;
+    margin-bottom: 0.7rem;
+    border-radius: 0.1rem;
+}
+
+.item_img img {
+    width: 100%;
+    height: 100%;
+}
+.footer{
+    width: 100%;
+    height: 1.2rem;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 111;
+}
+.footer img{
+    width: 7.5rem;
+    height: 1.2rem;
+}

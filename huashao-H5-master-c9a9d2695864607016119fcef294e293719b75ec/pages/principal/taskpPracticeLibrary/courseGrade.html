@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年级选择</title>
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/principal/l_courseType.css">
+</head>
+
+<body>
+    <div id="box" class="gradeSele" v-cloak>
+        <div class="fixed">
+            <div class="head_top" style="position: relative;">
+                <div class="head_topBox">
+                    <img class="head_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+                    <div class="head_topTitle">年级选择</div>
+                    <div class="head_topImg"></div>
+                </div>
+            </div>
+        </div>
+        <div class="th_padd lists" v-cloak>
+            <div class="danshen" v-for="(item,index) in lists" :key="index" @click="goClassName(item)">{{item.name}}
+            </div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#box',
+        data() {
+            return {
+                postData: {
+                    search: "",
+                    is_system: "",
+                    pid: ""
+                },
+                lists: [],
+                names: ""
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("id")
+            var is_system = GetQueryValue("is_system")
+            var names = GetQueryValue("name")
+            this.postData.is_system = is_system
+            this.postData.pid = id
+            this.names = names;
+            this.$refs.loadings.openLoading();
+            this.getDatas()
+        },
+        methods: {
+            getDatas() {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../../images/loading.gif"
+                // });
+                var that = this;
+                ajax("school/course/course_list", 'POST', this.postData, function(res) {
+                    if (res.code == 1) {
+                        res.data.list.forEach(function(item) {
+                            item.name = item.name + item.num;
+                        });
+                        that.lists = res.data.list;
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                    // vant.Toast.clear();
+                    that.$refs.loadings.closedLoading();
+                })
+            },
+            goback() {
+                history.go(-1)
+            },
+            goClassName(item) { //课时名称
+                var names = this.names + "/" + item.name;
+                let dataVal = JSON.parse(localStorage.getItem('dataVal'));
+                dataVal.courseId = item.course_id;
+                dataVal.courseType = names;
+                localStorage.setItem('dataVal', JSON.stringify(dataVal))
+                if (item.is_child == 0) {
+                    history.go(-3);
+                } else {
+                    location.href = "./courseClassName.html?id=" + item.course_id + "&is_system=" + this.postData.is_system + "&name=" + names
+                }
+                // if(item.level!=4){
+                // 	location.href = "./courseClassName.html?id="+item.course_id+"&is_system="+this.postData.is_system+"&name="+names
+                // }else{
+                // 	var postData = JSON.parse(localStorage.getItem('sendData'))
+                // 	postData.course_id = item.id
+                // 	postData.course_name = names
+                // 	postData.is_system = item.is_system
+                // 	postData.is_main = item.is_main
+                // 	localStorage.setItem('sendData',JSON.stringify(postData))
+                // 	history.go(-3)
+                // }
+            }
+        }
+    });
+</script>
+
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>作业通知</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/jobNotice.css">
+</head>
+
+<body>
+    <div id="jobNotice" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">作业通知</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="list">
+            <van-pull-refresh class="mainList" v-model="isLoading" success-text="刷新成功" @refresh="onRefresh">
+                <van-list v-model="isUpLoading" :finished="upFinished" v-if="listData.length > 0" @load="onupLoad" :offset="offset" :immediate-check='check'>
+                    <div class="item" v-for="item in listData">
+                        <div class="item_top">{{item.create_time}}</div>
+                        <div class="item_main" @click="goInfo(item.datas)">
+                            <!-- <div class="item_main_title">作业通知</div> -->
+                            <div class="item_main_text">{{item.datas.content}}</div>
+                        </div>
+                    </div>
+                </van-list>
+                <div class="noNotice" v-if="isShow">
+                    <div class="noNotice_main">
+                        <img src="../../images/student/noNotice.png" alt="">
+                        <div>暂无通知...</div>
+                    </div>
+                </div>
+            </van-pull-refresh>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+            $('.mainList').css('minHeight', $(window).height() - 100 + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#jobNotice',
+        data() {
+            return {
+                typeVal: '',
+                isShow: false,
+                check: false,
+                pageNo: 1,
+                pageSize: 5,
+                total: '',
+                listData: [],
+                isLoading: false,
+                isUpLoading: false,
+                upFinished: false, //上拉加载完毕
+                offset: 100, //滚动条与底部距离小于 offset 时触发load事件
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("type");
+            this.typeVal = id;
+            this.$refs.loadings.openLoading();
+            this.getMsgList(this.pageNo, this.pageSize, id)
+        },
+        methods: {
+            goBack() {
+                // history.go(-1);
+                AndroidRouter('closePage', '')
+            },
+            goInfo(val) {
+                if (val.type == 1) {
+                    location.href = './workTopics.html?id=' + val.student_task_id + '&goback=true';
+                } else {
+                    location.href = './teacherComments.html?id=' + val.student_task_opus_id + '&goback=true';
+                }
+            },
+            onRefresh() {
+                this.isLoading = true;
+                this.upFinished = false;
+                this.pageNo = 1;
+                this.listData = [];
+                this.getMsgList(this.pageNo, this.pageSize, this.typeVal)
+            },
+            onupLoad() { // 上拉调用此函数
+                // e.stopPropagation();
+                this.isUpLoading = false;
+                // this.upFinished = false;
+                this.pageNo++;
+                // this.$refs.loadings.openLoading();
+                this.getMsgList(this.pageNo, this.pageSize, this.typeVal)
+
+            },
+            getMsgList(pageNo, pageSize, type) {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                let that = this;
+                ajax('student/msg/msg_list', "POST", {
+                    "page_no": pageNo,
+                    "page_size": pageSize,
+                    "type": type
+                }, function(res) {
+                    if (res.code == 1) {
+                        let rows = res.data.list; //请求返回当页的列表
+                        that.isUpLoading = false;
+                        that.total = res.data.total;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        if (rows == null || rows.length === 0) {
+                            // 加载结束
+                            this.upFinished = true;
+                            if (that.listData.length < 1) {
+                                that.isShow = true;
+                            } else {
+                                that.isShow = false;
+                            }
+                            return false;
+                        }
+                        if (pageNo == 1) {
+                            that.listData = rows;
+                        } else {
+
+                            that.listData = that.listData.concat(rows);
+                        }
+                        if (that.listData.length >= that.total) {
+                            that.upFinished = true;
+                        }
+                        if (that.listData.length < 1) {
+                            that.isShow = true;
+                        } else {
+                            that.isShow = false;
+                        }
+                    }
+                    that.isLoading = false;
+                    // that.isUpLoading = false;
+                    // that.upFinished = true;
+                })
+            },
+            goUserInfo(id, type) {
+                location.href = './otherPrincipalPage.html?id=' + id + '&type=' + type + '&goback=true';
+            },
+            //点击关注
+            goFollow(id, type) {
+                let that = this;
+                ajax('student/student/follow_add', "POST", {
+                    "v_id": id,
+                    "v_type": type
+                }, function(res) {
+                    if (res.code == 1) {
+                        // that.getMsgList(that.pageNo, that.pageSize, type);
+                        vant.Toast(res.msg)
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                })
+            }
+        }
+    });
+</script>
+
+</html>

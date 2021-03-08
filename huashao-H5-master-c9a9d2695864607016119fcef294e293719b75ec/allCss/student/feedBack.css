@@ -1,0 +1,139 @@
+#feedBack {
+    width: 100%;
+    padding: 1rem 0.3rem 0;
+    box-sizing: border-box;
+}
+
+.top {
+    width: 100%;
+    padding: 0.265rem 0.3rem;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 111;
+    background: #ffffff;
+    border-bottom: 0.01rem solid #F5F5F5;
+}
+
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topImg {
+    width: 0.4rem;
+    height: 0.4rem;
+}
+
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.main {
+    padding: 0.2rem 0 0.3rem;
+    box-sizing: border-box;
+}
+
+.main_title {
+    width: 100%;
+    margin: 0.4rem 0 0.6rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.3rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+    line-height: 0.3rem;
+}
+
+.main_title img {
+    width: 0.34rem;
+    height: 0.34rem;
+    margin-right: 0.18rem;
+}
+
+
+/* .main_img{
+    margin-top: 0.2rem;
+    flex-wrap: wrap;
+    display: flex;
+}
+.main_img>div{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.main_img img {
+    width: 1.54rem;
+    height: 1.54rem;
+    margin-right: 0.1rem;
+    margin-bottom: 0.1rem;
+} */
+
+.main_img {
+    margin-top: 0.2rem;
+    flex-wrap: wrap;
+    display: flex;
+}
+
+.main_img>div {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.main_img img {
+    width: 1.54rem;
+    height: 1.54rem;
+    margin-right: 0.1rem;
+    margin-bottom: 0.1rem;
+    border-radius: 0.1rem;
+}
+
+.main_img>div>div {
+    width: 1.54rem;
+    height: 1.54rem;
+    position: relative;
+    margin: 0 0.39rem 0.3rem 0;
+}
+
+.main_img>div>div>.dele {
+    width: 0.4rem;
+    height: 0.4rem;
+    position: absolute;
+    top: -0.2rem;
+    right: -0.2rem;
+}
+
+.main_btn_box {
+    width: 100%;
+    margin-top: 0.98rem;
+    padding: 0.2rem 0.3rem;
+    box-sizing: border-box;
+    /* position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 11; */
+}
+
+.main_btn {
+    width: 100%;
+    height: 0.94rem;
+    /* margin-top: 0.98rem; */
+    background: url('../../images/student/Button_publish.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(255, 255, 255, 1);
+}

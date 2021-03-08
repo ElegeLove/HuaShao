@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>作业标题</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/workTopic.css">
+</head>
+
+<body>
+    <div id="workTopic" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">{{dataVal.task_form_text}}<span>作业</span></div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="topPic">
+            <img :src="dataVal.cover_img" alt="">
+            <div class="topPic_icon">
+                <div>
+                    <img v-if="dataVal.task_form==1" src="../../images/student/Ic_pic_03.png" alt="">
+                    <img v-if="dataVal.task_form==2" src="../../images/student/Ic_audio_03.png" alt="">
+                    <img v-if="dataVal.task_form==3" src="../../images/student/Ic_video_03.png" alt="">
+                    <div>{{dataVal.task_form_text}}<span>练习</span>&nbsp;&nbsp;{{dataVal.create_time}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="main_title">
+            <div class="main_title_text">{{dataVal.opus_name}}</div>
+            <div class="main_title_tag" v-if="dataVal.tag_name != ''">{{dataVal.tag_name}}</div>
+        </div>
+        <div class="main_content">
+            <div class="main_content_title">{{dataVal.content}}</div>
+            <div v-for="item in dataVal.attachment">
+                <img v-if="item.other_path == ''" class="main_content_img" :src="item.path" alt="">
+                <div v-else class="main_content_video">
+                    <img class="main_content_video_img" :src="item.other_path" alt="">
+                    <img class="main_content_video_play" src="../../images/student/Icon_pause_02.png" alt="">
+                </div>
+            </div>
+            <div class="main_content_btn" @click="showDetails">查看作业作品</div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#workTopic',
+        data() {
+            return {
+                dataVal: {}
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("id");
+            vant.Toast.loading({
+                message: '',
+                forbidClick: true,
+                loadingType: 'spinner',
+                duration: 0,
+                icon: "../../images/loading.gif"
+            });
+            let that = this;
+            ajax('student/task/student_task_opus', "POST", {
+                "student_task_id": id
+            }, function(res) {
+                if (res.code == 1) {
+                    that.dataVal = res.data.result;
+                    vant.Toast.clear();
+                    // that.show = true;
+                }
+            })
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+                // AndroidRouter('closePage', '')
+            },
+            showDetails() {
+                AndroidRouter('closePage', '', function(res) {
+                    console.log(res)
+                })
+            }
+        }
+    });
+</script>
+
+</html>

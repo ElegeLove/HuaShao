@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>荣誉明细</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/honorDetails.css">
+</head>
+
+<body>
+    <div id="honorDetails" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">荣誉明细</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div>
+            <van-pull-refresh class="mainScoll" v-model="isLoading" success-text="刷新成功" @refresh="onRefresh">
+                <van-list v-model="isUpLoading" v-if="listData.length > 0" :finished="upFinished" @load="onupLoad" :offset="offset" :immediate-check='check'>
+                    <div class="items" v-for="item in listData">
+                        <div class="items_left">{{item.content}}</div>
+                        <div class="items_right">{{item.create_time}}</div>
+                    </div>
+                </van-list>
+                <div v-if="isShow" class="nullData">
+                    <div>
+                        <img src="../../images/student/null.png" alt="">
+                        <div>暂无数据</div>
+                    </div>
+                </div>
+            </van-pull-refresh>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+            $('.mainScoll').css('minHeight', $(window).height() - 120 + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#honorDetails',
+        data() {
+            return {
+                // listData: [
+                //     { text: '“作业名称”被推荐评优', timer: '2019.05.25 18:00' },
+                //     { text: '“作业名称”被推荐评优', timer: '2019.05.25 18:00' },
+                //     { text: '“作业名称”被推荐评优', timer: '2019.05.25 18:00' },
+                //     { text: '“作业名称”被推荐评优', timer: '2019.05.25 18:00' },
+                //     { text: '“作业名称”被推荐评优', timer: '2019.05.25 18:00' },
+                //     { text: '“作业名称”被推荐评优', timer: '2019.05.25 18:00' },
+                //     { text: '“作业名称”被推荐评优', timer: '2019.05.25 18:00' }
+                // ],
+                listData: [],
+                pageNo: 1,
+                pageSize: 5,
+                total: '',
+                isShow: false,
+                check: false,
+                isLoading: false,
+                isUpLoading: false,
+                upFinished: false, //上拉加载完毕
+                offset: 100, //滚动条与底部距离小于 offset 时触发load事件
+                type: 1,
+                activeIndex: ''
+            }
+        },
+        mounted() {
+            var type = parseInt(GetQueryValue("type"));
+            this.type = type;
+            if (type == 1) {
+                this.activeIndex = 'medal';
+            } else if (type == 2) {
+                this.activeIndex = 'star';
+            } else {
+                this.activeIndex = 'flower';
+            }
+            // 监听原生返回事件
+            // if (window.history && window.history.pushState) {
+            //     history.pushState(null, null, document.URL);
+            //     window.addEventListener('popstate', this.fun, false); //false阻止默认事件
+            // }
+            this.$refs.loadings.openLoading();
+            this.getHonorInfo(this.pageNo, this.pageSize, type)
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+                // AndroidRouter('closePage', '');
+            },
+            // fun() {
+            //     this.goBack();
+            // },
+            onRefresh() {
+                this.isLoading = true;
+                this.upFinished = false;
+                this.pageNo = 1;
+                this.listData = [];
+                this.getHonorInfo(this.pageNo, this.pageSize, this.type);
+            },
+            onupLoad() { // 上拉调用此函数
+                // e.stopPropagation();
+                this.isUpLoading = false;
+                // this.upFinished = false;
+                this.pageNo++;
+                // this.$refs.loadings.openLoading();
+                this.getHonorInfo(this.pageNo, this.pageSize, this.type);
+
+            },
+            getHonorInfo(pageNo, pageSize, type) {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                let that = this;
+                ajax('student/honor/honer_log_list', "POST", {
+                    "page_no": pageNo,
+                    "page_size": pageSize,
+                    "type": type
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.dataVal = res.data.result
+                        let rows = res.data.list; //请求返回当页的列表
+                        that.isUpLoading = false;
+                        that.total = res.data.total;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        if (rows == null || rows.length === 0) {
+                            // 加载结束
+                            that.upFinished = true;
+                            if (that.listData.length < 1) {
+                                that.isShow = true;
+                            } else {
+                                that.isShow = false;
+                            }
+                            return false;
+                        }
+                        if (pageNo == 1) {
+                            that.listData = rows;
+                        } else {
+
+                            that.listData = that.listData.concat(rows);
+                        }
+                        if (that.listData.length >= that.total) {
+                            that.upFinished = true;
+                        }
+                        if (that.listData.length < 1) {
+                            that.isShow = true;
+                        } else {
+                            that.isShow = false;
+                        }
+                    }
+                    that.isLoading = false;
+                })
+            }
+        }
+    });
+</script>
+
+</html>

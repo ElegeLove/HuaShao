@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>投票活动</title>
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/teacher/votingActivity.css">
+</head>
+
+<body>
+    <div id="votingActivity" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../../images/student/icon_back.png" alt="">
+                <div class="topTitle">投票活动</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+		<form @submit.prevent="return false;">
+		<div class="searchBox">
+			<div class="ipts">
+				<input v-model="postData.keyword" @keyup.enter="searchers" @input="setIpts"/>
+				<div class="align_items" v-show="postData.keyword==''">
+					<img src="../../../images/teacher/ic_search.png" />
+					<p>活动名称搜索</p>
+				</div>
+			</div>
+		</div>
+		</form>
+        <div class="main">
+           
+           <van-pull-refresh v-model="refreshing" @refresh="onRefresh" style="min-height: 90%;"  v-cloak >
+           	<van-list
+           	  v-model="loading"
+           	  :finished="finished"
+           	   :offset="10"
+           	   :immediate-check="false"
+           	    finished-text="已加载完毕"
+           	  @load="onLoad">
+                    <div class="main_item" v-for="(item,index) in listData" @click="goDetail(item.vote_id)">
+                        <img :src="item.cover_path" onerror="this.src = '../../../images/teacher/error.png'" v-lazy="item.cover_path"/>
+                        <div class="main_item_text">{{item.title}}</div>
+                        <div class="main_footer">
+                            <div>参与：{{item.join_start_time}} - {{item.join_end_time}}</div>
+                            <div>投票：{{item.vote_start_time}} - {{item.vote_end_time}}</div>
+                        </div>
+                    </div>
+                </van-list>
+            </van-pull-refresh>
+        </div>
+		<loadings ref="loadings"/>
+    </div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#votingActivity',
+        data() {
+            return {
+				postData:{
+					keyword: "",
+					page:1
+				},
+                check: false,
+                listData: [],
+				//下拉刷新与加载
+				loading: false,
+				finished: false,
+				refreshing: false,
+            }
+        },
+        mounted() {
+           this.getLists()
+        },
+        methods: {
+			setIpts(e){
+				this.postData.keyword = e.target.value
+			},
+            goBack() {
+				AndroidRouter("closePage","")
+                // history.go(-1);
+            },
+            onLoad() {        //上拉加载
+              this.postData.page++
+              this.getLists()
+            },
+			onRefresh(){
+				this.finished = false;
+				this.loading = true;
+				this.xingCheck()
+			},
+			searchers(){       //搜索
+				this.loading = false
+				this.finished = false
+				this.refreshing = false
+				this.xingCheck()
+			},
+			xingCheck(){
+				this.postData.page = 1;
+				this.getLists()
+			},
+			getLists(){
+				if(this.postData.page==1){
+					this.$refs.loadings.openLoading()
+				}
+				var that = this;
+				ajax("teacher/Vote/voteList",'POST',this.postData,function(res){
+					that.loading = false
+					that.$refs.loadings.closedLoading()
+					if(res.code==1){
+						that.loading = false
+						that.refreshing = false
+						if(res.data.list.length==0){
+						  that.finished = true
+						  if(that.postData.page==1){
+							   that.listData = []
+						  }
+						  return false
+						}
+						if(that.postData.page==1){
+						  that.listData = res.data.list
+						}else{
+						  that.listData = that.listData.concat(res.data.list)
+						}
+					}
+				})
+			},
+            goDetail(id) {
+                location.href = './activityDetails.html?id='+id;
+            }
+        }
+    });
+</script>
+
+</html>

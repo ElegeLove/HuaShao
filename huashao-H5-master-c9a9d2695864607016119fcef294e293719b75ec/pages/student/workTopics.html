@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>完成作业标题</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/workTopics.css">
+</head>
+
+<body>
+    <div id="workTopics" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">{{dataVal.task_info.form_text}}作业</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="topPic">
+            <img :src="dataVal.task_info.cover_img_path" alt="">
+            <div class="topPic_icon">
+                <div>
+                    <img v-if="dataVal.task_info.form==1" src="../../images/student/Ic_pic_03.png" alt="">
+                    <img v-if="dataVal.task_info.form==2" src="../../images/student/Ic_audio_03.png" alt="">
+                    <img v-if="dataVal.task_info.form==3" src="../../images/student/Ic_video_03.png" alt="">
+                    <div>{{dataVal.task_info.form_text}}<span>练习</span>&nbsp;&nbsp;{{dataVal.create_time}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="main_title" v-cloak>
+            <!-- <div class="main_title_text">{{dataVal.task_info.name}}</div>
+            <div class="main_title_tag" v-if="dataVal.task_info.tag_name != ''">{{dataVal.task_info.tag_name}}</div> -->
+            <div>{{dataVal.task_info.name}}
+                <p v-for="item in dataVal.task_info.job_tag">
+                    {{item}}</p>
+            </div>
+        </div>
+        <div class="main_content">
+            <div class="main_content_title">{{dataVal.task_info.content}}</div>
+            <div v-if="dataVal.content_images && dataVal.content_images != ''">
+                <img class="main_content_img" v-for="item in dataVal.content_images" :src="item.path" alt="">
+            </div>
+            <div v-for="item in dataVal.attachment">
+                <img v-if="item.other_path == ''" class="main_content_img" :src="item.path" alt="">
+                <div v-else class="main_content_video">
+                    <img class="main_content_video_img" :src="item.other_path" alt="">
+                    <img class="main_content_video_play" @click="playVideo(dataVal.task_info.name,item.path)" src="../../images/student/Icon_pause_02.png" alt="">
+                </div>
+            </div>
+            <div v-if="isList && studentList.length > 0 && dataVal.status==1">
+                <div class="main_content_finished">已完成作业学员</div>
+                <div class="main_content_list">
+                    <div>
+                        <div class="main_content_list_item" v-for="item in studentList" @click="showWolrds(dataVal.task_info.name,dataVal.task_info.form,item)">
+                            <img :src="item.head" alt="">
+                            <div>{{item.student_name}}</div>
+                        </div>
+                        <!-- <div class="main_content_list_item">
+                        <img src="../../images/student/pic_222.png" alt="">
+                        <div>依依</div>
+                    </div>
+                    <div class="main_content_list_item">
+                        <img src="../../images/student/pic_333.png" alt="">
+                        <div>尔尔</div>
+                    </div>
+                    <div class="main_content_list_item">
+                        <img src="../../images/student/pic_444.png" alt="">
+                        <div>三三</div>
+                    </div>
+                    <div class="main_content_list_item">
+                        <img src="../../images/student/pic_555.png" alt="">
+                        <div>思思</div>
+                    </div> -->
+                    </div>
+                    <img @click="goStudentList(dataVal.task_info.form,dataVal.task_info.name)" src="../../images/student/ic_jt.png" alt="">
+                </div>
+            </div>
+            <!-- <div class="main_content_titles_box" v-if="dataVal.task_info.comment_standard && dataVal.task_info.comment_standard != ''">
+                <div class="main_content_titles">点评标准：</div>
+                <div class="main_content_titles_text">{{dataVal.task_info.comment_standard}}
+                </div>
+            </div> -->
+            <div class="main_content_btnBox">
+                <!-- <div class="main_content_btn" v-if="dataVal.status==0" @click="goFinishWolrd(dataVal.task_info.form,dataVal.student_task_id,dataVal.is_overdue,dataVal.time_length)">去完成作业</div> -->
+                <div class="main_content_btn" v-if="dataVal.status==0" @click="goFinishWolrd(dataVal)">去完成作业</div>
+                <div class="main_content_btn" v-if="dataVal.status==1" @click="showWolrd(dataVal.task_info.name,dataVal.task_info.form,dataVal.student_task_id,dataVal.is_review)">
+                    查看作业作品
+                </div>
+            </div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#workTopics',
+        data() {
+            return {
+                dataVal: {
+                    task_info: {
+                        form_text: ''
+                    }
+                },
+                taskId: '',
+                active: 0,
+                studentList: [],
+                isList: true,
+                goback: false,
+                closeType: false,
+                is_review: 0
+            }
+        },
+        mounted() {
+            if (GetQueryValue("isList")) {
+                this.isList = GetQueryValue("isList");
+            } else {
+                this.isList = true;
+            }
+            var id = GetQueryValue("id");
+            this.goback = GetQueryValue("goback");
+            this.task_id = id;
+            var active = GetQueryValue("active");
+            this.active = active;
+            var closeType = GetQueryValue("closeType");
+            this.closeType = closeType;
+            this.$refs.loadings.openLoading();
+            this.getInfo(id);
+            // let that = this;
+            // ajax('student/task/student_task_info', "POST", {
+            //     student_task_id: id
+            // }, (res) => {
+            //     if (res.code == 1) {
+            //         if (res.data.result.task_form == 0) {
+            //             res.data.result.task_form = 1;
+            //         }
+            //         that.dataVal = res.data.result;
+            //         that.taskId = res.data.result.task_id;
+            //         ajax('student/task/complete_task_student_list', "POST", {
+            //             task_id: res.data.result.task_id
+            //         }, (ress) => {
+            //             if (res.code == 1) {
+            //                 that.studentList = [];
+            //                 ress.data.list.forEach((item, i) => {
+            //                     if (i <= 5) {
+            //                         that.studentList.push(item)
+            //                     }
+            //                 });
+            //                 vant.Toast.clear();
+            //             }
+            //         })
+            //     }
+            // })
+
+        },
+        methods: {
+            goBack() {
+                // history.go(-1);
+                if (this.closeType) {
+                    AndroidRouter('closePage', "")
+                } else {
+                    if (this.goback) {
+                        history.go(-1);
+                    } else {
+                        AndroidRouter('closePage', '');
+                    }
+                }
+
+            },
+            goStudentList(i, name) {
+                location.href = './finishedStudent.html?id=' + this.taskId + '&type=' + i + '&name=' + name + '&isList=' + this.isList;
+            },
+            getInfo(id) {
+                let that = this;
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                ajax('student/task/student_task_info', "POST", {
+                    student_task_id: id
+                }, function(res) {
+                    if (res.code == 1) {
+                        if (res.data.result.task_form == 0) {
+                            res.data.result.task_form = 1;
+                        }
+                        that.dataVal = res.data.result;
+                        that.taskId = res.data.result.task_publish_id;
+                        ajax('student/task/complete_task_student_list', "POST", {
+                            task_publish_id: res.data.result.task_publish_id
+                        }, function(ress) {
+                            if (res.code == 1) {
+                                that.studentList = [];
+                                ress.data.list.forEach(function(item, i) {
+                                    if (i <= 5) {
+                                        that.studentList.push(item)
+                                    }
+                                });
+                                // vant.Toast.clear();
+                                that.$refs.loadings.closedLoading();
+                            }
+                        })
+                    }
+                })
+            },
+            // 视频播放
+            playVideo(name, url) {
+                let data = {
+                    "title": name,
+                    "path": url
+                }
+                AndroidRouter('playVideo', JSON.stringify(data))
+            },
+            // goInfo(i, id) {
+            //     if (i == 1) {
+            //         location.href = './workDetailsImgText.html?id=' + id;
+            //     }
+            // },
+            //完成作业
+            goFinishWolrd(val) {
+                // dataVal.task_info.form,dataVal.student_task_id,dataVal.is_overdue,dataVal.time_length
+                // i, id, start, time
+                if (val.is_overdue == 0) {
+                    let type = '';
+                    if (val.task_info.form == 1) {
+                        type = 3;
+                        // location.href = './finishWork.html?id=' + id;
+                    } else if (val.task_info.form == 2) {
+                        type = 2;
+                    } else if (val.task_info.form == 3) {
+                        type = 1;
+                    }
+                    let imgPath = '';
+                    if (val.content_images && val.content_images[0].path) {
+                        imgPath = val.content_images[0].path;
+                    }
+                    AndroidRouter('goStuWorkSign', JSON.stringify({
+                        "work_type": type,
+                        "student_task_id": val.student_task_id,
+                        "is_sign": 0,
+                        "max_duration": val.time_length,
+                        'cover': imgPath
+                    }), this.clockInFilsh, "set_goStuWorkSign")
+                } else {
+                    vant.Toast('该作业已过完成时间')
+                }
+            },
+            clockInFilsh(res) {
+                this.getInfo(this.task_id);
+            },
+            //查看作业
+            showWolrd(name, i, id, i2) {
+                if (i == 1) {
+                    location.href = './workDetailsImgText.html?id=' + id + '&review=' + i2;
+                } else {
+                    let type = '';
+                    if (i == 2) {
+                        type = 2;
+                    } else {
+                        type = 1;
+                    }
+                    let is_show = 0;
+                    if (this.isList) {
+                        is_show = 1;
+                    }
+                    let data = {
+                        title: name, //'页面标题'
+                        student_task_id: id, //'服务器返回的student_task_id'
+                        work_type: type, //'1视频打卡,2音频打卡'
+                        // is_comment_work: i2,//'是否是点评作业，1是（界面上只显示点评作业的按钮，下面其它参数将无效）'
+                        has_delete_btn: 1, //'是否有删除按钮， 1显示（只对学生端有效，教师端不显示）'
+                        has_tea_comment_btn: i2, //'是否有教师点评按钮， 1显示'
+                        has_work_title_btn: 1, //'是否有作业题目按钮， 1显示'
+                        is_show_student_list: is_show, //'是否显示已完成作业学员列表， 1显示'
+                    }
+                    AndroidRouter('goStuWorkDetail', JSON.stringify(data), this.workFilsh);
+                }
+            },
+            //查看作业
+            showWolrds(name, i, val) {
+                ajax('student/task/student_task_opus', "POST", {
+                    student_task_id: id
+                }, function(res) {
+                    if (res.code == 1) {
+                        // that.is_review = res.data.result.is_review;
+                        if (val.is_look == 1) {
+                            if (i == 1) {
+                                location.href = './workDetailsImgText.html?id=' + val.student_task_id + '&review=' + res.data.result.is_review;
+                            } else {
+                                let type = '';
+                                if (i == 2) {
+                                    type = 2;
+                                } else {
+                                    type = 1;
+                                }
+                                let is_show = 0;
+                                if (this.isList) {
+                                    is_show = 1;
+                                }
+                                let data = {
+                                    title: name, //'页面标题'
+                                    student_task_id: val.student_task_id, //'服务器返回的student_task_id'
+                                    work_type: type, //'1视频打卡,2音频打卡'
+                                    // is_comment_work: val.is_review,//'是否是点评作业，1是（界面上只显示点评作业的按钮，下面其它参数将无效）'
+                                    has_delete_btn: 1, //'是否有删除按钮， 1显示（只对学生端有效，教师端不显示）'
+                                    has_tea_comment_btn: res.data.result.is_review, //'是否有教师点评按钮， 1显示'
+                                    has_work_title_btn: 1, //'是否有作业题目按钮， 1显示'
+                                    is_show_student_list: is_show, //'是否显示已完成作业学员列表， 1显示'
+                                }
+                                AndroidRouter('goStuWorkDetail', JSON.stringify(data), this.workFilsh);
+                            }
+                        } else {
+                            vant.Toast(val.show_range_text)
+                        }
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                })
+
+
+            },
+            workFilsh() {
+                this.getInfo(this.task_id);
+            },
+        }
+    });
+</script>
+
+</html>

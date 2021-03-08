@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title></title>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/teacher/homes.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak class="homes" ref="messagesContainer">
+			<van-pull-refresh v-model="refreshing" @refresh="onRefresh" style="min-height: 90%;"  v-cloak>
+				<div class="class">
+					<p>班级</p>
+					<div v-for="(item,index) in classList" @click="goaClassDetails(item)" class="lisyd">
+						<div class="allTtem_centers tops">
+							<img src="../../../images/teacher/Ic_class.png" />
+							<p class="danshen">{{item.classes_name}}</p>
+						</div>
+						<div class="allTtem_centers bots">
+							<div>
+								<p>{{item.student_num}}人</p>
+								<p>班级人数</p>
+							</div>
+							<div>
+								<p>{{item.task_num}}次</p>
+								<p>作业累计</p>
+							</div>
+						</div>
+					</div>
+					<div v-if="classList.length==0&&classLoad" class="emptyBoxs">
+						<img src="../../../images/teacher/emptyTw.png" />
+						<div>
+							<p>您还未加入班级，联系管理员加入班级吧</p>
+							<p>管理员电话：{{phone}}</p>
+						</div>
+					</div>
+				</div>
+				<div class="homeWork">
+					<p>进行中的作业</p>
+					<van-list
+					      v-model="loading"
+					      :finished="finished"
+					      :immediate-check="false"
+					      finished-text="已加载完毕"
+					      @load="onLoad"
+					      :offset="10"
+						  v-if="homeWorkList.length!==0"
+					    >
+							<div class="listBoxs">
+								<div class="list" v-for="(item,index) in homeWorkList" @click="goDetails(item)">
+									<div class="top">
+										<img :src="item.cover_img" onerror="this.src = '../../../images/teacher/error.png'"/>
+										<div>
+											<div class="class_tag danshen">
+											{{item.class_name}}
+											</div>
+											<div class="iconsd">
+												<img src="../../../images/teacher/Ic_audio.png" v-if="item.form==2"/>
+												<img src="../../../images/teacher/Ic_pic_03.png" v-if="item.form==1"/>
+												<img src="../../../images/teacher/Ic_video_03.png" v-if="item.form==3"/>
+											</div>
+											<p class="danshen"><span>布置{{item.student_num}}人</span><span>完成{{item.completet_num}}人</span></p>
+											<!-- <span class="add">添加至学校作业库</span> -->
+										</div>
+									</div>
+									<div class="bot">
+										<p class="moreshen">{{item.name}}</p>
+										<div class="align_items">
+											<img src="../../../images/teacher/ic_time.png" />
+											<p class="danshen">{{item.end_date}}截止</p>
+										</div>
+									</div>
+								</div>
+							</div>
+					 </van-list>
+					 <div v-if="homeWorkList.length==0&&homeLoad" class="emptyBoxs emptyBoxsTwo">
+					 	<img src="../../../images/teacher/emptyOn.png" />
+					 	<div v-if="classList.length==0">
+					 		<p>暂未有作业，联系管理员加入班级布置作业吧</p>
+					 		<p>管理员电话：{{phone}}</p>
+					 	</div>
+						<div v-if="classList.length!==0">
+							<p>暂未发布作业</p>
+						</div>
+					 </div>
+				</div>
+			</van-pull-refresh>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script src="../../../js/public/vant.js"></script>
+	<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					classList:[],        //班级列表
+					homeWorkList:[],        //作业列表
+					refreshing: false,
+					page:1,
+					loadsAll:false,
+					loading:false,
+					finished:false,
+					classLoad:false,        //班级接口是否请求完成
+					homeLoad:false,            //作业接口是否请求完成
+					phone:""
+	            }
+	        },
+			mounted(){
+				AndroidRouter('getUserInfo',"",this.setUserInfo,"setUserInfo")
+				// this.setUserInfo()
+			},
+	        methods: {
+				reloadPage(){         //重新加载
+					this.page = 1
+					this.loadsAll = false
+					this.loading = false
+					this.finished = false
+					this.classLoad = false      
+					this.homeLoad = false
+					this.refreshing = false
+					var that = this;
+					setTimeout(function(){
+						that.getClassList("noLoading")
+						that.getHomeWork()
+					},100)
+					 window.scrollTo (0, 0);
+				},
+				setOnBottomTabClick(){
+					this.reloadPage()
+					AndroidRouter('onBottomTabClick',1,this.setOnBottomTabClick,"setOnBottomTabClick")
+				},
+				setUserInfo(res){
+					localStorage.setItem("token",res)
+					this.getPhone()
+					this.getClassList()
+					this.getHomeWork()
+					AndroidRouter('onBottomTabClick',1,this.setOnBottomTabClick,"setOnBottomTabClick")
+				},
+				getPhone(){         //获取管理员电话
+					var that = this;
+					ajax("current/index/config",'POST',{identity:"admin_phone"},function(res){
+						if(res.code==1){
+							that.phone = res.data.result.value
+						}
+					})
+				},
+				onRefresh() {           //刷新
+				  this.getClassList()
+				  this.page = 1
+				  this.loadsAll = false
+				  this.loading = false
+				  this.finished = false
+				  this.homeWorkList = []
+				  var that = this;
+				  this.getHomeWork()
+				},
+				getClassList(status){           //获取班级列表
+					var postObj = {
+						get_student:"",
+						student_id:"",
+						student_name:""
+					}
+					var that = this;
+					if(this.page==1&&status!='noLoading'){
+						this.$refs.loadings.openLoading()
+					}
+					ajax("teacher/Teacher/TeacherClassessList",'POST',postObj,function(res){
+						if(that.page==1&&status!='noLoading'){
+							that.$refs.loadings.closedLoading()
+						}
+						that.classLoad = true
+						if(res.code==1){
+							that.refreshing = false;
+							if(res.code==1){
+								that.classList = res.data.list
+							}
+						}else{
+							that.classList = []
+						}
+					})
+				},
+				onLoad(){      //上拉加载
+				  this.page++
+				  this.getHomeWork()
+				},
+				getHomeWork(){
+					var that = this;
+					ajax("teacher/Teacher/TeacherTasking",'POST',{page:this.page},function(res){
+						that.homeLoad = true
+						that.loading = false;
+						if(res.code==1){
+							that.refreshing = false;
+							that.loadsAll = true;
+							var numData = JSON.parse(JSON.stringify(res.data))
+							if(numData.length==0){
+							  that.finished = true
+							  return false
+							}
+							if(that.page==1){
+							  that.homeWorkList = numData
+							}else{
+							  that.homeWorkList = that.homeWorkList.concat(numData)
+							}
+							that.loading = false;
+						}
+					})
+				},
+				closeCall(){         //返回自动刷新
+					this.reloadPage()
+				},
+				goaClassDetails(item){       //班级详情
+					localStorage.removeItem("primordial")
+					var urls = "teacher/home/homeDetails.html?id="+item.classes_id
+					AndroidRouter('onClosePage',"tea_home",this.closeCall,"get_closedCall")
+					AndroidRouter("newPage",urls)
+					// location.href = "homeDetails.html?id="+item.classes_id
+				},
+				goDetails(item){       //详情
+					localStorage.removeItem("primordial")
+					var urls = "teacher/index.html?id="+item.task_publish_id+"&status_type=2"
+					AndroidRouter('onClosePage',"tea_home",this.closeCall,"get_closedCall")
+					AndroidRouter("newPage",urls)
+					// location.href = "../index.html?id="+item.task_publish_id
+				}
+	        }
+	    });
+	</script>
+</html>

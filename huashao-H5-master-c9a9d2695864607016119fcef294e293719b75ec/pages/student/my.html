@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>我的</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/my.css">
+</head>
+
+<body>
+    <div id="my" v-cloak>
+        <van-pull-refresh v-model="refreshing" @refresh="onRefresh" v-cloak style="min-height:90%;">
+            <div class="top">
+                <div class="top_main" @click="goHome(dataVal.student_id)">
+                    <div class="top_main_left">
+                        <img :src="dataVal.head" alt="">
+                        <div class="top_main_left_right">
+                            <div>
+                                <div class="userName">{{dataVal.name}}</div>
+                                <div class="invite" @click="goInvite">邀请码</div>
+                            </div>
+                            <div @click="schoolInfo">
+                                <img src="../../images/student/icon_school.png" alt="">
+                                <div>{{dataVal.school.name}}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <img class="top_main_right" src="../../images/student/me_jt.png" alt="">
+                </div>
+            </div>
+            <div class="menuBox">
+                <div class="menuList">
+                    <div class="menuList_item" @click="goWolrk(dataVal.is_join_classes)">
+                        <div class="menuList_item_num">{{dataVal.task_num}}</div>
+                        <div class="menuList_item_text"><span>作业</span></div>
+                    </div>
+                    <!-- <div class="menuList_item" @click="newgongneng">
+                        <div class="menuList_item_num">{{dataVal.style_num}}</div>
+                        <div class="menuList_item_text"><span>风采</span></div>
+                    </div> -->
+                    <div class="menuList_item" @click="goCollection(dataVal.student_id)">
+                        <div class="menuList_item_num">{{dataVal.collection_num}}</div>
+                        <div class="menuList_item_text"><span>收藏</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="myHonor">
+                <div class="myHonor_title">
+                    <div class="myHonor_title_left">我的荣誉</div>
+                    <!-- <div class="myHonor_title_right" @click="goRule">
+                        <img src="../../images/student/Icon_rule.png" alt="">
+                        <div>规则</div>
+                    </div> -->
+                </div>
+                <div class="myHonor_main">
+                    <div @click="goMyHonor('medal',dataVal.is_join_classes)">
+                        <img src="../../images/student/Pic_medal.png" alt="">
+                        <div><span class="myHonor_main_left">评优奖章</span>&nbsp;<span class="myHonor_main_right">x</span><span class="myHonor_main_right">{{dataVal.medal_num}}</span>
+                        </div>
+                    </div>
+                    <div @click="goMyHonor('star',dataVal.is_join_classes)">
+                        <img src="../../images/student/Pic_star.png" alt="">
+                        <div><span class="myHonor_main_left">打卡之星</span>&nbsp;<span class="myHonor_main_right">x</span><span class="myHonor_main_right">{{dataVal.star_num}}</span>
+                        </div>
+                    </div>
+                    <div @click="goMyHonor('flower',dataVal.is_join_classes)">
+                        <img src="../../images/student/Pic_flower.png" alt="">
+                        <div><span class="myHonor_main_left">作业繁花</span>&nbsp;<span class="myHonor_main_right">x</span><span class="myHonor_main_right">{{dataVal.flower_num}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="list">
+                <!-- <div class="list_item" @click="newgongneng">
+                    <div class="list_item_left">
+                        <img src="../../images/student/Ic_balance.png" alt="">
+                        <div>钱包余额</div>
+                    </div>
+                    <div class="list_item_right">
+                        <div>&yen;&nbsp;<span>{{dataVal.balance}}</span></div>
+                        <img src="../../images/student/ic_jt.png" alt="">
+                    </div>
+                </div>
+                <div class="list_item" @click="newgongneng">
+                    <div class="list_item_left">
+                        <img src="../../images/student/Ic_record_my.png" alt="">
+                        <div>观看记录</div>
+                    </div>
+                    <div class="list_item_right">
+                        <img src="../../images/student/ic_jt.png" alt="">
+                    </div>
+                </div>
+                <div class="list_item" @click="newgongneng">
+                    <div class="list_item_left">
+                        <img src="../../images/student/Ic_video.png" alt="">
+                        <div>购买的视频</div>
+                    </div>
+                    <div class="list_item_right">
+                        <img src="../../images/student/ic_jt.png" alt="">
+                    </div>
+                </div>
+                <div class="list_item" @click="newgongneng">
+                    <div class="list_item_left">
+                        <img src="../../images/student/Ic_master_02.png" alt="">
+                        <div>大师课</div>
+                    </div>
+                    <div class="list_item_right">
+                        <img src="../../images/student/ic_jt.png" alt="">
+                    </div>
+                </div> -->
+                <div class="list_item" @click="goLibrary">
+                    <div class="list_item_left">
+                        <img src="../../images/student/Ic_dubbing.png" alt="">
+                        <div>配音库</div>
+                    </div>
+                    <div class="list_item_right">
+                        <img src="../../images/student/ic_jt.png" alt="">
+                    </div>
+                </div>
+                <div class="list_item" @click="goVote">
+                    <div class="list_item_left">
+                        <img src="../../images/student/Ic_vote.png" alt="">
+                        <div>投票活动</div>
+                    </div>
+                    <div class="list_item_right">
+                        <img src="../../images/student/ic_jt.png" alt="">
+                    </div>
+                </div>
+                <div class="list_item" @click="goFeedback">
+                    <div class="list_item_left">
+                        <img src="../../images/student/Ic_feedback.png" alt="">
+                        <div>意见反馈</div>
+                    </div>
+                    <div class="list_item_right">
+                        <img src="../../images/student/ic_jt.png" alt="">
+                    </div>
+                </div>
+                <div class="list_item" @click="privacyPolicy">
+                    <div class="list_item_left">
+                        <img src="../../images/student/Ic_feedback.png" alt="">
+                        <div>隐私政策</div>
+                    </div>
+                    <div class="list_item_right">
+                        <img src="../../images/student/ic_jt.png" alt="">
+                    </div>
+                </div>
+                <div class="list_item" @click="userAgreement">
+                    <div class="list_item_left">
+                        <img src="../../images/student/Ic_feedback.png" alt="">
+                        <div>用户协议</div>
+                    </div>
+                    <div class="list_item_right">
+                        <img src="../../images/student/ic_jt.png" alt="">
+                    </div>
+                </div>
+            </div>
+        </van-pull-refresh>
+        <van-popup v-model="show" round closeable>
+            <div class="popMain">
+                <div class="popMain_title">提示</div>
+                <div class="popMain_text">{{tipsVal}}</div>
+                <div class="popBtnBox">
+                    <div class="popBtn" @click="popSure">确定</div>
+                </div>
+            </div>
+        </van-popup>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#my',
+        data() {
+            return {
+                dataVal: {
+                    school: {
+                        name: ''
+                    }
+                },
+                tName: '',
+                tPhone: '',
+                refreshing: false,
+                show: false,
+                tipsVal: ''
+            }
+        },
+        created() {
+            // iosReload();
+            // vant.Toast.loading({
+            //     message: '',
+            //     forbidClick: true,
+            //     loadingType: 'spinner',
+            //     duration: 0,
+            //     icon: "../../images/loading.gif"
+            // });
+            let that = this;
+            ajax('current/index/config', "POST", {
+                "identity": 'course_consultant_name'
+            }, function(res) {
+                if (res.code == 1) {
+                    that.tName = res.data.result.value;
+                }
+            });
+            ajax('current/index/config', "POST", {
+                "identity": 'course_consultant_phone'
+            }, function(res) {
+                if (res.code == 1) {
+                    that.tPhone = res.data.result.value;
+                }
+            });
+        },
+        mounted() {
+            this.$refs.loadings.openLoading();
+            let that = this;
+            // this.getInfoData();
+            AndroidRouter('getUserInfo', "", this.setUserInfo, "setUserInfo");
+            // AndroidRouter('onClosePage', "my2", this.newPage, 'get_closedCall')
+        },
+        methods: {
+            setUserInfo(res) {
+                localStorage.setItem("token", res)
+                this.getInfoData();
+                AndroidRouter('onBottomTabClick', 4, this.bottomTab, "setOnBottomTabClick")
+            },
+            bottomTab() {
+                // location.reload()
+                // this.$refs.loadings.openLoading();
+                this.getInfoData();
+                AndroidRouter('onBottomTabClick', 4, this.bottomTab, "setOnBottomTabClick")
+            },
+            newPage() {
+                this.getInfoData();
+            },
+            onRefresh() { //刷新
+                this.refreshing = true;
+                this.getInfoData();
+            },
+            newgongneng() {
+                vant.Toast('功能暂未开放')
+            },
+            // 获取数据
+            getInfoData() {
+                let that = this;
+                ajax('student/student/mine', "POST", {}, function(res) {
+                    if (res.code == 1) {
+                        if (res.data.result.head == '') {
+                            res.data.result.head = '../../images/student/pic_pig_26.png';
+                        }
+                        that.dataVal = res.data.result;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        that.refreshing = false;
+                    }
+                })
+            },
+            // 个人主页
+            goHome(id) {
+                // location.href = './homePage.html?id=' + id;
+                let url = 'student/homePage.html?id=' + id;
+                AndroidRouter('newPage', url);
+            },
+            //邀请码
+            goInvite(e) {
+                e.stopPropagation();
+                // location.href = './inviteCode.html';
+                AndroidRouter('newPage', 'student/inviteCode.html');
+            },
+            // 学校信息
+            schoolInfo(e) {
+                e.stopPropagation();
+                // location.href = './schoolInfo.html';
+                let url = 'student/schoolInfo.html';
+                AndroidRouter('newPage', url);
+            },
+            // 作业
+            goWolrk(num) {
+                this.tipsVal = '请联系课程顾问' + this.tName + this.tPhone;
+                if (num == 1) {
+                    // location.href = './work.html?type=true';
+                    AndroidRouter('newPage', 'student/work.html?type=true');
+                } else {
+                    this.show = true;
+                    // vant.Dialog.alert({
+                    //     title: '暂无班级',
+                    //     message: val,
+                    // }).then(function() {
+                    //     // on close
+                    // });
+                }
+
+            },
+            popSure() {
+                this.show = false;
+            },
+            //收藏
+            goCollection(id) {
+                // location.href = './myCollection.html?id=' + id;
+                let url = 'student/myCollection.html?id=' + id;
+                AndroidRouter('onClosePage', "myCollection", this.newPage, 'get_closedCall')
+                AndroidRouter('newPage', url);
+            },
+            //我的荣誉
+            goMyHonor(i, num) {
+                this.tipsVal = '请联系课程顾问' + this.tName + this.tPhone;
+                if (num == 1) {
+                    // location.href = './myHonor.html?type=' + i;
+                    let url = 'student/myHonor.html?type=' + i;
+                    AndroidRouter('newPage', url);
+                } else {
+                    this.show = true;
+                    // vant.Dialog.alert({
+                    //     title: '暂无班级',
+                    //     message: val,
+                    // }).then(function() {
+                    //     // on close
+                    // });
+                }
+            },
+            // 荣耀规则
+            goRule() {
+                // location.href = './honorRules.html';
+                AndroidRouter('newPage', 'student/honorRules.html');
+            },
+            //配音库
+            goLibrary() {
+                // location.href = './dubbingLibrary.html';
+                AndroidRouter('newPage', 'student/dubbingLibrary.html');
+            },
+            // 投票活动
+            goVote() {
+                // location.href = './votingActivity.html';
+                AndroidRouter('newPage', 'student/votingActivity.html');
+            },
+            //意见反馈
+            goFeedback() {
+                // location.href = './feedBack.html';
+                AndroidRouter('newPage', 'student/feedBack.html');
+            },
+            //隐私政策
+            privacyPolicy() {
+                // location.href = './web1.html';
+                AndroidRouter('newPage', 'student/web1.html');
+            },
+            //用户协议
+            userAgreement() {
+                // location.href = './web2.html';
+                AndroidRouter('newPage', 'student/web2.html');
+            },
+            //页面刷新
+            newPage() {
+                this.getInfoData();
+            }
+        }
+    });
+</script>
+
+</html>

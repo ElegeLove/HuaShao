@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>添加至班级</title>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/teacher/AddClass.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="topFied">
+				<div class="heads_top">
+				    <div class="heads_topBox">
+				        <img class="heads_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+				        <div class="heads_topTitle">{{status=='shift'?'转班':'添加'}}至班级</div>
+				        <div class="heads_rig" @click="submits">确定</div>
+				    </div>
+				</div>
+				<div class="userInfo">
+					<div class="align_items tops">
+						<img :src="message.head" onerror="this.src = '../../../images/teacher/error.png'"/>
+						<div>
+							<p class="danshen">{{message.student_name}}</p>
+							<div>ID：{{message.student_id}}</div>
+						</div>
+					</div>
+					<div class="allTitles align_items">
+						<span></span>
+						<p>选择{{status=='shift'?'转班':'添加至'}}的班级</p>
+					</div>
+				</div>
+			</div>
+			<div class="bgcolors">
+				<van-list
+				      v-model="loading"
+				      :finished="finished"
+				      :immediate-check="false"
+				      finished-text="已加载完毕"
+				      @load="onLoad"
+				      :offset="10"
+				    >
+						<div class="allList">
+							<div class="list align_items" v-for="(item,index) in list" @click="check(item)">
+								<p class="danshen">{{item.classes_name}}</p>
+								<div>
+									<img src="../../../images/teacher/checkBoxOne.png" v-if="item.show"/>
+									<img src="../../../images/teacher/checkBoxTwo.png" v-else/>
+								</div>
+							</div>
+						</div>
+				 </van-list>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script src="../../../js/public/vant.js"></script>
+	<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					list:[],
+					message:{},
+					postData:{
+						student_id:"",
+						classes_ids:[]
+					},
+					listData:{
+						page_no:1,
+						page_size:15,
+						scene:2,
+						student_id:""
+					},
+					loading:false,
+					finished:false,
+					btnCheck:true,       //节流处理
+					status:""              //为shift时是转班进来
+	            }
+	        },
+			mounted(){
+			   var id = GetQueryValue("id")
+			   var status = GetQueryValue("status")
+			   var mess = localStorage.getItem("userMess")
+			   this.message = JSON.parse(mess)
+			   this.postData.student_id = id
+			   this.status = status
+			   this.listData.student_id = id
+			   this.getClassList()
+			},
+	        methods: {
+				onLoad(){      //上拉加载
+				  this.listData.page_no++
+				  this.getClassList()
+				},
+				getClassList(){
+					if(this.listData.page_no==1){
+						this.$refs.loadings.openLoading()
+					}
+					var that = this;
+					ajax("school/classes/classes_list",'POST',this.listData,function(res){
+						that.$refs.loadings.closedLoading()
+						that.loading = false;
+						if(res.code==1){
+							that.refreshing = false;
+							var numData = JSON.parse(JSON.stringify(res.data.list))
+							numData.forEach(function(item){
+								item.show = false
+							})
+							if(numData.length==0){
+							  that.finished = true
+							  return false
+							}
+							if(that.postData.page_no==1){
+							  that.list = numData
+							}else{
+							  that.list = that.list.concat(numData)
+							}
+						}else{
+							vant.Toast(res.msg)
+						}
+					})
+				},
+				goback(){
+					history.go(-1)
+				},
+				check(item){           //选择
+					item.show?item.show=false:item.show=true
+				},
+				submits(){        //确定
+					var classIds = []
+					this.list.forEach(function(it){
+						if(it.show==true){
+							classIds.push(it.classes_id)
+						}
+					})
+					this.postData.classes_ids = classIds
+					if(this.status=='shift'){           //转班
+						this.shiftClass()
+					}else{
+						this.addClass()
+					}
+				},
+				shiftClass(){             //转班至班级
+					if(this.postData.classes_ids.length==0){
+						vant.Toast("请选择转班得班级")
+					}else{
+						if(this.btnCheck){
+							this.btnCheck = false
+							this.$refs.loadings.openLoading()
+							var that = this;
+							var quertObj = {
+								old_classes_id:this.message.classes_id,
+								new_classes_ids:this.postData.classes_ids,
+								student_id:this.postData.student_id
+							}
+							quertObj.new_classes_ids = JSON.stringify(quertObj.new_classes_ids)
+							ajax("school/classes/school_student_change_classes",'POST',quertObj,function(res){
+								that.$refs.loadings.closedLoading()
+								if(res.code==1){
+									setTimeout(function(){
+										history.go(-1)
+									},700)
+								}
+								vant.Toast(res.msg);
+							})
+							setTimeout(function(){
+								that.btnCheck = true
+							},1500)
+						}
+					}
+				},
+				addClass(){              //添加至班级
+					if(this.postData.classes_ids.length==0){
+						vant.Toast("请选择添加的班级")
+					}else{
+						if(this.btnCheck){
+							this.btnCheck = false
+							this.$refs.loadings.openLoading()
+							var that = this;
+							var jsonDatas = JSON.parse(JSON.stringify(this.postData))
+							jsonDatas.classes_ids = JSON.stringify(jsonDatas.classes_ids)
+							ajax("school/classes/classes_student_add",'POST',jsonDatas,function(res){
+								that.$refs.loadings.closedLoading()
+								if(res.code==1){
+									setTimeout(function(){
+										history.go(-2)
+									},700)
+								}
+								vant.Toast(res.msg);
+							})
+							setTimeout(function(){
+								that.btnCheck = true
+							},1500)
+						}
+					}
+				}
+			}
+	    });
+	</script>
+</html>

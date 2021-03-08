@@ -1,0 +1,237 @@
+#homework{
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	padding-top:2.1rem;
+	overflow-y: scroll;
+	-webkit-overflow-scrolling: touch;
+	overflow-scrolling: touch;
+}
+#homework .van-tab span{
+	font-size: 0.28rem !important;
+	line-height: 0.35rem !important;
+}
+.Fixedss{
+	width: 100%;
+	position: fixed;
+	top: 0;
+	left: 0;
+	background-color: white;
+	z-index: 400;
+}
+.top {
+    width: 100%;
+    padding: 0.265rem 0.25rem;
+    box-sizing: border-box;
+    z-index: 111;
+    background: #ffffff;
+}
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.topImg {
+    width: 0.45rem;
+    height: 0.45rem;
+}
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+}
+.banners{
+	width: 100%;
+	height: 2.42rem;
+	background:url(../../images/teacher/banner_01.png) center no-repeat;
+	background-size: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: flex-end;
+}
+.banners>div{
+	font-size: 0.4rem;
+	color: #FFFFFF;
+	margin-bottom: 0.52rem;
+}
+.tabs{
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	box-sizing: border-box;
+	border-bottom: 0.02rem solid #EEEEEE;
+}
+.tabs>div{
+	font-size: 0.28rem;
+	color: #999999;
+	position: relative;
+	height: 0.99rem;
+	display: flex;
+	align-items: center;
+}
+.antives::after{
+	position: absolute;
+	content: '';
+	width: 0.5rem;
+	height: 0.06rem;
+	background-color: #2EC5E0;
+	bottom: 0;
+	left: 50%;
+	transform: translateX(-50%);
+}
+.user_people{
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	box-sizing: border-box;
+	padding: 0 0.3rem 0 0.3rem;
+	height: 1.3rem;
+	margin-top: 0.1rem;
+}
+.user_people>img{
+	width: 0.4rem;
+	height: 0.4rem;
+	/* margin-top: 0.23rem; */
+}
+.user_people>div{
+	display: flex;
+	align-items: center;
+}
+.user_people>div>div>img{
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 50%;
+}
+.user_people>div>div{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+.user_people>div>div:not(last-child){
+	margin-right: 0.59rem;
+}
+.user_people>div>div>span{
+	font-size: 0.24rem;
+	color: #333333;
+	margin-top: 0.14rem;
+	max-width: 0.7rem;
+	height: 0.35rem;
+	line-height: 0.35rem;
+}
+.listBoxs{
+	margin-top: 0.24rem;
+}
+.list{
+	box-sizing: border-box;
+	padding: 0 0.3rem 0.36rem 0.3rem;
+	border-bottom: 0.02rem solid #EEEEEE;
+}
+.list>.list_tiop{
+	width: 100%;
+	height: 2.91rem;
+	border-radius: 0.1rem;
+	overflow: hidden;
+	position: relative;
+}
+.list>.list_tiop>img{
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.list>.list_tiop>div{
+	position: absolute;
+	bottom: 0;
+	box-sizing: border-box;
+	padding: 0.5rem 0.24rem 0.15rem 0.24rem;
+	left: 0;
+	width: 100%;
+	background: linear-gradient(to top,rgba(0,0,0,0.4),rgba(0,0,0,0.01));
+	background: -webkit-linear-gradient(to top,rgba(0,0,0,0.4),rgba(0,0,0,0.01));
+	background: -o-linear-gradient(to top,rgba(0,0,0,0.4),rgba(0,0,0,0.01));
+	background: -moz-linear-gradient(to top,rgba(0,0,0,0.4),rgba(0,0,0,0.01));
+	display: flex;
+	align-items: center;
+	font-size: 0.2rem;
+	color: #FFFFFF;
+}
+.list>.list_tiop>div>img{
+	width: 0.4rem;
+	height: 0.4rem;
+	margin-right: 0.1rem;
+}
+.list>.titles{
+	display: flex;
+	align-items: center;
+	margin-top: 0.35rem;
+}
+.list>.titles>div{
+	font-size: 0.36rem;
+	color: #333333;
+	font-weight: bold;
+	line-height: 0.5rem;
+	font-family: 'miui';
+}
+.list>.titles>div>p{
+	display: inline-block;
+	box-sizing: border-box;
+	padding: 0 0.2rem;
+	height: 0.36rem;
+	border-radius: 0.18rem;
+	font-size: 0.24rem;
+	color: #2EC5E0;
+	text-align: center;
+	font-family: 'miui';
+	line-height: 0.36rem;
+	border: 0.02rem solid #2EC5E0;
+	margin-left: 0.19rem;
+}
+.listBoxs>.details{
+	box-sizing:border-box;
+	padding: 0.35rem 0.3rem 0 0.3rem;
+	font-size: 0.28rem;
+	color: #333333;
+	border-radius: 0.1rem;
+	overflow: hidden;
+}
+.listBoxs>.details>p{
+	line-height: 0.45rem;
+	margin-bottom: 0.4rem;
+}
+.listBoxs>.details>div>.bg{
+	width: 100%;
+	height: 100%;
+	border-radius: 0.1rem;
+	object-fit: cover;
+}
+.listBoxs>.details>div{
+	width: 100%;
+	height: 2.9rem;
+	margin-bottom: 0.28rem;
+	position: relative;
+}
+.listBoxs>.details>.imgh{
+	height: auto !important;
+}
+.listBoxs>.details>div>.videos{
+	width:1rem ;
+	height: 1rem;
+	border-radius: 50%;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translateX(-50%) translateY(-50%);
+}
+.checkTab{
+	box-sizing: border-box;
+	padding-top: 0.38rem;
+	border-bottom: 0.02rem solid #EEEEEE;
+}
+.checkTab .van-tabs--line .van-tabs__wrap{
+	height: 0.6rem;
+}
+.checkTab .van-tab{
+	font-size: 0.28rem;
+}

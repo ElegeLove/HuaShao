@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>创建作业</title>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/teacher/createJob.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="th_top">
+			    <div class="th_topBox">
+			        <img class="th_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+			        <div class="th_topTitle">创建作业</div>
+			        <div class="th_topImg"></div>
+			    </div>
+			</div>
+			<div class="th_padd opts">
+				<div class="align_items divBox" @click="checkClassType">
+					<p><span>*</span>课程体系</p>
+					<div class="align_items">
+						<input placeholder="请选择" readonly="readonly" v-model="postData.course_name" class="danshen"/>
+						<img src="../../../images/teacher/ic_more.png" />
+					</div>
+				</div>
+				<div class="align_items divBox">
+					<p><span>*</span>作业名称</p>
+					<div class="align_items">
+						<input placeholder="请输入作业名称" v-model="postData.task_name" maxlength="12"/>
+					</div>
+				</div>
+				<div class="uploadBox">
+					<p><span>*</span>作业封面</p>
+					<div>
+						<div v-if="postData.cover_img!==''">
+							<img :src="postData.cover_imgss" class="imgs"/>
+							<img src="../../../images/teacher/ic_del.png" class="dele" @click="deleteImg"/>
+						</div>
+						<div @click="uploadImg" v-else >
+							<img src="../../../images/teacher/pic_09.png" class="imgs"/>
+						</div>
+					</div>
+				</div>
+				<div class="align_items divBox" @click="openFoot(1)">
+					<p><span>*</span>作业标签</p>
+					<div class="align_items">
+						<input placeholder="请选择" readonly="readonly" v-model="postData.task_tag_id_name" class="danshen"/>
+						<img src="../../../images/teacher/ic_more.png" />
+					</div>
+				</div>
+				<div class="align_items divBox" @click="openFoot(2)">
+					<p><span>*</span>作业形式</p>
+					<div class="align_items">
+						<input placeholder="请选择" readonly="readonly" v-model="postData.form_name"/>
+						<img src="../../../images/teacher/ic_more.png" />
+					</div>
+				</div>
+				<div class="align_items divBox" @click="openFoot(3)" v-if="postData.form!==1">
+					<p><span>*</span>作业时长</p>
+					<div class="align_items">
+						<input placeholder="请选择" readonly="readonly" v-model="postData.time_length_name"/>
+						<img src="../../../images/teacher/ic_more.png" />
+					</div>
+				</div>
+				<div class="iptBox" style="border: 0;">
+					<p><span>*</span>作业描述</p>
+					<textarea rows="6" v-model="postData.content" placeholder="请输入作业描述"></textarea>
+				</div>
+				<div class="uploadBox">
+					<div style="margin-top: 0;">
+						<div v-for="(it,ix) in postData.content_images_arr" :key="ix">
+							<img :src="it.url" class="imgs"/>
+							<img src="../../../images/teacher/ic_del.png" class="dele" @click="deleteOuthImg(ix)"/>
+						</div>
+						<div @click="uploadOuthImg" v-if="postData.content_images_arr.length<8" >
+							<img src="../../../images/teacher/pic_09.png" class="imgs"/>
+						</div>
+					</div>
+				</div>
+				<div class="iptBox">
+					<p>点评标准</p>
+					<textarea rows="6" v-model="postData.comment_standard" placeholder="请输入作业点评标准"></textarea>
+				</div>
+				<div class="uploadBox">
+					<p>视频附件<span class="videossd">(不超过3个)</span></p>
+					<div>
+						<div v-for="(its,itx) in postData.attachment_arr" :key="itx">
+							<img :src="its.coverPath" class="imgs"/>
+							<div class="cards" @click="autoVideo(its)">
+								<img src="../../../images/teacher/ic_bofang.png" />
+							</div>
+							<img src="../../../images/teacher/ic_del.png" class="dele" @click="deleteVideo(itx)"/>
+						</div>
+						<div v-if="postData.attachment_arr.length<3" @click="UploadVideo">
+							<img src="../../../images/teacher/pic_09.png" class="imgs"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="fotBtn">
+				<van-button type="default" class="gon" @click="goNext">下一步</van-button>
+			</div>
+			<van-popup v-model="footShow" round position="bottom">
+				<div class="popTitle">
+					<p>{{footTxt}}</p>
+					<img src="../../../images/teacher/ic_cancle.png" @click="checkFoot(false)"/>
+				</div>
+				<div class="popCont">
+					<div class="align_items" v-for="(it,ix) in listArr" :key="ix" @click="checkLabel(it)">
+						<p>{{it.form_name}}</p>
+						<div v-if="type!==1">
+							<img src="../../../images/teacher/xq_yuan.png" v-if="it.value==(type==2?postData.checkValue:postData.checkValueTwo)"/>
+							<img src="../../../images/teacher/xq_yuan2.png" v-else />
+						</div>
+						<div v-else>
+							<img src="../../../images/teacher/checkBoxOne.png" v-if="it.show"/>
+							<img src="../../../images/teacher/checkBoxTwo.png" v-else />
+						</div>
+					</div>
+				</div>
+				<div class="fotBtnNoFix">
+					<van-button type="default" class="gon" @click="checkFoot(false)">确定</van-button>
+				</div>
+			</van-popup>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../js/public/vant.js"></script>
+	<script src="../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					footShow:false,         //底部弹窗
+					listArr:[],
+					postData:{
+						is_system:0,
+						is_main:"",
+						task_name:"",
+						form:"",
+						form_name:"",
+						cover_img:"",
+						cover_imgss:"",				 //自定义的显示
+						content_images:[],
+						content_images_arr:[],        //自定义的显示
+						time_length:"",
+						time_length_name:"",			 //自定义的显示
+						content:"",
+						task_tag_id:[],
+						task_tag_id_name:"",			 //自定义的显示
+						course_id:"",
+						course_name:"",					 //自定义的显示
+						end_date:"",
+						is_comment:"",
+						classes_ids:[],
+						classes_ids_name:[],				 //自定义的显示
+						comment_standard:"",
+						syn_school:"",
+						attachment:[],
+						attachment_arr:[],               //自定义的显示
+						students:[],
+						checkValue:"",               //当前作业形式选择的单选数据
+						checkValueTwo:"",				//当前作业时长选择的单选数据
+						check:1
+					},
+					tostData:{
+					  course_id:"请选择课程类型",
+					  task_name:"请填写作业名称",
+					  cover_img:"请上传作业封面",
+					  form:"请选择作业形式",
+					  content:"请输入作业描述"
+					},
+					type:0,                //用于判断当前点击的是哪个下拉
+					footTxt:"",
+					task_tag_id_Arr:[],           //作业标签名字存放
+					homeForm:[],     //作业形式
+					homeTags:[],        //作业标签
+					objTime:{},         //作业时长
+					primordial:""
+	            }
+	        },
+			created(){
+			   iosReload()
+			   var classId = GetQueryValue("classId")
+			   var primordial = GetQueryValue("primordial")
+			   this.primordial = primordial
+			   var className = GetQueryValue("className")
+			   if(classId!==null){
+				  this.postData.classes_ids = [classId]
+				  this.postData.classes_ids_name = [className]
+			   }
+			   this.getLocal()
+			   this.getTasks()
+			   this.getTags()
+			   this.getHomeTim()
+			},
+	        methods: {
+				autoVideo(it){        //播放视频
+					var obj = {
+						title:"视频播放",
+						path:it.videoPath
+					}
+					AndroidRouter('playVideo',JSON.stringify(obj))
+				},
+				getTasks(){          //作业形式获取
+					var that = this;
+					ajax("teacher/Task/getForm",'POST',"",function(res){
+						if(res.code==1){
+							that.homeForm = res.data.form
+						}else{
+							vant.Toast(res.msg)
+						}
+					})
+				},
+				getTags(){          //作业标签获取
+					var that = this;
+					ajax("teacher/Task/getTaskTagList",'POST',{type:0},function(res){
+						if(res.code==1){
+							var newArr = []
+							var dats = JSON.parse(JSON.stringify(res.data.list))
+							dats.forEach(function(it){
+								newArr.push({form_name:it.tag_name,value:it.id,show:false})
+							})
+							that.homeTags = JSON.parse(JSON.stringify(newArr))
+						}
+					})
+				},
+				getHomeTim(){          //获取作业时长
+					var that = this;
+					ajax("teacher/Task/getTimeList",'POST',"",function(res){
+						if(res.code==1){
+							var newObj = {
+								vedio:[],
+								music:[]
+							}
+							var datas = JSON.parse(JSON.stringify(res.data))
+							datas.vedio.forEach(function(it){
+								newObj.vedio.push({value:it,form_name:it+'分钟'})
+							})
+							datas.music.forEach(function(it){
+								newObj.music.push({value:it,form_name:it+'分钟'})
+							})
+							that.objTime = newObj
+						}
+					})
+				},
+				getLocal(){    //获取缓存数据
+					var localPost = localStorage.getItem('sendData')
+					if(localPost!==null){
+					   var datas = JSON.parse(localPost)
+					   this.postData = datas
+					}
+				},
+				uploadImg(){         //上传图片
+					var that = this;
+					AndroidRouter("selectPic",1,this.upImgCall,"set_selectPic")
+				},
+				upImgCall(res){       //封面图回调
+					var resPen = JSON.parse(res)
+					this.postData.cover_img = resPen[0].id;
+					this.postData.cover_imgss = resPen[0].path
+				},
+				deleteVideo(ix){             //删除视频
+					// this.postData.attachment.splice(ix,1)
+					this.postData.attachment_arr.splice(ix,1)
+				},
+				UploadVideo(){         //上传视频
+					var that = this;
+					AndroidRouter('selectVideo',"1",this.upVic,"set_selectVideo")
+				},
+				upVic(res){         //选择视频回调
+					var resPen = JSON.parse(res)
+					this.postData.attachment_arr.push({coverPath:resPen.cover_path,coverPathId:resPen.cover_path_id,videoPath:resPen.video_loc_path})
+				},
+				deleteImg(){           //删除封面
+					this.postData.cover_img = ""
+					this.postData.cover_imgss = ""
+				},
+				deleteOuthImg(ix){        //删除其他图片
+					this.postData.content_images.splice(ix,1)
+					this.postData.content_images_arr.splice(ix,1)
+				},
+				uploadOuthImg(){           //上传其他图片
+					AndroidRouter("selectPic",7,this.outhImgs,"set_selectPic")
+				},
+				outhImgs(res){			//上传其他图片回调
+					var that = this;
+					var resPen = JSON.parse(res)
+					resPen.forEach(function(item){
+						that.postData.content_images.push(item.id)
+						that.postData.content_images_arr.push({url:item.path})
+					})
+				},
+				goNext(){              //下一步
+					var arr =  Object.keys(this.tostData)
+					for(var i=0;i<arr.length;i++){           //非空验证
+					   if(this.postData[arr[i]]==''){
+					       vant.Toast(this.tostData[arr[i]])
+					       return;
+					   }
+					}
+					if(this.postData.form==2||this.postData.form==3){
+						if(this.postData.time_length==""){
+							return vant.Toast("请选择作业时长")
+						}
+					}
+					localStorage.setItem('sendData',JSON.stringify(this.postData))
+					location.href = "creatNext.html?primordial="+this.primordial
+				},
+				checkClassType(){          //课程类型选择
+					localStorage.setItem("sendData",JSON.stringify(this.postData))
+					location.href = "courseType.html"
+				},
+				goback(){
+					localStorage.removeItem('sendData')
+					if(this.primordial=="yes"){
+						AndroidRouter("closePage","")
+					}else{
+						history.go(-1)
+					}
+				},
+				checkFoot(bool){        //打开关闭弹窗
+					this.footShow = bool
+				},
+				openFoot(type){            //1是作业标签      2是作业形式      3是作业时长
+					this.type = type
+					var that = this;
+					var titles = type==1?'作业标签':type==2?'作业形式':'作业时长'
+					if(type==1){
+						this.listArr = JSON.parse(JSON.stringify(this.homeTags))
+						this.listArr.map(function(it){
+							that.postData.task_tag_id.forEach(function(item){
+								if(it.value==item){
+									it.show = true
+								}
+							})
+						})
+					}else if(type==2){
+						this.listArr = JSON.parse(JSON.stringify(this.homeForm))
+					}else{
+						var forms = this.postData.form
+						if(forms==""){
+							return vant.Toast('请选择作业形式')
+						}
+						if(forms!==1){
+							var keys = forms==2?'music':forms==3?'vedio':''
+							this.listArr = this.objTime[keys]
+						}
+					}
+					this.footTxt = titles
+					this.checkFoot(true)
+				},
+				checkLabel(it){           //选择标签
+					var that = this;
+					if(this.type==1){             //作业标签
+						it.show?it.show = false:it.show = true
+						if(it.show){
+							this.postData.task_tag_id.push(it.value)
+							this.task_tag_id_Arr.push(it.form_name)
+						}else{
+							this.postData.task_tag_id.map(function(item,index){
+								if(item==it.value){
+									that.postData.task_tag_id.splice(index,1)
+									that.task_tag_id_Arr.splice(index,1)
+								}
+							})
+						}
+						this.postData.task_tag_id_name = this.task_tag_id_Arr.join("/")
+					}else{            //
+						var keys = this.type==2?'form':'time_length'
+						var keysName = this.type==2?'form_name':'time_length_name'
+						var checks = this.type==2?'checkValue':'checkValueTwo'
+						this.postData[keys] = it.value
+						this.postData[keysName] = it.form_name
+						this.postData[checks] = it.value
+						var forms = this.postData.form
+						var keyss = forms==2?'music':forms==3?'vedio':''
+						if(this.type==2){         //清空
+							if(this.objTime[keyss]!==undefined&&this.objTime[keyss].length!==0){
+								this.postData.time_length = this.objTime[keyss][0].value
+								this.postData.time_length_name = this.objTime[keyss][0].form_name
+								this.postData.checkValueTwo = this.objTime[keyss][0].value
+							}
+						}
+					}
+				}
+	        }
+	    });
+	</script>
+</html>

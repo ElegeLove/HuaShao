@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>老师点评</title>
+		<script src="../../js/public/rem.js"></script>
+		<script src="../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../allCss/public.css">
+		<link rel="stylesheet" href="../../allCss/teacher/teacherComments.css">
+		<link rel="stylesheet" href="../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak @scroll="scolls">
+			<div  v-cloak>
+				<div class="head_top" :style="{background:scoll?'#fff':'transparent'}">
+				    <div class="head_topBox">
+				        <img class="head_topImg" src="../../images/student/ic_return_white.png" alt="" @click="goback" v-if="!scoll">
+				        <img class="head_topImg" src="../../images/student/icon_back.png" alt="" @click="goback" v-else>
+				        <div class="head_topTitle" :style="{color:scoll?'black':'#fff'}">老师点评</div>
+				        <div class="head_topImg"></div>
+				    </div>
+				</div>
+				<div class="coreds" v-if="allData!==''">
+					<div>
+						<p>{{allData.student_opus_comment.score}}</p>
+						<div>
+							— 分数 —
+						</div>
+					</div>
+				</div>
+				<div class="padd" v-if="allData!==''">
+					<div class="videos align_items">
+						<div class="audios align_items" v-if="allData.student_opus_comment.attachment_music!==''" @click="autoVoice">
+							<img src="../../images/student/Collection_voice.png" />
+							<span>{{allData.student_opus_comment.attachment_music.duration}}〞</span>
+						</div>
+						<div class="videoAuto" v-if="allData.student_opus_comment.attachment_vedio!==''" @click="autoVideo">
+							<img :src="allData.student_opus_comment.attachment_vedio.other_path" />
+							<div>
+								<img src="../../images/teacher/ic_bofang.png" />
+							</div>
+						</div>
+					</div>
+					<div class="details">
+						<p>{{allData.student_opus_comment.content}}</p>
+						<div v-for="(item,index) in allData.student_opus_comment.attachment_img" :key="index">
+							<img :src="item" class="bg" onerror="this.src = '../../images/teacher/error.png'"/>
+						</div>
+					</div>
+					<div class="repay" v-if="allData.reply_list.length!==0">
+						<p>{{allData.reply_list[0].student_name}}回复:</p>
+						<div>{{allData.reply_list[0].content}}</div>
+					</div>
+				</div>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../js/public/vue.js"></script>
+	<script src="../../js/public/vant.js"></script>
+	<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					scoll:false,
+					allData:"",
+					type:""
+	            }
+	        },
+			mounted(){
+				var id = GetQueryValue("id")
+				var type = GetQueryValue("type")
+				this.type = type
+				this.getDetails(id)
+			},
+	        methods: {
+				autoVideo(){         //播放视频
+					var obj = {
+					   title:"老师点评",
+					   path:this.allData.student_opus_comment.attachment_vedio.path
+					}
+					AndroidRouter('playVideo',JSON.stringify(obj))
+				},
+				autoVoice(it){         //播放音频
+					var obj = {
+						title:"老师点评",
+						path:this.allData.student_opus_comment.attachment_music.path
+					}
+					AndroidRouter('playVoice',JSON.stringify(obj))
+				},
+				getDetails(id){
+					var that = this;
+					this.$refs.loadings.openLoading()
+					ajax("teacher/Studenttask/studentOpusComment",'POST',{student_opus_id:id},function(res){
+						that.$refs.loadings.closedLoading()
+						if(res.code==1){
+							that.allData = res.data.list
+						}else{
+							vant.Toast(res.msg)
+							setTimeout(function(){
+								history.go(-1)
+							},600)
+						}
+					})
+				},
+				scolls(e){
+					var scrollTop = e.target.scrollTop
+					scrollTop>67?this.scoll=true:this.scoll=false
+				},
+				goback(){
+					if(this.type=="web"){
+						history.go(-1)
+					}else{
+						AndroidRouter("closePage","")
+					}
+				},
+	        }
+	    });
+	
+	
+	</script>
+</html>

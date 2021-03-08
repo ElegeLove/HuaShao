@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>活动详情</title>
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/principal/t_activityDetails.css">
+</head>
+
+<body>
+    <div id="activityDetails" class="content" v-cloak>
+        <div class="th_headers">
+            <div class="th_headers_topBox">
+				<div class="marginfgs">
+					<img class="th_headers_topImg" @click="goBack()" src="../../../images/student/icon_back.png" alt="">
+				</div>
+                <div class="th_headers_topTitle marginfgs yidongs">活动详情</div>
+				<div class="marginfgs tiRigs">
+					<img class="topImg" @click="goShare(true)" src="../../../images/student/Ic_share_02.png" alt="">
+				</div>
+            </div>
+        </div>
+        <div class="boxPadd mainTop" v-if="allData!==''">
+            <div class="mainTop_title">
+				 <div class="mainTop_title_text">{{allData.title}}<p class="mainTop_title_tag">{{allData.a_type_text}}</p></div>
+            </div>
+            <div class="mainTop_text">活动描述：{{allData.content}}</div>
+			<div class="imgBoxsd">
+				<img :src="it.path" @click="openImg(ix)" v-for="(it,ix) in allData.attament"/>
+				<p></p>
+			</div>
+            <div class="mainTop_footer">
+                <div>
+                    <div>参与时间：</div>
+                    <div class="mainTop_footer_time">{{allData.join_start_time}}&nbsp;-&nbsp;{{allData.join_end_time}}
+                    </div>
+                </div>
+                <div>
+                    <div>投票时间：</div>
+                    <div class="mainTop_footer_time">{{allData.vote_start_time }}&nbsp;-&nbsp;{{allData.vote_end_time}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="boxPadd list">
+            <div class="listBox" v-if="dataList.length!==0">
+                <div class="item" v-for="(item,i) in dataList">
+                    <div class="item_top">
+                        <div class="item_top_left">{{i+1}}.{{item.full_name}}（{{item.vote_num}}票）</div>
+                        <div class="item_top_right" v-if="item.is_vote == 0">
+                            <div class="item_top_rightBox">
+                                <img src="../../../images/student/Ic_thumbup.png" alt="">
+                                <div class="item_top_right_text" @click="goVote(item)">投票</div>
+                            </div>
+                        </div>
+                        <div class="item_top_rights" v-if="item.is_vote == 1">
+                            <div class="item_top_rightBox">
+                                <img src="../../../images/student/Ic_thumbup.png" alt="">
+                                <div class="item_top_rights_text">已投票</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item_main">
+                        {{item.conent}}
+                    </div>
+					<div v-if="allData.a_type==1">
+						<div class="audiosf align_items" v-if="item.attachment!==''" @click="autoVoice(item.attachment.path)">
+							<div class="audiosBox">
+								{{item.attachment.duration}}"
+							</div>
+						</div>
+					</div>
+                   <div v-if="allData.a_type==0">
+					   <div class="item_img" v-if="item.attachment!==''">
+					        <img :src="item.attachment.path" 
+							@click="lookImg(item.attachment.path)"
+							alt=""  onerror="this.src = '../../../images/teacher/error.png'"/>
+					    </div>
+				   </div>
+					<div v-if="allData.a_type==2">
+						<div class="videoBox align_items" v-if="item.attachment!==''">
+							<div  @click="autoVideo(item.attachment.path)">
+								<img :src="item.attachment.other_path" onerror="this.src = '../../../images/teacher/error.png'"/>
+								<div>
+									<img src="../../../images/teacher/ic_bofang.png" />
+								</div>
+							</div>
+						</div>
+					</div>
+                </div>
+            </div>
+			<div class="nullEmptys mads" v-if="dataList.length==0&&loadMo">
+				<img src="../../../images/student/null.png" />
+				<p>什么都没有...</p>
+			</div>
+        </div>
+		<van-popup v-model="show" round position="bottom" style="max-height: 70%;">
+			<div class="shareWay">
+				<div @click="share('WEIXIN')">
+					<img src="../../../images/teacher/pic_chat.png" />
+					<p>微信</p>
+				</div>
+				<div @click="share('WEIXIN_CIRCLE')">
+					<img src="../../../images/teacher/pic_friend.png" />
+					<p>朋友圈</p>
+				</div>
+			</div>
+			<div class="shareWay_Cacel" @click="goShare(false)">取消</div>
+		</van-popup>
+		<loadings ref="loadings"/>
+    </div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#activityDetails',
+        data() {
+            return {
+                show: false,
+                allData: "",
+                dataList: [],
+                vote_id: '',
+				sharesData:{},
+				loadMo:false
+            }
+        },
+        mounted() {
+          var id = GetQueryValue("id")
+		  this.vote_id = id
+		  this.getShare(id)
+		  this.getDetails(id)
+        },
+        methods: {
+			openImg(ix){
+				var imgs = []
+				for(var i=0;i<this.allData.attament.length;i++){
+					imgs.push(this.allData.attament[i].path)
+				}
+				vant.ImagePreview({
+				  images: imgs,
+				  startPosition: ix,
+				  onClose() {
+				    // do something
+				  },
+				});
+			},
+			lookImg(path){            //查看图片
+				var imgs = [path]
+				vant.ImagePreview({
+				  images: imgs,
+				  startPosition: 0,
+				  onClose() {
+				    // do something
+				  },
+				});
+			},
+			getShare(id){
+				var that = this;
+				var url = pageUrl+"huashao_h5/pages/shares/principal/shareActivityDetails.html?id="+id
+				ajax("current/share/vote",'POST',{share_url:url,vote_activity_id:id},function(res){
+					if(res.code==1){
+						that.sharesData = res.data.result.share
+					}
+				})
+			},
+			share(type){       //分享
+				this.show = false
+				var that = this;
+				var objs = {
+					content:this.sharesData.description,
+					description:this.sharesData.description,
+					platform:type,
+					title:this.sharesData.title,
+					url:this.sharesData.webpageUrl
+				}
+				AndroidRouter("share",JSON.stringify(objs),this.set_share,"set_share")
+			},
+			set_share(res){            //分享回调
+				
+			},
+			getDetails(id){
+				this.$refs.loadings.openLoading()
+				var that = this;
+				ajax("school/vote/vote_activity",'POST',{vote_activity_id:id},function(res){
+					if(res.code==1){
+						that.allData = res.data.result
+						that.dataList = res.data.list
+					}
+					that.loadMo = true
+					that.$refs.loadings.closedLoading()
+				})
+			},
+			goVote(item){        //投票
+				var that = this;
+				ajax("school/vote/school_vote",'POST',{vote_activity_join_id:item.vote_activity_join_id},function(res){
+					vant.Toast(res.msg)
+					if(res.code==1){
+						item.is_vote = 1
+						item.vote_num+=1
+					}
+				})
+			},
+            goBack() {
+                history.go(-1);
+            },
+            goShare(bool) {
+                this.show = bool;
+            },
+            shareWayCacel(){
+                this.show = false;
+            },
+			autoVideo(item){       //视频播放
+				var obj = {
+					title:this.allData.title,
+					path:item
+				}
+				AndroidRouter('playVideo',JSON.stringify(obj))
+			},
+			autoVoice(item){        //音频播放
+				var obj = {
+					title:this.allData.title,
+					path:item
+				}
+				AndroidRouter('playVoice',JSON.stringify(obj))
+			}
+        }
+    });
+</script>
+
+</html>

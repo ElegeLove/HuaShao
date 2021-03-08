@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>消息</title>
+    <!-- head 中 -->
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/principal/l_tidings.css">
+</head>
+
+<body>
+    <div class="content" id="l_tidings" v-cloak>
+        <div class="top">
+            <div class="top_title">消息</div>
+            <div class="top_text">{{allData.no_read_num}}&nbsp;<span>条未读</span></div>
+        </div>
+        <van-pull-refresh v-model="refreshing" class="listmsg" @refresh="onRefresh" v-cloak>
+            <ul class="list">
+                <li v-for="item in allData.list" @click="goDetail(item.type)">
+                    <!-- <a href="./systemNotice.html"> -->
+                    <div class="list_img">
+                        <img src="../../../images/principal/ic_sys.png" v-if="item.type == 1" alt="">
+                        <img src="../../../images/principal/Ic_registration.png" v-else alt="">
+                    </div>
+                    <div class="list_right">
+                        <div class="list_right_top">
+                            <div class="list_right_top_left">{{item.type_text }}<span v-show="item.is_new == 1"></span>
+                            </div>
+                            <div class="list_right_top_right">{{item.create_time}}</div>
+                        </div>
+                        <div class="list_right_text">{{item.title}}</div>
+                    </div>
+                    <!-- </a> -->
+                </li>
+            </ul>
+        </van-pull-refresh>
+        <div class="noNotice" v-if="isShow">
+            <div class="noNotice_main">
+                <img src="../../../images/principal/noNotice.png" alt="">
+                <div>暂无通知...</div>
+            </div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('height', $(window).height() + 'px');
+            $('.listmsg').css('height', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#l_tidings',
+        data() {
+            return {
+                allData: {},
+                isShow: false,
+                refreshing: false
+            }
+        },
+        mounted() {
+            this.$refs.loadings.openLoading();
+            // this.getLists()
+            AndroidRouter('getUserInfo', "", this.setUserInfo, "setUserInfo");
+        },
+        methods: {
+            setUserInfo(res) { //获取token回调
+                localStorage.setItem("token", res)
+                this.getLists();
+                AndroidRouter('onBottomTabClick', 3, this.bottomTab, "setOnBottomTabClick")
+            },
+            bottomTab() {
+                // location.reload()
+                this.getLists();
+                AndroidRouter('onBottomTabClick', 3, this.bottomTab, "setOnBottomTabClick")
+            },
+            onRefresh() { //刷新
+                this.getLists()
+            },
+            getLists() {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../../images/loading.gif"
+                // });
+                var that = this;
+                ajax("school/msg/msg_type_list", 'POST', {}, function(res) {
+                    // vant.Toast.clear();
+                    that.$refs.loadings.closedLoading();
+                    if (res.code == 1) {
+                        that.allData = res.data;
+                        if (that.allData.list.length > 0) {
+                            that.isShow = false;
+                        } else {
+                            that.isShow = true;
+                        }
+                        that.refreshing = false;
+                    }
+                })
+            },
+            goDetail(type) {
+                let url = '';
+                if (type == 1) {
+                    // location.href = './systemNotice.html?type=' + type;
+                    url = 'principal/tidings/systemNotice.html?type=' + type;
+                } else {
+                    // location.href = '../homes/enrollmentList.html';
+                    url = 'principal/homes/enrollmentList.html';
+                }
+                AndroidRouter('onClosePage', "schoolTidings", this.newPage, 'get_closedCall')
+                AndroidRouter('newPage', url)
+            },
+            newPage(res) {
+                this.getLists();
+            }
+        }
+    });
+</script>
+
+</html>

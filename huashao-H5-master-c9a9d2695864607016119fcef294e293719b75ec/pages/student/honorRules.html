@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>荣誉规则</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/honorRules.css">
+</head>
+
+<body>
+    <div id="honorRules" class="content">
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">荣誉规则</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main" v-html="main"></div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#honorRules',
+        data() {
+            return {
+                main: "",
+                goback: 'false'
+            }
+        },
+        created() {
+            this.goback = GetQueryValue("goback");
+        },
+        mounted() {
+            // vant.Toast.loading({
+            //     message: '',
+            //     forbidClick: true,
+            //     loadingType: 'spinner',
+            //     duration: 0,
+            //     icon: "../../images/loading.gif"
+            // });
+            // 监听原生返回事件
+            // if (window.history && window.history.pushState) {
+            //     history.pushState(null, null, document.URL);
+            //     window.addEventListener('popstate', this.fun, false); //false阻止默认事件
+            // }
+            this.$refs.loadings.openLoading();
+            let that = this;
+            ajax('current/index/config', "POST", {
+                identity: 'honor_rules'
+            }, function(res) {
+                if (res.code == 1) {
+                    that.main = res.data.result.value;
+                    // vant.Toast.clear();
+                    that.$refs.loadings.closedLoading();
+                }
+            })
+        },
+        methods: {
+            goBack() {
+                if (this.goback == 'true') {
+                    history.go(-1);
+                } else {
+                    AndroidRouter('closePage', '');
+                }
+            },
+            // fun() {
+            //     this.goBack();
+            // }
+        }
+    });
+</script>
+
+</html>

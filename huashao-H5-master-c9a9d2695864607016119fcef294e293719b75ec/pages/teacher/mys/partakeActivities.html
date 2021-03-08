@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>参与活动</title>
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/teacher/partakeActivities.css">
+</head>
+
+<body>
+    <div id="partakeActivities" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack()" src="../../../images/student/icon_back.png" alt="">
+                <div class="topTitle">参与活动</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="main_name">
+                <div class="name_text">
+                    <span class="redColor">*</span><span>我的姓名</span>
+                </div>
+                <input class="namr_inp" type="text" v-model="PostData.full_name" placeholder="请输入姓名" maxlength="10">
+            </div>
+            <div class="theme">
+                <div>
+                    <span class="redColor">*</span><span>我的主题（100字以内）</span>
+                </div>
+                <input placeholder="请输入作品主题" maxlength="100" v-model="PostData.title"/>
+            </div>
+            <div class="theme">
+                <div>
+                    主题描述（300字以内）
+                </div>
+                <input placeholder="请输入主题描述" maxlength="300" class="trows" v-model="PostData.conent"/>
+            </div>
+            <div class="upload">
+                <div>
+                    <span class="redColor">*</span><span>上传{{type==0?'图片':type==1?'音频':'视频'}}作品</span>
+                </div>
+                <div class="upFile">
+                    <div v-if="PostData.attachment_arr!==''">
+                        <img :src="PostData.attachment_arr" alt="" class="bg" v-if="type!==1">
+						<div class="audios align_items" v-if="type==1" @click="autoVoice">
+							<img src="../../../images/student/Collection_voice.png" />
+							<span>{{PostData.attachment_arr}}〞</span>
+						</div>
+						<div v-if="type==2" class="vis" @click="autoVideo">
+							<img src="../../../images/teacher/ic_bofang.png" />
+						</div>
+						<img src="../../../images/teacher/ic_del.png" class="dele" @click="deletes"/>
+                    </div>
+					<div class="upFile_file" @click="upload" v-if="PostData.attachment_arr==''"></div>
+                </div>
+            </div>
+			<div class="fotBtn_teath">
+				<van-button type="default" class="gon" @click="subData">确定参加</van-button>
+			</div>
+        </div>
+		<loadings ref="loadings"/>
+    </div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#partakeActivities',
+        data() {
+            return {
+               PostData:{
+				   vote_id:"",
+				   full_name:"",
+				   title:"",
+				   conent:"",
+				   attachment:"",
+				   attachment_arr:""
+			   },
+			   attachment_arr:[],
+			   tostData:{
+			     full_name:"请输入姓名",
+			     title:"请输入作品主题"
+			   },
+			   type:""
+            }
+        },
+        created() {
+            var id = GetQueryValue("id")
+            var type = GetQueryValue("type")
+			this.type = type
+            this.PostData.vote_id = id
+        },
+        methods: {
+			autoVideo(){               //播放视频
+				var obj = {
+					title:"视频播放",
+					path:this.attachment_arr[0].videoPath
+				}
+				AndroidRouter('playVideo',JSON.stringify(obj))
+			},
+			autoVoice(it){         //播放音频
+				var obj = {
+					title:"音频播放",
+					path:this.PostData.attachment[0].file_path
+				}
+				AndroidRouter('playVoice',JSON.stringify(obj))
+			},
+            goBack() {
+                history.go(-1);
+            },
+			set_selectPic(res){            //上传图片回调
+				var ress = JSON.parse(res)
+				this.PostData.attachment = ress[0].id
+				this.PostData.attachment_arr = ress[0].path
+			},
+			set_selectVoice(res){			//选择音频回调
+				var ress = JSON.parse(res)
+				this.PostData.attachment = [ress]
+				this.PostData.attachment_arr = ress.duration
+			},
+			set_selectVideo(res){		//选择视频回调
+				var resPen = JSON.parse(res)
+				this.PostData.attachment_arr = resPen.cover_path
+				this.attachment_arr.push({path:resPen.cover_path,coverPathId:resPen.cover_path_id,videoPath:resPen.video_loc_path})
+			},
+            upload() {          //上传音视频图片
+				var that = this;
+				if(this.type==0){       //图文
+					AndroidRouter("selectPic",1,this.set_selectPic,"set_selectPic")
+				}else if(this.type==1){			//音频
+					AndroidRouter("selectVoice",1,this.set_selectVoice,"set_selectVoice")
+				}else{                    //视频
+					AndroidRouter('selectVideo',"1",this.set_selectVideo,"set_selectVideo")
+				}
+            },
+			deletes(index){        //删除附件
+				if(this.type!=2){
+					this.PostData.attachment = ""
+				}
+				this.PostData.attachment_arr = ""
+				this.attachment_arr = []
+			},
+            subData() {
+			  var that = this;
+			  var posts = JSON.parse(JSON.stringify(this.PostData))
+			  var arr =  Object.keys(this.tostData)
+			  for(var i=0;i<arr.length;i++){           //非空验证
+				 if(this.PostData[arr[i]]==''){
+					 vant.Toast(this.tostData[arr[i]])
+					 return;
+				 }
+			  }
+			  if(this.PostData.attachment_arr.length==0){
+				  return vant.Toast("请上传附件")
+			  }
+			  if(this.type==2){
+				  var videoArr = []
+				  this.attachment_arr.forEach(function(it){
+				  	videoArr.push({video_loc_path:it.videoPath,cover_path_id:it.coverPathId})
+				  })
+				  AndroidRouter('uploadVideo',JSON.stringify(videoArr),this.set_uploadVideo,"set_uploadVideo")
+			  }else if(this.type==1){
+				  AndroidRouter('uploadVoice',JSON.stringify(posts.attachment),this.set_uploadVoice,"set_uploadVoice")
+			  }else{
+				  this.sendDatas(posts)
+			  }
+            },
+			set_uploadVoice(res){		 //上传音频回调
+				var posts = JSON.parse(JSON.stringify(this.PostData))
+				var videoIdArr = JSON.parse(res)
+				posts.attachment = videoIdArr[0]
+				this.sendDatas(posts)
+			},
+			set_uploadVideo(res){                //上传视频回调
+				var posts = JSON.parse(JSON.stringify(this.PostData))
+				var videoIdArr = JSON.parse(res)
+				posts.attachment = videoIdArr[0]
+				this.sendDatas(posts)
+			},
+			sendDatas(posts){
+				this.$refs.loadings.openLoading()
+				var that = this;
+				ajax("teacher/Vote/addJoinActive",'POST',posts,function(res){
+					that.$refs.loadings.closedLoading()
+					vant.Toast(res.msg)
+					if(res.code==1){
+						setTimeout(function(){
+							history.go(-1)
+						},700)
+					}
+				})
+			}
+        }
+    });
+</script>
+
+</html>

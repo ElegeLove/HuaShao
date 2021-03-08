@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>学生管理</title>
+		<script src="../../js/public/rem.js"></script>
+		<script src="../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../allCss/public.css">
+		<link rel="stylesheet" href="../../allCss/teacher/checkStudents.css">
+		<link rel="stylesheet" href="../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="topFixd">
+				<div class="heads_top">
+				    <div class="heads_topBox">
+				        <img class="heads_topImg" src="../../images/student/icon_back.png" alt="" @click="goback">
+				        <div class="heads_topTitle">选择学生</div>
+				        <div class="heads_rig" @click="subGo">确定</div>
+				    </div>
+				</div>
+			</div>
+			<div class="persons" v-cloak>
+				<van-collapse v-model="activeName" accordion v-if="list.length!==0">
+				  <van-collapse-item :title="item.classes_name+'('+item.student_num+')'" :name="index" v-for="(item,index) in list" :key="index">
+					  <div class="listBg">
+						  <div class="align_items allCheck" v-if="item.student_list.length!==0" @click="checkAlls(item)">
+							  <div>
+								  <img src="../../images/teacher/xq_yuan.png" v-if="item.checkAll"/>
+								  <img src="../../images/teacher/xq_yuan2.png" v-else />
+							  </div>
+							  <p>全选</p>
+						  </div>
+						  <div class="align_items" v-for="(it,ix) in item.student_list" :key="ix" @click="checks(it,item)">
+							  <div>
+								  <img src="../../images/teacher/checkBoxOne.png" v-if="it.check"/>
+								  <img src="../../images/teacher/checkBoxTwo.png" v-else/>
+							  </div>
+							  <img :src="it.student_head" onerror="this.src = '../../images/teacher/error.png'"/>
+							  <span class="danshen">{{it.student_name}}</span>
+						  </div>
+						  <div class="noStau" v-if="item.student_list.length==0">暂无学生数据</div>
+					  </div>
+				  </van-collapse-item>
+				</van-collapse>
+				<div v-if="list.length==0&&nullEmptys" class="nullEmptys">
+					<img src="../../images/student/null.png" />
+					<p>什么都没有...</p>
+				</div>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../js/public/vue.js"></script>
+	<script src="../../js/public/vant.js"></script>
+	<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					postData:{
+						search:""
+					},
+					activeName: 0,
+					list:[],
+					students:[],
+					students_name:[],
+					nullEmptys:false
+	            }
+	        },
+			mounted(){
+				this.getList()
+			},
+	        methods: {
+				getLocal(){
+					var that = this;
+					var sendData = localStorage.getItem('sendData')
+					if(sendData!==null){
+						var datas = JSON.parse(sendData)
+						this.students = datas.students
+						this.students_name = datas.students_name
+						var arr3 = this.list.filter(function(item, i){
+						    var myitem = '';
+						    that.students.filter(function(value, b){
+							  item.student_list.filter(function(va,ix){
+								 if(va.classes_student_id== value) {
+									 that.$set(va,"check",true)
+								 }
+							  })
+						      
+						  });
+						  return myitem;
+						});
+						this.list.map(function(it){        //自动全选
+							var status = it.student_list.every(function(item){return item.check === true})
+							if(status){
+								it.checkAll = true
+							}
+						})
+					}
+				},
+				getList(){
+					var that = this;
+					this.$refs.loadings.openLoading()
+					ajax("teacher/Teacher/TeacherClassessList",'POST',{get_student:1},function(res){
+						that.$refs.loadings.closedLoading()
+						if(res.code==1){
+							that.nullEmptys = true
+							var sendData = JSON.parse(localStorage.getItem('sendData'))
+							var datas = JSON.parse(JSON.stringify(res.data.list))
+							datas.map(function(item){
+								item.checkAll = false
+								item.student_list.map(function(it){
+									it.check = false
+								})
+							})
+							that.list = datas
+							if(sendData.students.length!==0){
+								that.getLocal()
+							}
+						}else{
+							vant.Toast(res.msg)
+						}
+					})
+				},
+				checks(item,allItem){        //选择
+					this.$set(item,"check",item.check?false:true)
+					this.list.forEach(function(items){
+						var status = items.student_list.every(function(item){return item.check === true})
+						if(status){
+							items.checkAll = true
+						}else{
+							items.checkAll = false
+						}
+					})
+				},
+				checkAlls(item){           //全选
+					item.checkAll = !item.checkAll
+					item.student_list.forEach(function(its){
+						its.check = item.checkAll
+					})
+				},
+				goback(){         //返回
+					history.go(-1)
+				},
+				subGo(){          //确定
+					var newsArr = []
+					var newsArr_name = []
+					var allsData = JSON.parse(JSON.stringify(this.list))
+					allsData.forEach(function(it){
+						it.student_list.forEach(function(item){
+							if(item.check==true){
+								newsArr.push(item.classes_student_id)
+								newsArr_name.push(item)
+							}
+						})
+					})
+					var sendData = localStorage.getItem('sendData')
+					if(sendData!==null){
+						var datas = JSON.parse(sendData)
+						datas.students = newsArr
+						datas.students_name = newsArr_name
+						localStorage.setItem('sendData',JSON.stringify(datas))
+					}
+					history.go(-1)
+				}
+			}
+	    });
+	
+	
+	</script>
+</html>

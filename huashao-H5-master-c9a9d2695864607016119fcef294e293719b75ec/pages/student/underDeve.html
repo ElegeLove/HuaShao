@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>研发中</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/student/underDeve.css">
+</head>
+
+<body>
+    <div id="underDeve" class="content">
+        <div class="main">
+            <img src="../../images/student/underDeve.png" alt="">
+            <div>研发中，暂未开放......</div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script>
+    new Vue({
+        el: '#underDeve',
+        data() {
+            return {}
+        },
+        mounted() {
+
+        },
+        methods: {
+            // goBack() {
+            //     history.go(-1);
+            // }
+        }
+    });
+</script>
+
+</html>

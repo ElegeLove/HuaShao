@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>规则</title>
+	<script src="../../../js/public/rem.js"></script>
+	<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+	<link rel="stylesheet" href="../../../allCss/public.css">
+	<link rel="stylesheet" href="../../../allCss/teacher/rules.css">
+	<link rel="stylesheet" href="../../../allCss/vant.css">
+</head>
+
+<body>
+	<div id="box" :class="type==1?'box1':'box'" v-cloak>
+		<div class="head_top" v-if="type != 1">
+			<div class="head_topBox">
+				<img class="head_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+				<div class="head_topTitle">{{this.title}}</div>
+				<div class="head_topImg"></div>
+			</div>
+		</div>
+		<div v-html="htmls" class="content">
+
+		</div>
+		<loadings ref="loadings"/>
+	</div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+	new Vue({
+		el: '#box',
+		data() {
+			return {
+				htmls: "",
+				key: "",
+				title: "",
+				type: 0
+			}
+		},
+		mounted() {
+			var title = GetQueryValue("title")
+			var key = GetQueryValue("key")
+			this.type = GetQueryValue("type")
+			this.title = title
+			this.key = key
+			this.getDetails(key)
+			document.title = title;
+		},
+		methods: {
+			getDetails(key) {
+				this.$refs.loadings.openLoading()
+				var that = this;
+				ajax("current/index/config", 'POST', { identity: key }, function (res) {
+					that.$refs.loadings.closedLoading()
+					if (res.code == 1) {
+						if (res.data.result !== null) {
+							that.htmls = res.data.result.value
+						}
+					}
+				})
+			},
+			goback() {
+				history.go(-1)
+			}
+		}
+	});
+</script>
+
+</html>

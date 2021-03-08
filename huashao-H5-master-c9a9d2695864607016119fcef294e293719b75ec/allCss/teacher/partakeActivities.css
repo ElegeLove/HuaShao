@@ -1,0 +1,243 @@
+.content {
+    width: 100%;
+    padding-top: 1rem;
+    box-sizing: border-box;
+}
+
+.redColor {
+    color: #F22828;
+}
+
+input::-webkit-input-placeholder {
+    font-size: 0.3rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: #999999;
+}
+
+input::-moz-placeholder {
+    /* Mozilla Firefox 19+ */
+    font-size: 0.3rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: #999999;
+}
+
+input:-moz-placeholder {
+    /* Mozilla Firefox 4 to 18 */
+    font-size: 0.3rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: #999999;
+}
+
+input:-ms-input-placeholder {
+    /* Internet Explorer 10-11 */
+    font-size: 0.3rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: #999999;
+}
+
+.top {
+    width: 100%;
+    padding: 0.265rem 0.3rem;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 111;
+    background: #ffffff;
+}
+
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topImg {
+    width: 0.4rem;
+    height: 0.4rem;
+}
+
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.main {
+    width: 100%;
+    padding: 0 0.3rem;
+    box-sizing: border-box;
+}
+
+.main_name {
+    width: 100%;
+    padding: 0.48rem 0;
+    border-bottom: 0.01rem solid #EEEEEE;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.name_text {
+    font-size: 0.3rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: #333333;
+}
+
+.namr_inp {
+    flex: 1;
+	text-align: right;
+	margin-left: 0.3rem;
+}
+
+.theme {
+    width: 100%;
+    padding: 0.44rem 0 0.3rem;
+    border-bottom: 0.01rem solid #EEEEEE;
+}
+
+.theme_text {
+    width: 100%;
+    height: 1.5rem;
+    margin-top: 0.2rem;
+    resize: none;
+}
+.theme_texts{
+    height: 3rem;
+}
+.upload{
+    width: 100%;
+    padding: 0.44rem 0 0.3rem;
+}
+.upFile input{
+    width: 1.54rem;
+    height: 1.54rem;
+}
+.upFile_file{
+    width: 1.54rem;
+    height: 1.54rem;
+    border-radius: 0.1rem;
+    background: url('../../images/student/pic_add.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+}
+.listBtn {
+    width: 100%;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+    margin-top: 2rem;
+    padding: 0.15rem 0.3rem;
+    box-sizing: border-box;
+   
+}
+
+.listBtn_main {
+    width: 100%;
+    height: 1.06rem;
+    background: url('../../images/student/Icon_button_register.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(255, 255, 255, 1);
+}
+.theme input{
+	font-size: 0.3rem;
+	margin-top: 0.83rem;
+}
+.upFile{
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+    border-radius: 0.1rem;
+}
+.trows{
+	margin-top: 1.53rem !important;
+}
+.upFile>div{
+	width: 1.54rem;
+	height: 1.54rem;
+	border-radius: 0.1rem;
+	margin-right: 0.3rem;
+	margin-top: 0.36rem;
+	position: relative;
+}
+.upFile>div>.bg{
+	width: 100%;
+	height: 100%;
+	border-radius: 0.1rem;
+}
+.upFile>div>.dele{
+	width: 0.4rem;
+	height: 0.4rem;
+	position: absolute;
+	right: -0.2rem;
+	top: -0.2rem;
+	z-index: 100;
+}
+.upFile>div>div{
+	width: 100%;
+	height: 100%;
+	background: rgba(0,0,0,0.5);
+	position: absolute;
+	top: 0;
+	left: 0;
+	border-radius: 0.1rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.upFile>div>div>img{
+	width: 0.7rem;
+	height: 0.7rem;
+}
+.audios{
+	background: linear-gradient(to right, #74E5F9, #2EC5E0) !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+}
+.audios>img{
+	width: 0.32rem !important;
+	height: 0.4rem !important;
+}
+.audios>span{
+	color: #FFFFFF;
+	font-size: 0.26rem;
+	margin-left: 0.13rem;
+}
+.fotBtn_teath{
+	width: 100%;
+	/* position: fixed; */
+	bottom: 0;
+	left: 0;
+	box-sizing: border-box;
+	padding: 0.15rem 0rem;
+	margin-top: 0.6rem;
+	background-color: white;
+}
+.fotBtn_teath>.gon{
+	width: 100%;
+	height: 0.88rem;
+	background-color: #2EC5E0;
+	font-size: 0.36rem;
+	color: #FFFFFF;
+	text-align: center;
+	line-height: 0.88rem;
+	border-radius: 0.44rem;
+	box-shadow: 0 0.05rem 0 #15A9C3;
+	border: 0;
+}

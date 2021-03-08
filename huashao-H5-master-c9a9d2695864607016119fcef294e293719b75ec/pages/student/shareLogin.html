@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+		content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>分享登录</title>
+	<script src="../../js/public/rem.js"></script>
+	<script src="../../js/public/jquery-3.2.1.min.js"></script>
+	<link rel="stylesheet" href="../../allCss/public.css">
+	<link rel="stylesheet" href="../../allCss/student/shareLogin.css">
+	<link rel="stylesheet" href="../../allCss/vant.css">
+</head>
+
+<body>
+	<div class="content" id="box">
+		<!-- <div class="top">
+			<div class="topBox">
+				<img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+				<div class="topTitle"></div>
+				<div class="topImg"></div>
+			</div>
+		</div> -->
+		<div class="main">
+			<div class="main_top">
+				<img src="../../images/student/pic_logo.png" alt="">
+			</div>
+			<div class="checkTab">
+				<van-tabs v-model="num" line-width="30" :border="false" title-inactive-color="#999999"
+					title-active-color="#333333" color="#2EC5E0" class="typeArrs" @click="checkType">
+					<van-tab v-for="(item,index) in typeArr" :key="index" :title="item.tit"></van-tab>
+				</van-tabs>
+			</div>
+			<div class="main_main">
+				<div class="main_phone">
+					<input class="main_phone_inp" onkeyup="this.value=this.value.replace(/\D/g,'')" maxlength="11"
+						onafterpaste="this.value=this.value.replace(/\D/g,'')" type="tel" placeholder="请输入手机号"
+						v-model="postData.mobile" oninput="if(value.length>11)value=value.slice(0,11)">
+				</div>
+				<div class="main_pwd">
+					<input class="main_pwd_inp" onkeyup="this.value=this.value.replace(/\D/g,'')"
+						onafterpaste="this.value=this.value.replace(/\D/g,'')" type="password" placeholder="请输入密码"
+						v-model="postData.password">
+				</div>
+				<div class="main_text">登录即同意<span @click="goRule">《用户协议》</span></div>
+				<div class="main_btn" @click="logins">
+					登录
+				</div>
+				<div class="main_footer">
+					<div class="main_footer_text">
+						<span href="" @click="regs">{{num==0?'学生注册':'老师注册'}}</span>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="footer">
+			<img src="../../images/student/pic_24.png" alt="" @click="downs">
+		</div>
+	</div>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+	new Vue({
+		el: '#box',
+		data() {
+			return {
+				typeArr: [{ tit: "我是学生", order: 0 }, { tit: "我是老师", order: 1 }],
+				num: 0,           //tab得选中目标
+				postData: {
+					mobile: "",
+					password: ""
+				},
+				type: ""
+			}
+		},
+		mounted() {
+			window.addEventListener('resize', function(){             //解决安卓键盘遮住input
+				if (document.activeElement.tagName == 'INPUT') {
+					window.setTimeout(function(){
+						document.activeElement.scrollIntoViewIfNeeded();
+					}, 100);
+				}
+			});
+		},
+	    created() {
+	      var type = GetQueryValue("type")
+		  this.type = type
+		  var indexDB = localStorage.getItem("indexDB")
+		  if(indexDB!==null||indexDB!==undefined||indexDB!==""){
+			  this.num = Number(indexDB)
+		  }
+		},
+		// created() {
+		// 	var type = GetQueryValue("type")
+		// 	var nums = GetQueryValue("nums")
+		// 	this.type = type
+		// 	if (nums) {
+		// 		this.num = parseInt(nums);
+		// 	}
+		// },
+	    methods: {
+	        goBack() {
+	            history.go(-1);
+	        },
+			checkType(it){              //切换tab
+				
+			},
+			checkType(it) {              //切换tab
+				console.log(this.num)
+				console.log(it)
+			},
+			logins() {
+				var datas = JSON.parse(JSON.stringify(this.postData))
+				if (datas.mobile == "") {
+					return vant.Toast("请输入手机号")
+				}
+				if (datas.password == "") {
+					return vant.Toast("请输入密码")
+				}
+				var posts = this.num == 0 ? 'student/login/do_login' : 'teacher/login/do_login'
+				webajax(posts, 'POST', datas, function (res) {
+					vant.Toast(res.msg)
+					if (res.code == 1) {
+						localStorage.setItem("token", res.data.key)
+						localStorage.setItem("u_types", res.data.u_type)
+						localStorage.setItem("u_id", res.data.u_id)
+						setTimeout(function () {
+							history.go(-1)
+						}, 300)
+					}
+				})
+			},
+			regs() {
+				// location.href = pageUrl + "huashao_h5/pages/shares/sharePage/shareInvitationData.html?type=2&index=" + this.num
+				localStorage.setItem("indexDB",this.num)
+				location.href = '../shares/sharePage/shareInvitationData.html?type=2&index=' + this.num
+			},
+			downs() {
+				localStorage.setItem("indexDB",this.num)
+				location.href = "./downloadAPP.html"
+			},
+			goRule(){
+				this.postData.mobile = ""
+				this.postData.password = ""
+				localStorage.setItem("indexDB",this.num)
+				var keys = this.num==0?'student_login_agreement':'teacher_login_agreement'
+				location.href = "../teacher/mys/rules.html?title=用户协议&key="+keys+'&type=1'
+			}
+		}
+	});
+</script>
+
+</html>

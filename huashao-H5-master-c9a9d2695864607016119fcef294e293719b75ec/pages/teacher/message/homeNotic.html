@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>作业通知</title>
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/teacher/homeNotic.css">
+	<link rel="stylesheet" href="../../../allCss/vant.css">
+</head>
+
+<body>
+    <div class="content" id="box" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" src="../../../images/teacher/ic_return.png" alt="" @click="goback">
+                <div class="topTitle">{{type==1?'作业':'系统'}}通知</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+		<van-pull-refresh v-model="refreshing" @refresh="onRefresh" style="min-height: 90%;"  v-cloak v-if="dataList.length!==0">
+			<van-list
+			  v-model="loading"
+			  :finished="finished"
+			   :offset="10"
+			   :immediate-check="false"
+			    finished-text="已加载完毕"
+			  @load="onLoad">
+				<div class="list">
+					<div class="item" v-for="(item,index) in dataList" :key="index" @click="goDetails(item)">
+						<div class="item_top">{{item.create_time}}</div>
+						<div class="item_main">
+							<!-- <div class="item_main_title">{{item.content}}</div> -->
+							<div class="item_main_text" v-if="type==1">{{item.datas.content}}</div>
+							<div class="item_main_text" v-else>{{item.content}}</div>
+						</div>
+					</div>
+				</div>
+		</van-list>
+		</van-pull-refresh>
+		<div v-if="dataList.length==0&&nullEmptys" class="nullEmptys margins" style="height: 100%;">
+			<img src="../../../images/student/null.png" />
+			<p>什么都没有...</p>
+		</div>
+		<loadings ref="loadings"/>
+    </div>
+</body>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#box',
+        data() {
+            return {
+                dataList:[],
+				//下拉刷新与加载
+				loading: false,
+				finished: false,
+				refreshing: false,
+				type:"",
+				page:1,
+				nullEmptys:false
+            }
+        },
+        mounted() {
+			var type = GetQueryValue("type")
+			this.type = type
+			this.getList(1)
+        },
+        methods: {
+			goDetails(item){     //作业详情				
+				if(this.type==1){
+					if(item.datas.task_form==1){
+						location.href = "../lookHomework.html?status=2&id="+item.datas.student_task_id+"&post=2"
+					}else{
+						var work_type = item.datas.task_form==2?2:1;
+						var obj = {
+							"title":item.title,
+							"student_task_id":item.datas.student_task_id,
+							"work_type":work_type,
+							"is_comment_work":1,
+							"has_delete_btn":0,
+							"has_tea_comment_btn":item.datas.is_comment==0?1:0,
+							"has_work_title_btn":0
+						}
+						AndroidRouter('goStuWorkDetail',JSON.stringify(obj))
+					}
+				}
+			},
+			onLoad() {        //上拉加载
+			  this.page++
+			  this.getList()
+			},
+			onRefresh() {           //刷新
+			  this.finished = false;
+			  this.loading = true;
+			  this.xingCheck()
+			},
+			xingCheck(){
+				this.page = 1;
+				this.getList()
+			},
+			getList(type){
+				if(type==1){
+					this.$refs.loadings.openLoading()
+				}
+				var that = this;
+				if(this.page==1){
+					this.loading = false
+					this.finished = false
+					this.refreshing = false
+				}
+				var urls = this.type==1?'teacher/Msg/submitTaskList':'teacher/Msg/systemList'
+				ajax(urls,'POST',{page:this.page},function(res){
+					that.loading = false
+					that.$refs.loadings.closedLoading()
+					if(res.code==1){
+						that.nullEmptys = true
+						that.loading = false
+						that.refreshing = false
+						if(res.data.list.length==0){
+						  that.finished = true
+						  if(that.page==1){
+							   that.dataList = []
+						  }
+						  return false
+						}
+						if(that.page==1){
+						  that.dataList = res.data.list
+						}else{
+						  that.dataList = that.dataList.concat(res.data.list)
+						}
+					}else{
+						vant.Toast(res.msg)
+					}
+				})
+			},
+			goback(){
+				AndroidRouter("closePage","")
+				// history.go(-1)
+			}
+        }
+    });
+</script>
+</html>

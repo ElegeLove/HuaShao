@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>活动详情</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/activityDetails.css">
+</head>
+
+<body>
+    <div id="activityDetails" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack()" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">活动详情</div>
+                <img class="topImg" @click="goShare()" src="../../images/student/Ic_share_02.png" alt="">
+            </div>
+        </div>
+        <div class="boxPadd mainTop">
+            <div class="mainTop_title">
+                <!-- <div class="mainTop_title_text">{{dataVal.title}}<p class="mainTop_title_tag">{{dataVal.a_type_text}}
+                    </p>
+                </div> -->
+                <div>{{dataVal.title}}
+                    <p v-if="dataVal.a_type_text && dataVal.a_type_text != ''">{{dataVal.a_type_text}}
+                    </p>
+                </div>
+                <!-- <div>{{dataVal.name}}<p v-for="(it,ix) in allData.task_info.job_tag_list">{{it.tag_name}}</p></div> -->
+            </div>
+            <div class="mainTop_text"><span>活动描述：</span>{{dataVal.content}}</div>
+            <div class="mainTop_imgs">
+                <img v-for="(imgItem,i) in dataVal.attament" :key="i" @click="preview(i)" :src="imgItem.path" alt="">
+            </div>
+            <div class="mainTop_footer">
+                <div>
+                    <div>参与时间：</div>
+                    <div class="mainTop_footer_time">
+                        {{dataVal.join_start_time}}&nbsp;<span>-</span>&nbsp;{{dataVal.join_end_time}}
+                    </div>
+                </div>
+                <div>
+                    <div>投票时间：</div>
+                    <div class="mainTop_footer_time">
+                        {{dataVal.vote_start_time }}&nbsp;<span>-</span>&nbsp;{{dataVal.vote_end_time}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="boxPadd list">
+            <div class="listBox">
+                <div class="item" v-for="(item,i) in dataList">
+                    <div class="item_top">
+                        <div class="item_top_left">{{i+1}}.{{item.full_name}}（{{item.vote_num}}票）</div>
+                        <div class="item_top_right" v-if="item.is_vote == 0">
+                            <div class="item_top_rightBox">
+                                <img src="../../images/student/Ic_thumbup.png" alt="">
+                                <div class="item_top_right_text" @click="goVote(item.vote_activity_join_id)">投票</div>
+                            </div>
+                        </div>
+                        <div class="item_top_rights" v-if="item.is_vote == 1">
+                            <div class="item_top_rightBox">
+                                <img src="../../images/student/Ic_thumbup.png" alt="">
+                                <div class="item_top_rights_text">已投票</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item_main">
+                        {{item.conent}}
+                    </div>
+                    <div class="item_img" v-if="item.attachment && item.attachment.path">
+                        <img v-if="dataVal.a_type==0" :src="item.attachment.path" @click='previewss(item.attachment.path)' alt="">
+                        <div v-if="dataVal.a_type==1" class="audioVal" @click="audioPlay(dataVal.title,item.attachment.path)">
+                            {{item.attachment.duration}}〞
+                        </div>
+                        <div v-if="dataVal.a_type==2" class="videoVal">
+                            <img :src="item.attachment.other_path" class="videoVal_img" alt="">
+                            <div class="video_play">
+                                <img src="../../images/student/ic_anting.png" @click="videoPlay(dataVal.title,item.attachment.path)" alt="">
+                            </div>
+                        </div>
+                        <!-- <img v-if="item.attachment.other_path == ''" :src="item.attachment.path" alt="">
+                        <img v-if="item.attachment.other_path != ''" :src="item.attachment.other_path" alt=""> -->
+                    </div>
+                </div>
+            </div>
+            <div class="listBtn" v-if="dataVal.is_allow_join != 1">
+                <div class="listBtn_main" @click="goPartake(dataVal.a_type)">我要参与</div>
+            </div>
+        </div>
+        <van-popup v-model="show" round position="bottom">
+            <div class="shareBox">
+                <div @click="goShareDetail('WEIXIN')">
+                    <img src="../../images/student/pic_chat.png" alt="">
+                    <div class="shareBox_text">微信</div>
+                </div>
+                <!-- <div @click="goShareDetail('QQ')">
+                    <img src="../../images/student/pic_qq.png" alt="">
+                    <div class="shareBox_text">QQ</div>
+                </div> -->
+                <div @click="goShareDetail('WEIXIN_CIRCLE')">
+                    <img src="../../images/student/pic_friend.png" alt="">
+                    <div class="shareBox_text">朋友圈</div>
+                </div>
+            </div>
+            <div class="shareWay_Cacel" @click="shareWayCacel">取消</div>
+        </van-popup>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+        $('.listBtn_main').click(function() {
+            window.location.href = 'partakeActivities.html';
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#activityDetails',
+        data() {
+            return {
+                show: false,
+                dataVal: {},
+                dataList: [],
+                activetyId: ''
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("id");
+            this.activetyId = id;
+            // vant.Toast.loading({
+            //     message: '',
+            //     forbidClick: true,
+            //     loadingType: 'spinner',
+            //     duration: 0,
+            //     icon: "../../images/loading.gif"
+            // });
+            this.$refs.loadings.openLoading();
+            this.getActivetyInfo(id);
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            // 图片点击放大预览
+            preview(i) {
+                var imgs = []
+                this.dataVal.attament.forEach(function(item) {
+                    imgs.push(item.path)
+                })
+                vant.ImagePreview({
+                    images: imgs,
+                    startPosition: i,
+                    onClose() {
+                        // do something
+                    },
+                });
+            },
+            previewss(val) {
+                var imgs = [];
+                imgs.push(val);
+                vant.ImagePreview({
+                    images: imgs,
+                    startPosition: 0,
+                    onClose() {
+                        // do something
+                    },
+                });
+            },
+            goShare() {
+                this.show = true;
+            },
+            goShareDetail(val) {
+                let that = this;
+                ajax('current/share/vote', "POST", {
+                    vote_activity_id: that.dataVal.vote_activity_id,
+                    share_url: pageUrl + 'huashao_h5/pages/shares/principal/shareActivityDetails.html?id=' + that.dataVal.vote_activity_id
+                }, function(res) {
+                    if (res.code == 1) {
+                        let data = {
+                            "content": res.data.result.share.content,
+                            "description": res.data.result.share.description,
+                            "platform": val,
+                            "title": res.data.result.share.title,
+                            "url": res.data.result.share.webpageUrl
+                        }
+                        AndroidRouter('share', JSON.stringify(data), this.setShare, "set_share");
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                })
+            },
+            setShare(res) {
+                this.show = false;
+                // if (res == -1) {
+                //     vant.Toast('分享失败')
+                // }
+                // if (res == 0) {
+                //     vant.Toast('取消分享')
+                // }
+                // if (res == 1) {
+                //     vant.Toast('分享成功')
+                // }
+            },
+            shareWayCacel() {
+                this.show = false;
+            },
+            getActivetyInfo(id) {
+                let that = this;
+                ajax('student/vote/vote_activity', "POST", {
+                    vote_activity_id: id
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.dataVal = res.data.result;
+                        that.dataList = res.data.list;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                    }
+                })
+            },
+            goVote(id) {
+                let that = this;
+                if (this.dataVal.is_allow_vote == 1) {
+                    vant.Toast('没有权限投票')
+                } else {
+                    ajax('student/vote/student_vote', "POST", {
+                        vote_activity_join_id: id
+                    }, function(res) {
+                        if (res.code == 1) {
+                            that.getActivetyInfo(that.activetyId);
+                            vant.Toast(res.msg)
+                        } else {
+                            vant.Toast(res.msg)
+                        }
+                    })
+                }
+            },
+            goPartake(type) {
+                location.href = './partakeActivities.html?id=' + this.dataVal.vote_activity_id + '&type=' + type;
+            },
+            videoPlay(name, url) {
+                let data = {
+                    "title": name,
+                    "path": url
+                }
+                AndroidRouter('playVideo', JSON.stringify(data))
+            },
+            audioPlay(name, url) {
+                let data = {
+                    "title": name,
+                    "path": url
+                }
+                AndroidRouter('playVoice', JSON.stringify(data))
+            },
+        }
+    });
+</script>
+
+</html>

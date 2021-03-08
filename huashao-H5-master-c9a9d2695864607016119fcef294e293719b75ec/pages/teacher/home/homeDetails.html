@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>班级详情</title>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/teacher/homeDetails.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="th_top" v-cloak v-if="allData!==''">
+			    <div class="th_topBox">
+			        <img class="th_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+			        <div class="th_topTitle danshen shends">{{allData.classes_info.name}}</div>
+			        <div class="th_topImg"></div>
+			    </div>
+			</div>
+			<div class="th_padd" v-cloak v-if="allData!==''">
+				<div class="th_class">
+					<div class="allTtem_centers tops">
+						<img src="../../../images/teacher/Ic_class.png" />
+						<p class="danshen">{{allData.classes_info.name}}</p>
+					</div>
+					<div class="allTtem_centers bots">
+						<div>
+							<p>{{allData.classes_info.student_num}}人</p>
+							<p>班级人数</p>
+						</div>
+						<div>
+							<p>{{allData.classes_info.task_num}}次</p>
+							<p>作业累计</p>
+						</div>
+					</div>
+				</div>
+				<div class="students">
+					<div class="tits align_items">
+						<span></span>
+						<p>学员列表</p>
+					</div>
+					<div class="user_people" @click="goUserList" v-if="allData.classes_info.student_list.length!==0">
+						<div>
+							<div v-for="(item,index) in allData.classes_info.student_list" :key="index">
+								<img :src="item.student_head" onerror="this.src = '../../../images/teacher/error.png'"/>
+							</div>
+						</div>
+						<img src="../../../images/teacher/ic_more.png" />
+					</div>
+					<div class="stu_add" @click="goUserList" v-else>
+						<img src="../../../images/teacher/ic_add.png" />
+						<span>添加学员</span>
+					</div>
+				</div>
+				<div class="listBoxs homeWorklist">
+					<div class="tits align_items">
+						<span></span>
+						<p>布置的作业</p>
+					</div>
+					<van-list
+					      v-model="loading"
+					      :finished="finished"
+					      :immediate-check="false"
+					      finished-text="已加载完毕"
+					      @load="onLoad"
+					      :offset="10"
+						  v-if="list.length!==0"
+					    >
+					<div class="allsList">
+						<div class="list" v-for="(item,index) in list" :key="index"  @click="goDetails(item)">
+							<div class="top">
+								<img :src="item.cover_img" onerror="this.src = '../../../images/teacher/error.png'"/>
+								<div>
+									<div>
+										<img src="../../../images/teacher/Ic_audio.png" v-if="item.form==2"/>
+										<img src="../../../images/teacher/Ic_pic_03.png" v-if="item.form==1"/>
+										<img src="../../../images/teacher/Ic_video_03.png" v-if="item.form==3"/>
+									</div>
+									<p class="danshen"><span>布置{{item.student_num}}人</span><span>完成{{item.done_num}}人</span></p>
+									<!-- <span class="add">添加至学校作业库</span> -->
+								</div>
+							</div>
+							<div class="bot">
+								<p class="moreshen">{{item.name}}</p>
+								<div class="align_items">
+									<img src="../../../images/teacher/ic_time.png" />
+									<p class="danshen">{{item.end_date}}截止</p>
+								</div>
+							</div>
+						</div>
+					</div>
+					</van-list>
+				</div>
+			</div>
+			<div class="sendFix align_items" @click="sendCheck(true)">
+				<img src="../../../images/principal/Ic_new.png" />
+				<span>新增作业</span>
+			</div>
+			<div class="sends">
+				<van-action-sheet
+				  v-model="show"
+				  :actions="actions"
+				  cancel-text="取消"
+				  @cancel="sendCheck(false)"
+				  @select="onSelect"
+				/>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script src="../../../js/public/vant.js"></script>
+	<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					list:[],
+					show:false,
+					actions: [             //发布练习数据
+					   { name: '从作业库中添加' },
+					   { name: '从收藏中添加' },
+					   { name: '自主新增' }
+					],
+					allData:"",
+					postData:{
+						page:1,
+						classes_id:""
+					},
+					loading:false,
+					finished:false
+	            }
+	        },
+	        mounted() {
+				iosReload()
+				localStorage.removeItem("sendData")
+				var id = GetQueryValue("id")
+				this.postData.classes_id = id
+				this.getDetails(id)
+				var that = this;
+				setTimeout(function(){
+					that.getLists()
+				},100)
+	        },
+	        methods: {
+				goDetails(item){       //详情
+					location.href = "../index.html?id="+item.task_publish_id+"&classId="+this.postData.classes_id
+				},
+				getDetails(id){     //获取班级详情
+					var that = this;
+					ajax("teacher/Classes/classesDetail",'POST',{classes_id:id},function(res){
+						if(res.code==1){
+							that.allData = JSON.parse(JSON.stringify(res.data))
+							that.allData.classes_info.student_list = that.allData.classes_info.student_list.slice(0,6)
+						}
+					})
+				},
+				onLoad(){      //上拉加载
+				  this.postData.page++
+				  this.getLists()
+				},
+				getLists(){
+					var that = this;
+					if(this.postData.page==1){
+						this.$refs.loadings.openLoading()
+					}
+					ajax("teacher/Classes/classesTaskList",'POST',this.postData,function(res){
+						that.loading = false
+						that.$refs.loadings.closedLoading()
+						if(res.code==1){
+							var numData = JSON.parse(JSON.stringify(res.data.list))
+							if(numData.length==0){
+							  that.finished = true
+							  return false
+							}
+							if(that.page==1){
+							  that.list = numData
+							}else{
+							  that.list = that.list.concat(numData)
+							}
+							that.loading = false;
+						}
+					})
+				},
+				goback(){
+					// history.go(-1)
+					AndroidRouter("closePage","")
+				},
+				sendCheck(bool) {       //发布弹框取消
+				  this.show = bool;
+				},
+				onSelect(item,index){          //发布弹框选择
+				    if(index==0){             //从作业库中添加
+						location.href = "../JobLibrary.html?status=add"
+					}else if(index==1){       //从收藏中添加
+						location.href = "addCollection.html"
+					}else if(index==2){		//自主新增作业
+						var classInfo = this.allData.classes_info
+						location.href = "createJob.html?classId="+classInfo.id+"&className="+classInfo.name
+					}
+					this.show = false
+				},
+				goUserList(){         //学员列表
+					location.href = "studentList.html?id="+this.allData.classes_info.id
+				}
+	        }
+	    });
+	</script>
+</html>

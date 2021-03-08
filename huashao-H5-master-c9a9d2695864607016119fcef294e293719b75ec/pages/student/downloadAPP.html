@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>花少教育</title>
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/downloadAPP.css">
+</head>
+
+<body>
+    <div id="downloadAPP" :class="type==1?'contents':'content'">
+        <!-- <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">花少教育</div>
+                <div class="topImg"></div>
+            </div>
+        </div> -->
+        <div class="btnBox">
+            <div class="btnMain" @click="downs">立即下载</div>
+        </div>
+    </div>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#downloadAPP',
+        data() {
+            return {
+                type:0
+            }
+        },
+        created () {
+            this.type = GetQueryValue("type");
+        },
+        methods: {
+			downs(){      //下载App
+				if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
+				    jump("mxHuashaoApp://")
+				}else{
+				    jump("launchapp://huashao")
+				}
+			},
+            goBack() {
+                history.go(-1);
+            },
+			
+        }
+    });
+</script>
+
+</html>

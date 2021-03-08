@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我的</title>
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/teacher/mysIndex.css">
+	<link rel="stylesheet" href="../../../allCss/vant.css">
+</head>
+
+<body>
+    <div id="my" v-cloak v-if="allData!==''" class="myss">
+		<van-pull-refresh v-model="refreshing" @refresh="onRefresh"  v-cloak >
+			<div class="top">
+				<div class="top_main" @click.stop="goRouter('userPage')">
+					<div class="top_main_left">
+						<img :src="allData.teacher.head" alt="" onerror="this.src = '../../../images/teacher/error.png'">
+						<div>
+							<div class="userName danshen">{{allData.teacher.name}}</div>
+							<div class="invite" @click.stop="goRouter('InvitationCode')">邀请码</div>
+						</div>
+					</div>
+					<img class="top_main_right" src="../../../images/teacher/me_jt.png" alt="">
+				</div>
+			</div>
+	 
+			<div class="list">
+				<div class="list_item" @click="noToast">
+					<div class="list_item_left">
+						<img src="../../../images/teacher/Me_balance.png" alt="">
+						<div>钱包余额</div>
+					</div>
+					<div class="list_item_right">
+						<div>&yen;&nbsp;<span>0</span></div>
+						<img src="../../../images/teacher/ic_more.png" alt="">
+					</div>
+				</div>
+				<div class="list_item" @click="goRouter('myCollection')">
+					<div class="list_item_left">
+						<img src="../../../images/teacher/Me_collection.png" alt="">
+						<div>我的收藏</div>
+					</div>
+					<div class="list_item_right">
+						<img src="../../../images/teacher/ic_more.png" alt="">
+					</div>
+				</div>
+				<div class="list_item" @click="noToast">
+					<div class="list_item_left">
+						<img src="../../../images/teacher/Me_elegantdemeanour.png" alt="">
+						<div>我的风采</div>
+					</div>
+					<div class="list_item_right">
+						<img src="../../../images/teacher/ic_more.png" alt="">
+					</div>
+				</div>
+				<div class="list_item" @click="goLastRouter('studentManagement')">
+					<div class="list_item_left">
+						<img src="../../../images/teacher/Me_students.png" alt="">
+						<div>学生管理</div>
+					</div>
+					<div class="list_item_right">
+						<img src="../../../images/teacher/ic_more.png" alt="">
+					</div>
+				</div>
+				<div class="list_item" @click="goLastRouter('punchPractice')">
+					<div class="list_item_left">
+						<img src="../../../images/teacher/Me_clock.png" alt="">
+						<div>打卡练习管理</div>
+					</div>
+					<div class="list_item_right">
+						<img src="../../../images/teacher/ic_more.png" alt="">
+					</div>
+				</div>
+				<div class="list_item" @click="noToast">
+					<div class="list_item_left">
+						<img src="../../../images/teacher/Me_live.png" alt="">
+						<div>直播教室</div>
+					</div>
+					<div class="list_item_right">
+						<img src="../../../images/teacher/ic_more.png" alt="">
+					</div>
+				</div>
+				<div class="list_item" @click="goRouter('votingActivity')">
+					<div class="list_item_left">
+						<img src="../../../images/teacher/Me_vote.png" alt="">
+						<div>投票活动</div>
+					</div>
+					<div class="list_item_right">
+						<img src="../../../images/teacher/ic_more.png" alt="">
+					</div>
+				</div>
+				<div class="list_item" @click="goRouter('feedBacks')">
+					<div class="list_item_left">
+						<img src="../../../images/teacher/Me_feedback.png" alt="">
+						<div>意见反馈</div>
+					</div>
+					<div class="list_item_right">
+						<img src="../../../images/teacher/ic_more.png" alt="">
+					</div>
+				</div>
+			</div>
+		</van-pull-refresh>
+    </div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#my',
+        data() {
+            return {
+               allData:"",
+			   refreshing: false
+            }
+        },
+		created(){
+			var that = this;
+			AndroidRouter('getUserInfo',"",this.setUserInfo,"setUserInfo")
+			// this.getUserInfo()
+		},
+        methods: {
+			setOnBottomTabClick(){
+				this.getUserInfo()
+				AndroidRouter('onBottomTabClick',4,this.setOnBottomTabClick,"setOnBottomTabClick")
+			},
+			setUserInfo(res){         //获取token回调
+				localStorage.setItem("token",res)
+				this.getUserInfo()
+				AndroidRouter('onBottomTabClick',4,this.setOnBottomTabClick,"setOnBottomTabClick")
+			},
+			closeCall(){          //页面触发回调
+				this.getUserInfo()
+			},
+			onRefresh() {           //刷新
+			  this.getUserInfo()
+			},
+			getUserInfo(){
+				var that = this;
+				ajax("teacher/Teacher/getTeacherInfo",'POST',"",function(res){
+					if(res.code==1){
+						that.refreshing = false;
+						that.allData = res.data
+						localStorage.setItem("userInfos",JSON.stringify(res.data))
+					}
+				})
+			},
+			goRouter(route){       //页面跳转
+				localStorage.removeItem("primordial")
+				var urls = "teacher/mys/"+route+".html"
+				if(route=="userPage"){
+					AndroidRouter('onClosePage',"tea_mys",this.closeCall,"get_closedCall")
+				}
+				AndroidRouter("newPage",urls)
+				// location.href = route+".html"
+			},
+			goLastRouter(route){     //学生管理
+				localStorage.removeItem("primordial")
+				var urls = "teacher/"+route+".html"
+				AndroidRouter("newPage",urls)
+				// location.href = '../'+route+".html"
+			},
+			noToast(){        //功能未开放
+				vant.Toast("功能暂未开放")
+			}
+        }
+    });
+</script>
+
+</html>

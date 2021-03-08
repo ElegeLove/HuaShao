@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport"
+		    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<title>新增投票</title>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+		<link rel="stylesheet" href="../../../allCss/principal/t_addVoting.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="th_headers">
+			    <div class="th_headers_topBox">
+					<div class="marginfgs">
+						<img class="th_headers_topImg" src="../../../images/student/icon_back.png" alt="" @click="goBack">
+					</div>
+			        <div class="th_headers_topTitle marginfgs yidongs">新增投票</div>
+					<div class="th_headers_rigs marginfgs"></div>
+			    </div>
+			</div>
+			<div class="conts">
+				<div class="divs">
+					<p>投票主题（100字以内）</p>
+					<input placeholder="请输入投票主题" max="100" v-model="postData.title"/>
+				</div>
+				<div class="divs clearBot clearMar">
+					<p>活动描述（300字以内）</p>
+					<textarea rows="4" placeholder="请输入投票描述" maxlength="300" v-model="postData.content"></textarea>
+				</div>
+				<div class="uploadBox">
+					<div style="margin-top: 0;">
+						<div v-for="(it,ix) in postData.attachment_arr" :key="ix">
+							<img :src="it.path" class="imgs"/>
+							<img src="../../../images/teacher/ic_del.png" class="dele" @click="deleOuth(ix)"/>
+						</div>
+						<div v-if="postData.attachment_arr.length<6" @click="uploads">
+							<img src="../../../images/teacher/pic_09.png" class="imgs"/>
+						</div>
+					</div>
+				</div>
+				<div class="divs clearBot marginTp uploadBox">
+					<p>封面上传</p>
+					<div>
+						<div v-if="postData.cover!==''">
+							<img :src="postData.cover_imgss" class="imgs"/>
+							<img src="../../../images/teacher/ic_del.png" class="dele" @click="deleCover"/>
+						</div>
+						<div v-else @click="uploadCover">
+							<img src="../../../images/teacher/pic_09.png" class="imgs"/>
+						</div>
+					</div>
+				</div>
+				<div>
+					<div class="align_items divBox" @click="openCheck('actionsOne','a_type','a_type_name')">
+						<p>参与投票作品类型</p>
+						<div class="align_items">
+							<input placeholder="请选择" readonly="readonly" v-model="postData.a_type_name"/>
+							<img src="../../../images/principal/jiantou.png" />
+						</div>
+					</div>
+					<div class="align_items divBox" @click="openCheck('actionsTwo','join_range','join_range_name')">
+						<p>参与选手范围</p>
+						<div class="align_items">
+							<input placeholder="请选择" readonly="readonly" v-model="postData.join_range_name"/>
+							<img src="../../../images/principal/jiantou.png" />
+						</div>
+					</div>
+					<div class="align_items divBox">
+						<p>参与人数</p>
+						<div class="align_items">
+							<input placeholder="输入参与人数" v-model="postData.people_num"
+							type="tel"
+							 onkeyup="this.value=this.value.replace(/\D/g,'')" onafterpaste="this.value=this.value.replace(/\D/g,'')"
+							/>
+						</div>
+					</div>
+					<div class="align_items divBox" @click="openCheck('actionsThree','vote_range','vote_range_name')">
+						<p>投票者范围</p>
+						<div class="align_items">
+							<input placeholder="请选择" readonly="readonly" v-model="postData.vote_range_name"/>
+							<img src="../../../images/principal/jiantou.png" />
+						</div>
+					</div>
+					<div class="timBox">
+						<p>参与时间</p>
+						<div class="align_items">
+							<input placeholder="开始时间" readonly="readonly" @click="checkTim('join_start_time')" v-model="postData.join_start_time"/>
+							<span>至</span>
+							<input placeholder="截止时间" readonly="readonly" @click="checkTim('join_end_time')" v-model="postData.join_end_time"/>
+						</div>
+					</div>
+					<div class="timBox">
+						<p>投票时间</p>
+						<div class="align_items">
+							<input placeholder="开始时间" readonly="readonly" @click="checkTim('vote_start_time')" v-model="postData.vote_start_time"/>
+							<span>至</span>
+							<input placeholder="截止时间" readonly="readonly" @click="checkTim('vote_end_time')" v-model="postData.vote_end_time"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="sends">
+				<van-action-sheet
+				  v-model="show"
+				  :actions="actions"
+				  cancel-text="取消"
+				  @cancel="closed"
+				  @select="onSelect"
+				/>
+			</div>
+			<div class="timePop">
+				<van-popup v-model="timeShow" position="bottom">
+					<van-datetime-picker
+					  v-model="currentDate"
+					  type="date"
+					  title="选择年月日"
+					  :min-date="minDate"
+					  :max-date="maxDate"
+					  :formatter="formatter"
+					  @cancel="openTim(false)"
+					  @confirm="getTim"
+					/>
+				</van-popup>
+			</div>
+			<div class="fotBtn">
+				<van-button type="default" class="gon" @click="submits">确定</van-button>
+			</div>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../js/public/vant.js"></script>
+	<script src="../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					postData:{
+						title:"",
+						content:"",
+						attachment:[],
+						attachment_arr:[],
+						cover:"",
+						cover_imgss:"",
+						a_type:"",
+						a_type_name:"",
+						join_range:"",
+						join_range_name:"",
+						vote_range:"",
+						vote_range_name:"",
+						people_num:"",
+						join_start_time:"",
+						join_end_time:"",
+						vote_start_time:"",
+						vote_end_time:""
+					},
+					tostData:{
+					  title:"请输入投票标题",
+					  content:"请输入活动描述",
+					  cover:"请上传封面图",
+					  a_type:"请选择投票类型",
+					  join_range:"请选择选手范围",
+					  people_num:"请输入参与人数",
+					  vote_range:"请选择投票者范围",
+					  join_start_time:"请选择参与开始时间",
+					  join_end_time:"请选择参与结束时间",
+					  vote_start_time:"请选择投票开始时间",
+					  vote_end_time:"请选择投票结束时间"
+					  
+					},
+					timeCheck:"",
+					key:"",           //当前选择属性
+					keyName:"",			//当前选择的属性名称
+					actions: [],           //底部弹窗数据
+					actionsOne: [             //参与投票作品类型
+					   { name: '图文',val:0 },
+					   { name: '视频',val:2 },{ name: '音频',val:1 }
+					],
+					actionsTwo: [             //选手范围
+					   { name: '所有人',val:0 },
+					   { name: '本校师生',val:1 },{ name: '本校老师',val:2 }
+					],
+					actionsThree: [             //投票者范围
+					   { name: '所有人',val:0 },
+					   { name: '本校师生',val:1}
+					],
+					timeShow:false,
+					minDate:"",
+					maxDate: new Date(2030, 10, 1),
+					currentDate: new Date(),
+					show:false,
+					btnCheck:true
+	            }
+	        },
+	        methods: {
+				deleOuth(ix){       //删除多图
+					this.postData.attachment.splice(ix,1)
+					this.postData.attachment_arr.splice(ix,1)
+				},
+				deleCover(){		//删除封面图
+					this.postData.cover = ''
+					this.postData.cover_imgss = ''
+				},
+				formatter (type, value) {         //时间格式化
+				  var tim = formatters(type,value)
+				  return tim;
+				},
+				onSelect(item){
+					this.postData[this.key] = item.val
+					this.postData[this.keyName] = item.name
+					this.show = false
+				}, 
+				openTim(bool){         //打开时间弹窗
+					this.timeShow = bool
+				},
+				checkTim(key){
+					if(key=="join_end_time"&&this.postData.join_start_time!==''){
+						var tims = this.postData.join_start_time.split(".")
+						this.minDate = new Date(tims[0], tims[1]-1, tims[2])
+					}else if(key=="vote_end_time"&&this.postData.vote_start_time!==''){
+						var tims = this.postData.vote_start_time.split(".")
+						this.minDate = new Date(tims[0], tims[1]-1, tims[2])
+					}else{
+						var datetime = new Date();
+						var year = datetime.getFullYear();
+						var month = datetime.getMonth();
+						var date = datetime.getDate() < 10 ? "0" + datetime.getDate() : datetime.getDate();
+						this.minDate = new Date(year,month,date)
+					}
+					this.timeCheck = key
+					this.openTim(true)
+				},
+				getTim(val){
+					var dateTims = getTime(val)
+					var tim = dateTims[0]+"."+dateTims[1]+'.'+dateTims[2]
+					this.postData[this.timeCheck] = tim
+					this.openTim(false)
+				},
+				closed(){
+					this.show = false
+				},
+				openCheck(arr,key,keyName){       //打开底部弹窗
+					this.key = key
+					this.keyName = keyName
+					this.actions = this[arr]
+					this.show = true
+				},
+				goBack(){         //返回
+					history.go(-1)
+				},
+				uploads(){          //上传多图
+					var that = this;
+					var nums = 6-(this.postData.attachment.length)
+					AndroidRouter("selectPic",nums,this.outhCall,"set_selectPic")
+				},
+				uploadCover(){           //上传封面图
+					AndroidRouter("selectPic",1,this.coverCall,"set_selectPic")
+				},
+				outhCall(res){            //上传多图回调
+					var that = this;
+					var resPen = JSON.parse(res)
+					resPen.forEach(function(it){
+						that.postData.attachment.push(it.id)
+						that.postData.attachment_arr.push({path:it.path})
+					})
+				},
+				coverCall(res){           //封面图回调
+					var resPen = JSON.parse(res)
+					this.postData.cover = resPen[0].id;
+					this.postData.cover_imgss = resPen[0].path
+				},
+				submits(){ 			//提交
+					var arr =  Object.keys(this.tostData)
+					for(var i=0;i<arr.length;i++){           //非空验证
+					   if(this.postData[arr[i]]===''){
+					       vant.Toast(this.tostData[arr[i]])
+					       return;
+					   }
+					}
+					var datas = JSON.parse(JSON.stringify(this.postData))
+					datas.attachment = JSON.stringify(datas.attachment)
+					datas.join_start_time = datas.join_start_time.split(".").join("-")
+					datas.join_end_time = datas.join_end_time.split(".").join("-")
+					datas.vote_start_time = datas.vote_start_time.split(".").join("-")
+					datas.vote_end_time = datas.vote_end_time.split(".").join("-")
+					var that = this;
+					if(this.btnCheck){
+						this.btnCheck = false
+						ajax("school/vote/vote_activity_add",'POST',datas,function(res){
+							vant.Toast(res.msg)
+							if(res.code==1){
+								setTimeout(function(){
+									history.go(-1)
+								},500)
+							}
+						})
+						setTimeout(function(){
+							that.btnCheck = true
+						},1500)
+					}
+				}
+	        }
+	    });
+	</script>
+</html>

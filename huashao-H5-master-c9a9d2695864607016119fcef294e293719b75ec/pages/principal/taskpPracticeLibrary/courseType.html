@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课程体系选择</title>
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/principal/l_courseType.css">
+</head>
+
+<body>
+    <div id="box" v-cloak>
+        <div class="fixed">
+            <div class="head_top" style="position: relative;">
+                <div class="head_topBox">
+                    <img class="head_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+                    <div class="head_topTitle">课程体系选择</div>
+                    <div class="head_topImg"></div>
+                </div>
+            </div>
+            <form @submit.prevent="return false">
+                <div class="padds">
+                    <div>
+                        <div class="ipts">
+                            <input v-model="postData.keyword" type="search" />
+                            <div class="align_items" v-show="postData.keyword==''">
+                                <img src="../../../images/teacher/ic_search.png" />
+                                <p>课程体系搜索</p>
+                            </div>
+                        </div>
+                        <div class="seaBtn" @click="setIpts">
+                            搜索
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <!-- <div class="checkTab">
+                <van-tabs v-model="num" line-width="30" :border="false" title-inactive-color="#999999" title-active-color="#333333" color="#2EC5E0" class="typeArrs" @click="checkType">
+                    <van-tab v-for="(item,index) in typeArr" :key="index" :title="item.tit"></van-tab>
+                </van-tabs>
+            </div> -->
+        </div>
+        <div class="th_padd lists" v-cloak>
+            <div class="danshen" v-for="(item,index) in lists" :key="index" @click="goCourseName(item)">{{item.name}}
+            </div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#box',
+        data() {
+            return {
+                postData: {
+                    keyword: "",
+                    is_system: 0
+                },
+                active: 0,
+                typeArr: [
+                    //     {
+                    //     tit: "系统课程类型",
+                    //     order: 1
+                    // }, 
+                    {
+                        tit: "学校课程体系",
+                        order: 0
+                    }
+                ],
+                num: 0, //tab得选中目标
+                lists: []
+            }
+        },
+        mounted() {
+            this.$refs.loadings.openLoading();
+            this.getDatas(this.num)
+        },
+        methods: {
+            setIpts() {
+                this.getDatas();
+            },
+            setIptsVal(e) {
+                this.postData.keyword = e.target.value;
+            },
+            getDatas() {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../../images/loading.gif"
+                // });
+                var that = this;
+                ajax("school/course/course_list", 'POST', this.postData, function(res) {
+                    if (res.code == 1) {
+                        that.lists = res.data.list;
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                    // vant.Toast.clear();
+                    that.$refs.loadings.closedLoading();
+                })
+            },
+            goback() {
+                history.go(-1)
+            },
+            checkType(i) { //切换tab
+                this.num = i;
+                if (i == 0) {
+                    this.postData.is_system = 1;
+                } else {
+                    this.postData.is_system = 0;
+                }
+                this.getDatas();
+            },
+            // searchIpt(e) {
+            //     this.getDatas();
+            // if (this.postData.keyword !== '') {
+            // 	vant.Toast.loading({
+            // 		message: '加载中...',
+            // 		forbidClick: true,
+            // 		loadingType: 'spinner',
+            // 		duration: 0
+            // 	});
+            // 	// var that = this;
+            // 	this.getDatas();
+            // 	// ajax("teacher/Course/searchCourse",'POST',this.postData,function(res){
+            // 	// 	vant.Toast.clear();
+            // 	// 	if(res.code==1){
+            // 	// 		if(res.data.list.length==0){
+            // 	// 			vant.Toast('暂无该课程')
+            // 	// 		}
+            // 	// 		that.lists = res.data.list
+            // 	// 	}else{
+            // 	// 		that.lists = []
+            // 	// 		vant.Toast(res.msg)
+            // 	// 	}
+            // 	// })
+            // } else {
+            // 	this.getDatas()
+            // }
+            // },
+            goCourseName(item) { //跳转课程名称
+                console.log(item)
+                let dataVal = JSON.parse(localStorage.getItem('dataVal'));
+                dataVal.courseId = item.course_id;
+                dataVal.courseType = item.name;
+                localStorage.setItem('dataVal', JSON.stringify(dataVal))
+                if (item.is_child == 0) {
+                    history.go(-1);
+                } else {
+                    location.href = "./courseName.html?id=" + item.course_id + "&is_system=" + this.postData.is_system + "&name=" + item.name
+                }
+
+
+
+
+                // if (item.level != 4) {
+                // 	location.href = "./courseName.html?id=" + item.course_id + "&is_system=" + this.postData.is_system + "&name=" + item.name
+                // } else {
+                // 	var postData = JSON.parse(localStorage.getItem('sendData'))
+                // 	postData.course_id = item.id
+                // 	postData.course_name = item.name
+                // 	postData.is_system = item.is_system
+                // 	postData.is_main = item.is_main
+                // 	localStorage.setItem('sendData', JSON.stringify(postData))
+                // 	history.go(-1)
+                // }
+            }
+        }
+    });
+</script>
+
+</html>

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>学校信息</title>
+    <!-- head 中 -->
+    <script src="../../../js/public/rem.js"></script>
+	<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+	
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/principal/t_schoolInformation.css">
+	<link rel="stylesheet" href="../../../allCss/vant.css">
+	<link rel="stylesheet" href="../../../allCss/student/addrss.css">
+</head>
+
+<body>
+    <div id="editProfile" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../../images/student/icon_back.png" alt="">
+                <div class="topTitle">学校信息</div>
+                <div class="topImgs"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="main_box main_boxs">
+                <div class="left_text">学校logo</div>
+                <div class="main_box_right">
+                    <img class="right_header" :src="userInfo.head" alt="" @click="uploads">
+                </div>
+            </div>
+            <div class="main_box">
+                <div class="left_text">学校名称</div>
+                <div class="main_box_right" @click="setCancel('showClassName',true,'name')">
+                    <div class="right_text danshen">{{userInfo.name}}</div>
+                </div>
+                <van-dialog v-model="showClassName" title="学校名称" show-cancel-button @confirm="nameSureClass('name')">
+                    <input class="getStyle" maxlength="20" type="text" v-model="iptValue" placeholder="请输入学校名称" />
+                </van-dialog>
+            </div>
+			<div class="main_box" @click="areaClick">
+			    <div class="left_text">地区</div>
+			    <div class="main_box_right">
+			        <div class="right_text danshen">{{userInfo.province}}{{userInfo.city}}{{userInfo.area}}{{userInfo.address}}</div>
+					 <img class="right_icon" src="../../../images/teacher/ic_more.png" alt="">
+			    </div>
+			</div>
+            <div class="main_box">
+                <div class="left_text">学校地址</div>
+                <div class="main_box_right">
+                    <input class="right_text danshen" type="text" 
+					placeholder="请输入学校地址"
+					@click="setCancel('showPersonal',true,'address_detail')" 
+					v-model="userInfo.address_detail"
+					readonly="readonly">
+                </div>
+                <van-dialog v-model="showPersonal" title="学校地址" show-cancel-button @confirm="nameSureClass('address_detail')">
+                    <textarea class="getStyles" maxlength="300" v-model="iptValue" cols="30" rows="10"
+                        placeholder="请输入学校地址"></textarea>
+                </van-dialog>
+            </div>
+			<div class="main_box">
+			    <div class="left_text">联系人</div>
+			    <div class="main_box_right" @click="setCancel('showName',true,'contact_name')">
+					<input v-model="userInfo.contact_name" placeholder="请输入联系人" readonly="readonly" class="right_text danshen"/>
+			    </div>
+			    <van-dialog v-model="showName" title="联系人" show-cancel-button @confirm="nameSureClass('contact_name')">
+			        <input class="getStyle" maxlength="20" type="text" v-model="iptValue" placeholder="请输入联系人" />
+			    </van-dialog>
+			</div>
+			<div class="main_box">
+			    <div class="left_text">联系电话</div>
+			    <div class="main_box_right" @click="setCancel('showPhone',true,'contact_phone')">
+					<input v-model="userInfo.contact_phone" placeholder="请输入联系电话" readonly="readonly" class="right_text danshen"/>
+			    </div>
+			    <van-dialog v-model="showPhone" title="联系电话" show-cancel-button @confirm="nameSureClass('contact_phone')">
+			        <input class="getStyle" maxlength="20" type="text" v-model="iptValue" placeholder="请输入联系电话" />
+			    </van-dialog>
+			</div>
+			<van-popup v-model="areaShow" position="bottom">
+			    <!-- <van-area title="城市选择" :area-list="areaList" @confirm="areaData" @cancel="areaCancel" /> -->
+			    <div class="blackbg">
+			        <div class="addkuang">
+			            <div class="province">
+			                <span @click="dataList()" :class="prishow==true?'spanact':'spannom'">{{pro}}</span>
+			                <span @click="citys()" v-show="cityspanshow==true"
+			                    :class="cityshow==true?'spanact':'spannom'">{{cit}}</span>
+			                <span @click="qus()" v-show="quspanshow==true"
+			                    :class="qushow==true?'spanact':'spannom'">{{qu}}</span>
+			                <span @click="streets()" v-show="streetspanshow==true"
+			                    :class="streetshow==true?'spanact':'spannom'">{{street}}</span>
+			                <span id="xxx" @click="close">确定</span>
+			            </div>
+			            <div class="chooseadd">
+			                <div ref="pro1" v-show="prishow==true" class="provinceEach" v-for="(item, index) in proList"
+			                    :key="index" @click="cityfun(item.childs,item.name)">
+			                    {{item.name}}
+			                </div>
+			                <div ref="cit2" v-show="cityshow==true" class="provinceEach"
+			                    v-for="(item, index) in citList" :key="'city'+index"
+			                    @click="qufun(item.childs,item.name)">
+			                    {{item.name}}
+			                </div>
+			                <div ref="qu3" v-show="qushow==true" class="provinceEach" v-for="(item, index) in quList"
+			                    :key="'qu'+index" @click="streetfun(item.childs,item.name)">
+			                    {{item.name}}
+			                </div>
+			                <div ref="street4" v-show="streetshow==true" class="provinceEach"
+			                    v-for="(item, index) in streetList" :key="'street'+index"
+			                    @click="endlist(item.childs,item.name)">
+			                    {{item.name}}
+			                </div>
+			            </div>
+			        </div>
+			    </div>
+			</van-popup>
+			<div class="main_box" @click="scollPofil">
+			    <div class="left_text">学校简介</div>
+			    <div class="main_box_right">
+			        <img class="right_icon" src="../../../images/teacher/ic_more.png" alt="">
+			    </div>
+			</div>
+            <div class="main_box">
+                <div class="left_text">密码</div>
+                <div class="main_box_right" @click="updatePass">
+                    <div class="right_text">{{userInfo.is_password==1?'修改':'未设置'}}</div>
+                    <img class="right_icon" src="../../../images/teacher/ic_more.png" alt="">
+                </div>
+            </div>
+
+        </div>
+		<div class="fotBtn">
+			<p @click="goOut">退出登录</p>
+		</div>
+		<loadings ref="loadings"/>
+    </div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script src="../../../js/public/address4.js"></script>
+<script>
+    new Vue({
+        el: '#editProfile',
+        data() {
+            return {
+				areaShow: false,
+				proList: [],
+				citList: [],
+				quList: [],
+				streetList: [],
+				prishow: true,
+				cityshow: false,
+				qushow: false,
+				streetshow: false,
+				cityspanshow: false,
+				quspanshow: false,
+				streetspanshow: false,
+				pro: "请选择",
+				cit: "请选择",
+				qu: "请选择",
+				street: "请选择",
+				iptValue: '',
+                showPersonal: false,
+                showName: false,
+				showPhone:false,
+				showClassName:false,	
+                minDate: new Date(1950, 03, 03),
+                maxDate: new Date(2025, 10, 1),
+                currentDate: new Date(),
+                userInfo: {
+					head:""
+				}
+            }
+        },
+		created(){
+			iosReload()
+		},
+        mounted() {
+			this.getUserInfos()
+			this.proList = address;
+        },
+        methods: {
+			getUserInfos(){
+				var that = this;
+				this.$refs.loadings.openLoading()
+				ajax("school/school/school",'POST',{},function(res){
+					that.$refs.loadings.closedLoading()
+					if(res.code==1){
+						that.userInfo = res.data.result
+					}
+				})
+			},
+			updatePass(){       //修改密码
+				location.href = "./updatePassword.html?password="+this.userInfo.is_password+"&phone="+this.userInfo.mobile
+			},
+			scollPofil(){        //学校简介
+				localStorage.setItem("quill",this.userInfo.content)
+				location.href = "schoolProfile.html"
+				// AndroidRouter("schoolProfile","")
+			},
+			//城市选择
+			areaClick() {
+			    this.areaShow = true;
+			},
+			dataList: function () {
+			    // this.proList = address;
+			    this.prishow = true;
+			    this.cityshow = false;
+			    this.qushow = false;
+			    this.streetshow = false;
+			},
+			cityfun: function (e, n) {
+			    this.pro = n;
+			    this.citList = e;
+			    this.cityspanshow = true;
+			    this.quspanshow = false;
+			    this.streetspanshow = false;
+			    this.prishow = false;
+			    this.cityshow = true;
+			    this.qushow = false;
+			    this.streetshow = false;
+			    this.cit = "请选择";
+			    this.qu = "请选择";
+			    this.street = "请选择";
+			
+			},
+			citys: function () {
+			    this.prishow = false;
+			    this.cityshow = true;
+			    this.qushow = false;
+			    this.streetshow = false;
+			},
+			qus: function () {
+			    this.prishow = false;
+			    this.cityshow = false;
+			    this.qushow = true;
+			    this.streetshow = false;
+			},
+			qufun: function (e, n) {
+			    this.cit = n;
+			    this.quList = e;
+			    this.quspanshow = true;
+			    this.streetspanshow = false;
+			
+			    this.prishow = false;
+			    this.cityshow = false;
+			    this.qushow = true;
+			    this.streetshow = false;
+			
+			    this.qu = "请选择";
+			    this.street = "请选择";
+			},
+			streets: function () {
+			    this.prishow = false;
+			    this.cityshow = false;
+			    this.qushow = false;
+			    this.streetshow = true;
+			},
+			streetfun: function (e, n) {
+			    this.qu = n;
+			    this.streetList = e;
+			    this.streetspanshow = true;
+			    this.prishow = false;
+			    this.cityshow = false;
+			    this.qushow = false;
+			    this.streetshow = true;
+			    this.street = "请选择";
+			},
+			endlist: function (e, n) {
+			    this.street = n;
+			    this.bgshow=false;
+			    this.areaShow = false;
+				
+			    var addr = this.pro + " " + this.cit + " " + this.qu + " " + this.street;
+				var objs = {
+					province:this.pro,
+					city:this.cit,
+					area:this.qu,
+					address:this.street
+				}
+				var that = this;
+				ajax("school/school/school_edit",'POST',objs,function(res){
+					vant.Toast(res.msg)
+					if(res.code==1){
+						that.userInfo.province = that.pro
+						that.userInfo.city = that.cit
+						that.userInfo.area = that.qu
+						that.userInfo.address = that.street
+					}
+				})
+			},
+			close(){
+			    this.areaShow = false;
+			    this.addr = this.pro + this.cit + this.qu;
+			},
+            goBack() {
+                AndroidRouter("closePage","")
+            },
+			nameSureClass(type){         //修改学校名称,学校地址,联系人,联系电话
+				var that = this;
+				var updateObj = {}
+				updateObj[type] = this.iptValue
+				ajax('school/school/school_edit',"POST",updateObj,function(res){
+					vant.Toast(res.msg)
+					if(res.code==1){
+						that.userInfo[type] = that.iptValue
+						that.iptValue = ""
+					}
+				})
+			},
+            setCancel(key,bool,objKeys) {          //弹窗选择取消
+				if(bool){
+					this.iptValue = this.userInfo[objKeys]
+				}
+                this[key] = bool;
+            },
+			uploads(){            //上传头像
+				AndroidRouter("uploadHead","",this.set_uploadHead,"set_uploadHead")
+			},
+			set_uploadHead(res){          //上传头像回调
+				var res = JSON.parse(res)
+				var _this = this
+				ajax('school/school/school_edit',"POST",{head:res[0].id},function(ress){
+					vant.Toast(ress.msg)
+					if(ress.code==1){
+						_this.userInfo.head = res[0].path
+					}
+				})
+			},
+			goOut(){         //退出
+				vant.Dialog.confirm({
+				  title: '退出登录',
+				  message: '确认要退出吗？'
+				}).then(function(){
+					ajax('school/school/login_out', "POST",{},function(ress){
+						if(ress.code==1){
+							AndroidRouter("loginOut",'')
+						}
+					})
+				})
+			}
+        }
+    });
+</script>
+
+</html>

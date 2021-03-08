@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作业详情</title>
+	<script src="../../js/public/rem.js"></script>
+	<script src="../../js/public/jquery-3.2.1.min.js"></script>
+	<link rel="stylesheet" href="../../allCss/public.css">
+	<link rel="stylesheet" href="../../allCss/teacher/operation_details.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+</head>
+
+<body>
+    <div id="homework" v-cloak @scroll="scolls">
+        <!-- <div class="allFixed"> -->
+			<div class="top">
+			    <div class="topBox">
+			        <img class="topImg" src="../../images/student/icon_back.png" alt="" @click="goBack">
+			        <div class="topTitle">作业详情</div>
+			        <div class="topImg"></div>
+			    </div>
+			</div>
+			<div class="banners" v-if="allData!==''">
+				<div>{{allData.score.max_score}}/{{allData.score.min_score}}/{{allData.score.avg_score}}</div>
+			</div>
+			<!-- <div class="checkTab" v-if="allData!==''">
+				<van-tabs v-model="num"  line-width="30" :border="false" title-inactive-color="#999999" title-active-color="#333333" color="#2EC5E0" class="typeArrs"  @click="checkType">
+				  <van-tab v-for="(item,index) in typeArr" :key="index" :title="item.tit"></van-tab>
+				</van-tabs>//
+			</div> -->
+			<div class="tabs" v-if="allData!==''">
+				<div v-for="(item,index) in typeArr" :class="{'antives':index==0}"  @click="checkType(index)">{{item.tit}}</div>
+			</div>
+		<!-- </div> -->
+		<div v-if="allData!==''">
+			<div class="user_people" @click="goList" v-if="peopleList.length!==0">
+				<div>
+					<div v-for="(item,index) in peopleList" :key="index">
+						<img :src="item.head" onerror="this.src = '../../images/teacher/error.png'"/>
+						<span class="danshen">{{item.name}}</span>
+					</div>
+				</div>
+				<img src="../../images/teacher/ic_more.png" />
+			</div>
+			<div class="listBoxs">
+				<div class="list">
+					<div :class="{'list_tiop':true,'scoll':lisScoll}">
+						<img :src="allData.task_info.cover_img" 
+						:class="{'clearRadio':lisScoll}"
+						onerror="this.src = '../../images/teacher/error.png'"/>
+						<div :class="{'clearRadio':lisScoll}">
+							<img src="../../images/teacher/laba.png" v-if="allData.task_info.form==2"/>
+							<img src="../../images/teacher/Icon_pic.png" v-if="allData.task_info.form==1"/>
+							<img src="../../images/teacher/Icon_video.png" v-if="allData.task_info.form==3"/>
+							<span>{{allData.task_info.form_name}}练习</span>
+						</div>
+					</div>
+					<div :class="{'empts':lisScoll}">
+						
+					</div>
+					<div class="titles">
+						<div>{{allData.task_info.name}}<p v-for="(it,ix) in allData.task_info.job_tag_list">{{it.tag_name}}</p></div>
+					</div>
+				</div>
+				<div class="details">
+					<p>{{allData.task_info.content}}</p>
+					<div v-for="(item,index) in allData.task_info.content_images" class="imgBoxsa">
+						<img :src="item.path" class="bg" onerror="this.src = '../../images/teacher/error.png'"/>
+					</div>
+					<div v-for="(item,index) in allData.task_info.attachment"
+					 @click="autoVideo(item)">
+						<img :src="item.other_path" class="bg" onerror="this.src = '../../images/teacher/error.png'"/>
+						<img class="videos"  src="../../images/teacher/Ic_suspended.png"/>
+					</div>
+				</div>
+				<div class="commentse" v-if="allData.task_info.comment_standard!==''">
+					<div class="commentse_tit">
+						<span></span>
+						<p>点评标准：</p>
+					</div>
+					<div class="commentse_cont">
+						{{allData.task_info.comment_standard}}
+					</div>
+				</div>
+			</div>
+		</div>
+		<loadings ref="loadings"/>
+    </div>
+
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#homework',
+        data() {
+            return {
+                value: 0,
+                switch1: false,
+                switch2: false,
+				typeArr:[],
+				num:0,           //tab得选中目标
+				allData:"",            //请求的数据
+				peopleList:[],        //人数
+				ids:"",
+				order:1,
+				lisScoll:false,
+				status_type:"",
+				classId:""
+            }
+        },
+		created(){
+			iosReload()
+		},
+		mounted(){
+			var id = GetQueryValue("id")
+			var classId = GetQueryValue("classId")	
+			var status_type = GetQueryValue("status_type")	
+			this.classId = classId;
+			this.getDetails(id,classId)
+			this.ids = id
+			this.status_type = status_type
+		},
+        methods: {
+			scolls(e){        //滚动监听
+				var scrollTop = e.target.scrollTop
+				if(scrollTop>=265){
+					this.lisScoll = true
+				}else{
+					this.lisScoll = false
+				}
+			},
+			autoVideo(item){        //播放视频   
+				var obj = {
+					title:this.allData.task_info.name,
+					path:item.path
+				}
+				AndroidRouter('playVideo',JSON.stringify(obj))
+			},
+			goBack(){
+				if(this.status_type==2){
+					AndroidRouter("closePage","")
+				}else{
+					history.go(-1)
+				}
+			},
+			getDetails(id,classes_id){        //获取数据
+				var obj = {
+					task_publish_id:id,
+					classes_id:classes_id
+				}
+				var that = this;
+				this.$refs.loadings.openLoading()
+				ajax("teacher/Teachertask/publishTaskDetail",'POST',obj,function(res){
+					if(res.code==1){
+						var datas = JSON.parse(JSON.stringify(res.data))
+						if(res.data.task_info.is_comment==1){
+							that.order = 1
+							that.peopleList = datas.student_list.not_comment_student.slice(0,5)
+							that.typeArr = [{tit:"待点评("+res.data.student_list.not_comment_num+")",order:1},{tit:"已点评("+res.data.student_list.comment_num+")",order:2},{tit:"未完成("+res.data.student_list.undone_num+")",order:3}]
+						}else{
+							that.order = 3//
+							that.peopleList = datas.student_list.undone_student.slice(0,5)
+							that.typeArr = [{tit:"未完成("+res.data.student_list.undone_num+")",order:3},{tit:"已完成("+res.data.student_list.done_num+")",order:4}]
+						}
+						that.allData = datas
+						// that.allData.student_list.not_comment_student = datas.student_list.not_comment_student.slice(0,5)
+						// that.allData.student_list.comment_student = datas.student_list.comment_student.slice(0,5)
+						// that.allData.student_list.undone_student = datas.student_list.undone_student.slice(0,5)
+						// that.allData.student_list.done_student = datas.student_list.done_student.slice(0,5)
+					}else{
+						vant.Toast(res.msg)
+					}
+					that.$refs.loadings.closedLoading()
+				})
+			},
+            goList() {
+				var obj = {
+					id:this.ids,
+					order:this.order,
+					classes_id:this.classId
+				}
+			   localStorage.setItem("detailsObj",JSON.stringify(obj))
+               location.href = "studentList.html"
+            },
+			checkType(it){              //切换tab
+				var order = this.typeArr[it].order
+				this.order = order
+				// if(order==1){
+				// 	this.peopleList = this.allData.student_list.not_comment_student
+				// }else if(order==2){
+				// 	this.peopleList = this.allData.student_list.comment_student
+				// }else if(order==3){
+				// 	this.peopleList = this.allData.student_list.undone_student
+				// }else if(order==4){
+				// 	this.peopleList = this.allData.student_list.done_student
+				// }
+				var obj = {
+					id:this.ids,
+					order:this.order,
+					classes_id:this.classId
+				}
+				localStorage.setItem("detailsObj",JSON.stringify(obj))
+				location.href = "studentList.html"
+			}
+        }
+    });
+
+
+</script>
+
+
+</html>

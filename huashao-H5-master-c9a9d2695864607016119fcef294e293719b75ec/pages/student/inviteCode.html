@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>邀请码</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/inviteCode.css">
+</head>
+
+<body>
+    <div id="inviteCode" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">邀请码</div>
+                <div class="toptext" @click="goRule">规则</div>
+            </div>
+        </div>
+        <div class="main">
+            <div>
+                <div class="myInvite">我的邀请码</div>
+                <div class="myCode">{{myCode}}</div>
+                <div class="main_btn">
+                    <div class="main_btn_left" @click="copy">复制</div>
+                    <div class="main_btn_right" @click="goShare">分享</div>
+                </div>
+            </div>
+        </div>
+        <div class="list_title">邀请记录</div>
+        <van-pull-refresh v-model="isLoading" class="mainScoll" success-text="刷新成功" @refresh="onRefresh">
+            <van-list v-model="isUpLoading" v-if="listData.length > 0" :finished="upFinished" @load="onupLoad" :offset="offset" :immediate-check='check'>
+                <div class="list">
+                    <div class="items" v-for="item in listData">
+                        <div class="items_left">{{item.name}}</div>
+                        <div class="items_right">{{item.create_time}}</div>
+                    </div>
+                </div>
+
+            </van-list>
+            <div v-if="listData.length < 1" class="nullData">
+                <div>
+                    <img src="../../images/student/null.png" alt="">
+                    <div>暂无数据</div>
+                </div>
+            </div>
+        </van-pull-refresh>
+        <van-popup v-model="show" round position="bottom">
+            <div class="shareBox">
+                <div @click="goShareDetail('WEIXIN')">
+                    <img src="../../images/student/pic_chat.png" alt="">
+                    <div class="shareBox_text">微信</div>
+                </div>
+                <!-- <div @click="goShareDetail('QQ')">
+                    <img src="../../images/student/pic_qq.png" alt="">
+                    <div class="shareBox_text">QQ</div>
+                </div> -->
+                <div @click="goShareDetail('WEIXIN_CIRCLE')">
+                    <img src="../../images/student/pic_friend.png" alt="">
+                    <div class="shareBox_text">朋友圈</div>
+                </div>
+            </div>
+            <div class="shareWay_Cacel" @click="shareWayCacel">取消</div>
+        </van-popup>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+            $('.mainScoll').css('minHeight', $(window).height() / 2 + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#inviteCode',
+        data() {
+            return {
+                show: false,
+                myCode: '',
+                listData: [],
+                pageNo: 1,
+                pageSize: 10,
+                total: '',
+                check: false,
+                isLoading: false,
+                isUpLoading: false,
+                upFinished: false, //上拉加载完毕
+                offset: 100, //滚动条与底部距离小于 offset 时触发load事件
+            }
+        },
+        mounted() {
+            this.$refs.loadings.openLoading();
+            this.getInfo(this.pageNo, this.pageSize)
+        },
+        methods: {
+            goBack() {
+                // history.go(-1);
+                AndroidRouter('closePage', '');
+            },
+            goRule() {
+                location.href = './inviteRules.html'
+            },
+            onRefresh() {
+                this.isLoading = true;
+                this.upFinished = false;
+                this.pageNo = 1;
+                this.listData = [];
+                this.getInfo(this.pageNo, this.pageSize)
+            },
+            onupLoad() { // 上拉调用此函数
+                // e.stopPropagation();
+                this.isUpLoading = false;
+                // this.upFinished = false;
+                this.pageNo++;
+                // this.$refs.loadings.openLoading();
+                this.getInfo(this.pageNo, this.pageSize)
+
+            },
+            getInfo(pageNo, pageSize) {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                let that = this;
+                ajax('student/invite/invite_list', "POST", {
+                    "page_no": pageNo,
+                    "page_size": pageSize
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.isLoading = false;
+                        that.myCode = res.data.result.invite_code;
+                        let rows = res.data.list; //请求返回当页的列表
+                        that.isUpLoading = false;
+                        that.total = res.data.total;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        if (rows == null || rows.length === 0) {
+                            // 加载结束
+                            this.upFinished = true;
+                            return false;
+                        }
+                        if (pageNo == 1) {
+                            that.listData = rows;
+                        } else {
+
+                            that.listData = that.listData.concat(rows);
+                        }
+                        if (that.listData.length >= that.total) {
+                            that.upFinished = true;
+                        }
+                    }
+                    that.isLoading = false;
+                })
+            },
+            copy() {
+                let url = this.myCode;
+                let oInput = document.createElement('input');
+                oInput.value = url;
+                document.body.appendChild(oInput);
+                oInput.select(); // 选择对象;
+                document.execCommand("Copy"); // 执行浏览器复制命令
+                oInput.remove()
+                vant.Toast('复制成功')
+            },
+            goShare() {
+                this.show = true;
+            },
+            shareWayCacel() {
+                this.show = false;
+            },
+            //分享
+            goShareDetail(val) {
+                let that = this;
+                ajax('student/student/mine', "POST", {}, function(res) {
+                    if (res.code == 1) {
+                        ajax('current/share/app', "POST", {
+                            "student_share_code": res.data.result.share_code,
+                            "share_url": pageUrl + 'huashao_h5/pages/shares/sharePage/shareInvitation.html?type=1'
+                        }, function(res) {
+                            if (res.code == 1) {
+                                let data = {
+                                    "content": res.data.result.share.content,
+                                    "description": res.data.result.share.description,
+                                    "platform": val,
+                                    "title": res.data.result.share.title,
+                                    "url": res.data.result.share.webpageUrl
+                                }
+                                AndroidRouter('share', JSON.stringify(data), this.setShare, "set_share");
+                            } else {
+                                vant.Toast(res.msg)
+                            }
+                        })
+                    }
+                })
+
+            },
+            setShare(res) {
+                this.show = false;
+                if (res == -1) {
+                    vant.Toast('分享失败')
+                }
+                if (res == 0) {
+                    vant.Toast('取消分享')
+                }
+                if (res == 1) {
+                    vant.Toast('分享成功')
+                }
+            },
+        }
+    });
+</script>
+
+</html>

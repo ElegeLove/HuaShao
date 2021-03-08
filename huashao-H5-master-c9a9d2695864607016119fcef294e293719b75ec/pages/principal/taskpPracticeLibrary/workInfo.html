@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>完成作业标题</title>
+    <!-- head 中 -->
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/principal/l_workInfo.css">
+</head>
+
+<body>
+    <div id="workTopics" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../../images/principal/icon_back.png" alt="">
+                <div class="topTitle"><span>{{dataVal.form_text}}</span>{{type}}</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="topPic" v-if="dataVal.cover_img && dataVal.cover_img != ''">
+            <img :src="dataVal.cover_img" alt="">
+            <div class="topPic_icon">
+                <div>
+                    <img v-if="dataVal.form==1" src="../../../images/principal/Ic_pic_03.png" alt="">
+                    <img v-if="dataVal.form==2" src="../../../images/principal/Ic_audio.png" alt="">
+                    <img v-if="dataVal.form==3" src="../../../images/principal/Ic_video_03.png" alt="">
+                    <div><span>{{dataVal.form_text}}</span>练习</div>
+                </div>
+            </div>
+        </div>
+        <div class="main_title">
+            <!-- <div class="main_title_text">{{dataVal.task_name}}</div>
+            <div class="main_title_tag">练声</div> -->
+            <div class="main_title_text">{{dataVal.task_name}}
+                <p class="main_title_tag" v-for="item in dataVal.job_tag">
+                    {{item.tag_name}}
+                </p>
+            </div>
+        </div>
+        <div class="main_content">
+            <div class="main_content_title">{{dataVal.content}}</div>
+            <div class="main_content_img" v-if="dataVal.content_images && dataVal.content_images.length > 0">
+                <img v-for="item in dataVal.content_images" :src="item.path" alt="">
+            </div>
+            <div class="main_content_fu" v-for="items in dataVal.attachment">
+                <img v-if="items.other_path == ''" :src="items.path" alt="">
+                <div class="main_content_video" v-if="items.other_path != ''">
+                    <img class="main_content_video_img" :src="items.other_path" alt="">
+                    <img class="main_content_video_play" src="../../../images/student/Icon_pause_02.png" @click="playVideo(dataVal.task_name,items.path)" alt="">
+                </div>
+            </div>
+            <div v-if="studentList.length > 0">
+                <div class="main_content_finished">优秀学生作业展</div>
+                <div class="main_content_list">
+                    <div>
+                        <div class="main_content_list_item" v-for="item in studentList" @click="goInfo(item.student_task_id,dataVal.form,dataVal.task_name)">
+                            <img :src="item.head" alt="">
+                            <div>{{item.name}}</div>
+                        </div>
+                        <!-- <div class="main_content_list_item">
+                        <img src="../../../images/student/pic_222.png" alt="">
+                        <div>依依</div>
+                    </div>
+                    <div class="main_content_list_item">
+                        <img src="../../../images/student/pic_333.png" alt="">
+                        <div>尔尔</div>
+                    </div>
+                    <div class="main_content_list_item">
+                        <img src="../../../images/student/pic_444.png" alt="">
+                        <div>三三</div>
+                    </div>
+                    <div class="main_content_list_item">
+                        <img src="../../../images/student/pic_555.png" alt="">
+                        <div>思思</div>
+                    </div>
+                    <div class="main_content_list_item">
+                        <img src="../../../images/student/pic_555.png" alt="">
+                        <div>柳柳</div>
+                    </div> -->
+                    </div>
+                    <img @click="more(dataVal.task_id,dataVal.form,dataVal.task_name)" src="../../../images/student/ic_jt.png" alt="">
+                </div>
+            </div>
+            <div v-if="dataVal.comment_standard && dataVal.comment_standard != ''">
+                <div class="main_content_titles">点评标准：</div>
+                <div class="main_content_titles_text">{{dataVal.comment_standard}}
+                </div>
+            </div>
+            <div class="footer" v-if="dataVal.is_del_button == 1">
+                <div class="main_content_btn" @click="del(dataVal.task_id)">删除该{{type}}</div>
+            </div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#workTopics',
+        data() {
+            return {
+                dataVal: {},
+                studentList: [],
+                type: '作业'
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("id");
+            var type = GetQueryValue("type");
+            if (type == 1) {
+                this.type = '练习';
+            } else {
+                this.type = '作业';
+            }
+            this.$refs.loadings.openLoading();
+            this.getInfo(id);
+        },
+        methods: {
+            goBack() {
+                // history.go(-1);
+                AndroidRouter('closePage', "")
+            },
+            getInfo(id) {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../../images/loading.gif"
+                // });
+                var that = this;
+                ajax("school/task/school_task", 'POST', {
+                    'task_id': id
+                }, function(res) {
+                    if (res.code == 1) {
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        that.dataVal = res.data.result;
+                        console.log(that.dataVal)
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                })
+                ajax("school/task/school_good_task_list", 'POST', {
+                    'task_id': id
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.studentList = [];
+                        res.data.list.forEach(function(item, i) {
+                            if (i <= 5) {
+                                that.studentList.push(item)
+                            }
+                        });
+                        console.log(that.studentList)
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                })
+            },
+            // 视频播放
+            playVideo(name, url) {
+                let data = {
+                    "title": name,
+                    "path": url
+                }
+                AndroidRouter('playVideo', JSON.stringify(data))
+            },
+            //
+            more(id, type, name) {
+                location.href = './finishedStudent.html?id=' + id + '&type=' + type + '&name=' + name;
+            },
+            goInfo(id, i, name) {
+                // if (this.type == 1) {
+                //     // location.href = './workDetailsImgText.html?id=' + id;
+                // }
+
+                if (i == 1) {
+                    location.href = './workDetailsImgText.html?id=' + id;
+                } else {
+                    let type = '';
+                    if (i == 2) {
+                        type = 2;
+                    } else {
+                        type = 1;
+                    }
+                    let is_show = 0;
+                    if (this.isList) {
+                        is_show = 1;
+                    }
+                    let data = {
+                        title: name, //'页面标题'
+                        student_task_id: id, //'服务器返回的student_task_id'
+                        work_type: type, //'1视频打卡,2音频打卡'
+                        // is_comment_work: 1,//'是否是点评作业，1是（界面上只显示点评作业的按钮，下面其它参数将无效）'
+                        // has_delete_btn: 1,//'是否有删除按钮， 1显示（只对学生端有效，教师端不显示）'
+                        has_tea_comment_btn: 1, //'是否有教师点评按钮， 1显示'
+                        // has_work_title_btn: 1,//'是否有作业题目按钮， 1显示'
+                        is_show_student_list: is_show, //'是否显示已完成作业学员列表， 1显示'
+                    }
+                    AndroidRouter('goStuWorkDetail', JSON.stringify(data), this.workFilsh);
+                }
+            },
+            //删除作业
+            del(id) {
+                var that = this;
+                ajax("school/task/school_task_delete", 'POST', {
+                    'task_id': id
+                }, function(res) {
+                    if (res.code == 1) {
+                        vant.Toast(res.msg)
+                        setTimeout(function() {
+                            AndroidRouter('closePage', "")
+                        }, 1000)
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                })
+            }
+        }
+    });
+</script>
+
+</html>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建作业</title>
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/principal/l_createWork.css">
+</head>
+
+<body>
+    <div id="box" v-cloak>
+        <div class="th_top">
+            <div class="th_topBox">
+                <img class="th_topImg" src="../../../images/principal/icon_back.png" alt="" @click="goback">
+                <div class="th_topTitle">创建作业</div>
+                <div class="th_topImg"></div>
+            </div>
+        </div>
+        <div class="th_padd opts">
+            <div class="align_items divBox" @click="checkClassType">
+                <p><span>*</span>课程体系</p>
+                <div class="align_items">
+                    <input placeholder="请选择" v-model="dataVal.courseType" readonly="readonly" />
+                    <img src="../../../images/teacher/ic_more.png" />
+                </div>
+            </div>
+            <div class="align_items divBox">
+                <p><span>*</span>作业名称</p>
+                <div class="align_items">
+                    <input placeholder="请输入作业名称" v-model="dataVal.workName" />
+                </div>
+            </div>
+            <div class="uploadBox">
+                <p><span>*</span>作业封面</p>
+                <div>
+                    <div v-if="dataVal.jobCover.path!=''">
+                        <img :src="dataVal.jobCover.path" class="imgs" />
+                        <img src="../../../images/teacher/ic_del.png" class="dele" @click="deleteImg" />
+                    </div>
+                    <div @click="uploadImg" v-else>
+                        <img src="../../../images/teacher/pic_09.png" class="imgs" />
+                    </div>
+                </div>
+            </div>
+            <div class="align_items divBox" @click="openFoot(1)">
+                <p><span>*</span>作业标签</p>
+                <div class="align_items">
+                    <input placeholder="请选择" v-model="dataVal.tagName" readonly="readonly" />
+                    <img src="../../../images/teacher/ic_more.png" />
+                </div>
+            </div>
+            <div class="align_items divBox" @click="openFoot(2)">
+                <p><span>*</span>作业形式</p>
+                <div class="align_items">
+                    <input placeholder="请选择" v-model="dataVal.workform.form_name" readonly="readonly" />
+                    <img src="../../../images/teacher/ic_more.png" />
+                </div>
+            </div>
+            <div class="align_items divBox" @click="openFoot(3,dataVal.workform.id)" v-if="dataVal.workform.id==2 || dataVal.workform.id==3">
+                <p><span>*</span>作业时长</p>
+                <div class="align_items">
+                    <input placeholder="请选择" v-model="dataVal.timeLong.form_name" readonly="readonly" />
+                    <img src="../../../images/teacher/ic_more.png" />
+                </div>
+            </div>
+            <div class="iptBox iptBoxs">
+                <p><span>*</span>作业描述</p>
+                <input placeholder="请输入作业描述" v-model="dataVal.workDescribe" />
+            </div>
+            <div class="uploadBox">
+                <div style="margin-top: 0;">
+                    <div v-for="(it,ix) in dataVal.content_images_arr" :key="ix">
+                        <img :src="it.url" class="imgs" />
+                        <img src="../../../images/teacher/ic_del.png" class="dele" @click="deleteOuthImg(ix)" />
+                    </div>
+                    <div v-if="dataVal.content_images_arr.length<7" @click="uploadOuthImg">
+                        <img src="../../../images/teacher/pic_09.png" class="imgs" />
+                    </div>
+                </div>
+            </div>
+            <div class="iptBox">
+                <p>点评标准</p>
+                <input placeholder="请输入作业点评标准" v-model="dataVal.comStandard" />
+            </div>
+            <div class="uploadBox uploadBoxs">
+                <p>视频附件（不超过3个）</p>
+                <div>
+                    <div v-for="(item,i) in dataVal.videoImgArr" :key="i">
+                        <img :src="item.cover_path" class="imgs" />
+                        <img src="../../../images/teacher/ic_del.png" class="dele" @click="deleteVideo(i)" />
+                    </div>
+                    <div v-if="dataVal.videoImgArr.length<3" @click="UploadVideo">
+                        <img src="../../../images/teacher/pic_09.png" class="imgs" />
+                    </div>
+                </div>
+                <!-- <div>
+                    <div>
+                        <img src="../../../images/teacher/pic_08.png" class="imgs" />
+                        <img src="../../../images/teacher/ic_del.png" class="dele" />
+                    </div>
+                    <div>
+                        <img src="../../../images/teacher/pic_09.png" class="imgs" />
+                    </div>
+                </div> -->
+            </div>
+        </div>
+        <div class="fotBtn">
+            <p @click="goNext">完成创建</p>
+        </div>
+        <van-popup v-model="footShow" round position="bottom" style="max-height: 72%;">
+            <div class="popTitle">
+                <p>{{footTxt}}</p>
+                <img src="../../../images/teacher/ic_cancle.png" @click="checkFoot(false)" />
+            </div>
+            <div class="popCont">
+                <div class="align_items" v-for="(it,ix) in listArr" :key="ix" @click="checkLabel(it,ix)">
+                    <p>{{it.form_name}}</p>
+                    <div v-if="popType != 2">
+                        <img src="../../../images/teacher/checkBoxOne.png" v-if="it.show" />
+                        <img src="../../../images/teacher/checkBoxTwo.png" v-else />
+                    </div>
+                    <div v-if="popType == 2">
+                        <img src="../../../images/teacher/xq_yuan.png" v-if="it.show" />
+                        <img src="../../../images/teacher/xq_yuan2.png" v-else />
+                    </div>
+                </div>
+            </div>
+            <div class="fotBtn">
+                <p @click="checkFoots(false,type)">确定</p>
+            </div>
+        </van-popup>
+    </div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#box',
+        data() {
+            return {
+                dataVal: {
+                    courseId: '',
+                    courseType: '', //课程类型
+                    workName: '', //作业名称
+                    jobCover: {
+                        id: '',
+                        path: ''
+                            // path: '../../../images/teacher/pic_08.png'
+                    }, //作业封面
+                    videoImg: [],
+                    videoImgArr: [],
+                    worktag: [], //作业标签
+                    tagName: '',
+                    workform: {}, //作业形式
+                    timeLong: {}, //作业时长
+                    workDescribe: '', //作业描述
+                    content_images: [], //作业描述图片
+                    content_images_arr: [], //作业描述图片
+                    comStandard: '', //点评标准
+                },
+                viceTime: [],
+                vedioTime: [],
+                footShow: false, //底部弹窗
+                listArr: [],
+                type: 0, //用于判断当前点击的是哪个下拉
+                footTxt: "",
+                homeForm: [{
+                    id: 1,
+                    form_name: '图文',
+                    show: false
+                }, {
+                    id: 2,
+                    form_name: '音频',
+                    show: false
+                }, {
+                    id: 3,
+                    form_name: '视频',
+                    show: false
+                }, ], //作业形式
+                homeTags: [], //作业标签
+                popType: 0
+            }
+        },
+        created() {
+            iosReload();
+            if (localStorage.getItem('dataVal')) {
+                this.dataVal = JSON.parse(localStorage.getItem('dataVal'));
+            }
+            // this.getTasks()
+            this.getTags()
+            this.getTime()
+        },
+        methods: {
+            // getTasks() {          //作业形式获取
+            //     var that = this;
+            //     ajax("school/task/school_task_tag_list", 'POST', { type: 1 }, function (res) {
+            //         if (res.code == 1) {
+            //             var newArr = []
+            //             var dats = JSON.parse(JSON.stringify(res.data.list))
+            //             dats.forEach(function (it) {
+            //                 newArr.push({ form_name: it.tag_name, id: it.task_tag_id, show: false })
+            //             })
+            //             that.homeForm = JSON.parse(JSON.stringify(newArr))
+            //         } else {
+            //             vant.Toast(res.msg)
+            //         }
+            //     })
+            // },
+            getTags() { //作业标签获取
+                var that = this;
+                ajax("school/task/school_task_tag_list", 'POST', {
+                    type: 0
+                }, function(res) {
+                    if (res.code == 1) {
+                        var newArr = []
+                        var dats = JSON.parse(JSON.stringify(res.data.list))
+                        dats.forEach(function(it) {
+                            newArr.push({
+                                form_name: it.tag_name,
+                                id: it.task_tag_id,
+                                show: false
+                            })
+                        })
+                        that.homeTags = JSON.parse(JSON.stringify(newArr))
+                    }
+                })
+            },
+            getTime() {
+                var that = this;
+                ajax("current/index/get_time_list", 'POST', {}, function(res) {
+                    if (res.code == 1) {
+                        console.log(res)
+                        that.viceTime = res.data.music;
+                        that.vedioTime = res.data.vedio;
+                        // var newArr = []
+                        // var dats = JSON.parse(JSON.stringify(res.data.list))
+                        // dats.forEach(function (it) {
+                        //     newArr.push({ form_name: it.tag_name, id: it.task_tag_id, show: false })
+                        // })
+                        // that.homeTags = JSON.parse(JSON.stringify(newArr))
+                    }
+                })
+            },
+            goNext() { //完成创建
+                // localStorage.removeItem('dataVal');
+                // let arr = [];
+                // if (this.dataVal.videoImg.length > 0) {
+                //     this.dataVal.videoImg.forEach(function (item) {
+                //         arr.push(item);
+                //     })
+                // }
+                let tagId = [];
+                this.dataVal.worktag.forEach(function(item) {
+                    tagId.push(item.id);
+                })
+                let data = {
+                    course_id: this.dataVal.courseId,
+                    cover_img: this.dataVal.jobCover.id,
+                    name: this.dataVal.workName,
+                    job_tag_id: JSON.stringify(tagId),
+                    form: this.dataVal.workform.id,
+                    time_length: parseInt(this.dataVal.timeLong.timeLong) * 60,
+                    content: this.dataVal.workDescribe,
+                    content_images: JSON.stringify(this.dataVal.content_images),
+                    comment_standard: this.dataVal.comStandard,
+                    attachment: JSON.stringify(this.dataVal.videoImg)
+                }
+                var that = this;
+                ajax("school/task/school_task_add", 'POST', data, function(res) {
+                    if (res.code == 1) {
+                        if (localStorage.getItem('dataVal')) {
+                            localStorage.removeItem('dataVal');
+                        }
+                        vant.Toast(res.msg)
+                        setTimeout(function() {
+                            AndroidRouter('closePage', "")
+                        }, 1000)
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                })
+            },
+            checkClassType() { //课程类型选择
+                localStorage.setItem('dataVal', JSON.stringify(this.dataVal));
+                location.href = "courseType.html";
+            },
+            deleteOuthImg(ix) { //删除其他图片
+                this.dataVal.content_images.splice(ix, 1)
+                this.dataVal.content_images_arr.splice(ix, 1)
+            },
+            uploadOuthImg() { //上传其他图片
+                let num = 7 - this.dataVal.content_images_arr.length;
+                AndroidRouter('selectPic', num, this.setPics, "set_selectPic");
+            },
+            uploadImg() { //上传图片
+                AndroidRouter('selectPic', 1, this.setPic, "set_selectPic");
+            },
+            setPic(res) {
+                var resPen = JSON.parse(res)
+                this.dataVal.jobCover.id = resPen[0].id;
+                this.dataVal.jobCover.path = resPen[0].path;
+            },
+            setPics(res) {
+                var resPen = JSON.parse(res)
+                let that = this;
+                resPen.forEach(function(item) {
+                    that.dataVal.content_images.push(item.id)
+                    that.dataVal.content_images_arr.push({
+                        url: item.path
+                    })
+                })
+            },
+            deleteImg() { //删除封面
+                this.dataVal.jobCover.id = "";
+                this.dataVal.jobCover.path = "";
+                // this.postData.cover_imgss = "";
+            },
+            goback() {
+                localStorage.removeItem('dataVal');
+                // history.go(-1)
+                AndroidRouter('closePage', "")
+            },
+            checkFoot(bool) { //打开关闭弹窗
+                this.footShow = bool
+            },
+            checkFoots(bool, type) { //打开关闭弹窗
+                let that = this;
+                if (type == 1) {
+                    this.dataVal.worktag = this.listArr.filter(function(item) {
+                        return item.show
+                    })
+                    let arr = [];
+                    if (this.dataVal.worktag.length > 1) {
+                        this.dataVal.worktag.forEach(function(item) {
+                            arr.push(item.form_name)
+                        })
+                        this.dataVal.tagName = arr.join('/')
+                    } else if (this.dataVal.worktag.length == 1) {
+                        this.dataVal.tagName = this.dataVal.worktag[0].form_name;
+                    } else {
+                        this.dataVal.tagName = '';
+                    }
+                    // this.listArr.forEach(function (item) {
+                    //     if (item.show) {
+                    //         that.dataVal.worktag = item;
+                    //     }
+                    // });
+                } else if (type == 2) {
+                    this.listArr.forEach(function(item) {
+                        if (item.show) {
+                            that.dataVal.workform = item;
+                        }
+                    });
+                } else {
+                    this.listArr.forEach(function(item) {
+                        if (item.show) {
+                            that.dataVal.timeLong = item;
+                        }
+                    });
+                }
+                this.footShow = bool
+            },
+            openFoot(type, i) { //1是作业标签      2是作业形式      3是作业时长
+                this.type = type
+                if (type == 1) {
+                    this.footTxt = "作业标签";
+                    this.listArr = this.homeTags;
+                    // this.listArr = [{tit:"无",show:false},{tit:"图文",show:false},{tit:"视频",show:false},{tit:"音频",show:false}]
+                    this.popType = 0;
+                } else if (type == 2) {
+                    this.footTxt = "作业形式";
+                    this.popType = 2;
+                    this.listArr = this.homeForm;
+                    // this.listArr = [{tit:"音频",show:false},{tit:"图文",show:false},{tit:"视频",show:false}]
+                } else {
+                    this.popType = 1;
+                    let arr = [];
+                    if (i && i == 2) {
+                        this.viceTime.forEach(function(item) {
+                            let obj = {
+                                form_name: item + "分钟",
+                                timeLong: item,
+                                show: false
+                            };
+                            arr.push(obj)
+                        })
+                    } else if (i && i == 3) {
+                        this.vedioTime.forEach(function(item) {
+                            let obj = {
+                                form_name: item + "分钟",
+                                timeLong: item,
+                                show: false
+                            };
+                            arr.push(obj)
+                        })
+                    }
+                    this.footTxt = "作业时长";
+                    this.listArr = arr;
+                    // this.viceTime = res.data.music;
+                    // this.vedioTime = res.data.vedio;
+                    // this.listArr = [{ form_name: "1分钟", timeLong: '1', show: false }, { form_name: "5分钟", timeLong: '5', show: false }, { form_name: "10分钟", timeLong: '10', show: false }]
+                }
+                this.checkFoot(true)
+            },
+            checkLabel(it, i) { //选择标签
+                if (this.type == 1) {
+                    this.listArr[i].show = !this.listArr[i].show;
+                } else {
+                    this.listArr.map(function(item, index) {
+                        item.show = false
+                    })
+                    it.show = true;
+                }
+            },
+            deleteVideo(ix) { //删除视频
+                // this.postData.attachment.splice(ix,1)
+                this.dataVal.videoImg.splice(ix, 1)
+                this.dataVal.videoImgArr.splice(ix, 1)
+            },
+            UploadVideo() { //上传视频
+                AndroidRouter('selectVideo', 3, this.setVideo, "set_selectVideo")
+            },
+            // 视频
+            setVideo(res) {
+                let resopen = JSON.parse(res)
+                let arr = [];
+                let arr1 = [];
+                // let dataVals = {
+                //     cover_path_id: res.cover_path_id,
+                //     video_loc_path: res.video_loc_path
+                // }
+                // let dataVal1 = {
+                //     cover_path_id: resopen.cover_path_id,
+                //     cover_path: resopen.cover_path
+                // }
+                arr.push({
+                    cover_path_id: resopen.cover_path_id,
+                    video_loc_path: resopen.video_loc_path
+                })
+                this.dataVal.videoImgArr.push({
+                    cover_path_id: resopen.cover_path_id,
+                    cover_path: resopen.cover_path
+                });
+                AndroidRouter('uploadVideo', JSON.stringify(arr), this.setuploadVideo, "set_uploadVideo");
+            },
+            setuploadVideo(res) {
+                this.dataVal.videoImg = JSON.parse(res);
+            },
+        }
+    });
+</script>
+
+</html>

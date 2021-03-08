@@ -1,0 +1,244 @@
+#teaOuthPage{
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	padding-top: 5.6rem;
+	overflow-y: scroll;
+	-webkit-overflow-scrolling: touch;
+	overflow-scrolling: touch;
+	 background: rgb(245, 245, 245);
+}
+.t_fixeds{
+	width: 100%;
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 500;
+}
+.tops {
+    width: 100%;
+    padding: 0.27rem 0.25rem;
+    box-sizing: border-box;
+    z-index: 111;
+    background: #ffffff;
+	border-bottom: 0.02rem solid #F5F5F5;
+}
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.topImg {
+    width: 0.5rem;
+    height: 0.5rem;
+}
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+	font-weight: bold;
+}
+.allpads{
+	background: white;
+	box-sizing: border-box;
+	border-bottom: 0.02rem solid #F5F5F5;
+}
+.userMess{
+	justify-content: space-between;
+	box-sizing: border-box;
+	padding: 0.27rem 0 0.84rem 0;
+}
+.userMess>.lefs>img{
+	width: 1.3rem;
+	height: 1.3rem;
+	border-radius: 50%;
+	overflow: hidden;
+	margin-right: 0.24rem;
+}
+.userMess>.lefs>div>p span:nth-of-type(1){
+	font-size: 0.4rem;
+	color: #333333;
+	max-width: 1.8rem;
+}
+.userMess>.lefs>div>p>span:nth-of-type(2){
+	font-size:0.24rem;
+	color: #999999;
+	margin-left: 0.22rem;
+}
+.userMess>.lefs>div>div{
+	margin-top: 0.3rem;
+}
+.userMess>.lefs>div>div>img{
+	width: 0.25rem;
+	height: 0.25rem;
+	margin-right: 0.1rem;
+}
+.userMess>.lefs>div>div>p{
+	font-size: 0.24rem;
+	color: #666666;
+	max-width: 3rem;
+	line-height: 0.35rem;
+}
+.userMess>.rigs{
+	width: 1.4rem;
+	box-sizing: border-box;
+	height: 0.5rem;
+}
+.userMess>.rigs>p{
+	width: 100%;
+	height: 0.5rem;
+	background-color: #2EC5E0;
+	font-size: 0.24rem;
+	color: #FFFFFF;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 0.44rem;
+	box-shadow: 0 0.05rem 0 #15A9C3;
+}
+.fans{
+	justify-content: space-around;
+	box-sizing: border-box;
+	padding-bottom: 0.32rem;
+}
+.fans>div{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	position: relative;
+	width: 33.33%;
+}
+.fans>div:nth-of-type(2)::after{
+	content: '';
+	width: 0.02rem;
+	height: 0.6rem;
+	background-color: #EEEEEE;
+	left: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	position: absolute;
+}
+.fans>div:nth-of-type(2)::before{
+	content: '';
+	width: 0.02rem;
+	height: 0.6rem;
+	background-color: #EEEEEE;
+	right: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	position: absolute;
+}
+.fans>div>p:nth-of-type(1){
+	font-size: 0.36rem;
+	color: #323232;
+}
+.fans>div>p:nth-of-type(2){
+	font-size: 0.24rem;
+	color: #999999;
+	margin-top: 0.26rem;
+}
+.allTxts{
+	background-color: white;
+	box-sizing: border-box;
+	padding: 0.3rem;
+}
+.checkTab{
+	box-sizing: border-box;
+	padding-top: 0.35rem;
+	background-color: white;
+	border-bottom: 0.02rem solid #EEEEEE;
+}
+.checkTab .van-tabs--line .van-tabs__wrap{
+	height: 0.6rem;
+}
+.checkTab .van-tab{
+	font-size: 0.28rem;
+}
+.listBox{
+	flex-wrap: wrap;
+	box-sizing: border-box;
+	padding: 0.3rem 0.3rem 0 0.3rem;
+	justify-content:space-between;
+}
+.list{
+	background-color: white;
+	width: 47%;
+	border: 0.02rem solid #EEEEEE;
+	border-radius: 0.1rem;
+	margin-bottom: 0.3rem;
+	overflow: hidden;
+}
+.list>.top{
+	width: 100%;
+	height: 2.39rem;
+	position: relative;
+}
+.list>.top>img{
+	width: 100%;
+	height: 100%;
+}
+.list>.top>div{
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	background-color: rgba(0,0,0,0.1);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+.list>.top>div>p{
+	font-size: 0.22rem;
+	color: #FFFFFF;
+	margin: 0 0.16rem 0.13rem 0.16rem;
+}
+.list>.top>div>.add{
+	width: 2rem;
+	height: 0.5rem;
+	background-color: #FFBB03;
+	color: #fff;
+	font-size: 0.2rem;
+	border-radius: 0 0.25rem 0.25rem 0;
+	margin-bottom: 0.25rem;
+	text-align: center;
+	line-height: 0.5rem;
+}
+.list>.top>div>div{
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	margin-right: 0.14rem;
+	margin-top: 0.14rem;
+}
+.list>.top>div>div>img{
+	width: 0.4rem;
+	height: 0.4rem;
+}
+.list>.bot{
+	box-sizing: border-box;
+	padding: 0.2rem 0.17rem 0.21rem 0.17rem;
+}
+.list>.bot>p{
+	font-size: 0.26rem;
+	color: #444444;
+	line-height: 0.4rem;
+}
+.list>.bot>div{
+	margin-top: 0.3rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.list>.bot>div>div>img{
+	width: 0.3rem;
+	height: 0.3rem;
+	margin-right: 0.03rem;
+}
+.list>.bot>div>div>span{
+	font-size: 0.2rem;
+	color: #666666;
+}

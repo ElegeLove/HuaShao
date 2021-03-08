@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>新增教师</title>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/teacher/newStudents.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak @touchstart.stop="scolls">
+			<div class="topFixd">
+				<div class="heads_top">
+				   <div class="head_topBox">
+				       <img class="head_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+				       <div class="head_topTitle">教师列表</div>
+				       <div class="head_topImg"></div>
+				   </div>
+				</div>
+				<div class="searchBox">
+					<div class="ipts">
+						<div class="align_items alitemLef">
+							<img src="../../../images/teacher/ic_search.png" />
+							<input v-model="postData.keyword" @input="setIpts" ref="inputs" 
+							placeholder="手机号搜索"
+							class="iptLefts"
+							oninput = "value=value.replace(/[^\d]/g,'')"
+							/>
+						</div>
+					</div>
+					<span class="serBtn" @click="searchs">搜索</span>
+				</div>
+			</div>
+			<van-list
+			      v-model="loading"
+			      :finished="finished"
+			      :immediate-check="false"
+			      finished-text="已加载完毕"
+			      @load="onLoad"
+			      :offset="10"
+				   v-if="list.length!==0"
+			    >
+			<div class="listBox">
+				<div class="align_items lists" v-for="(item,index) in list" :key="index" v-if="list.length!==0">
+					<div class="align_items tops" @click="goUserPage(item)">
+						<img :src="item.head" onerror="this.src = '../../../images/teacher/error.png'"/>
+						<div>
+							<p class="danshen">{{item.teacher_name}}</p>
+							<div>手机号:{{item.mobile}}</div>
+						</div>
+					</div>
+					<div class="fotBtn">
+						<p @click="addClass(item)">添加至班级</p>
+					</div>
+				</div>
+			</div>
+			 </van-list>
+			 <div v-if="list.length==0&&loadsAll" class="nullEmptys" style="height: 80%;">
+			 	<img src="../../../images/student/null.png" />
+			 	<p>什么都没有...</p>
+			 </div>
+			 <loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script src="../../../js/public/vant.js"></script>
+	<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					postData:{
+						keyword:"",
+						page_no:1,
+						page_size:15,
+						scene:1
+					},
+					activeName: '1',
+					list:[],
+					overLoads:false,
+					loadsAll:false,
+					loading:false,
+					finished:false,
+					class_id:"",
+					title:""
+	            }
+	        },
+			mounted(){
+				var class_id = GetQueryValue("class_id")
+				var title = GetQueryValue("title")
+				this.class_id = class_id
+				this.title = title
+				this.getStudentList()
+			},
+	        methods: {
+				goUserPage(item){
+					location.href = "./userPage/teaOuthPage.html?id="+item.teacher_id+"&u_type=1"
+				},
+				scolls(){
+					var that = this;
+					this.$nextTick(function(){
+					   that.$refs.inputs.blur()
+					})
+				},
+				searchs(){        //搜索
+					this.postData.page_no = 1
+					this.loadsAll = false
+					this.loading = false
+					this.finished = false
+					this.list = []
+					this.getStudentList()
+				},
+				onLoad(){      //上拉加载
+				  this.postData.page_no++
+				  this.getStudentList()
+				},
+				setIpts(e){
+					this.postData.keyword = e.target.value
+				},
+				getStudentList(){
+					if(this.postData.page_no==1){
+						this.$refs.loadings.openLoading()
+					}
+					var that = this;
+					var posts = "school/classes/school_teacher_list"
+					ajax(posts,'POST',this.postData,function(res){
+						that.$refs.loadings.closedLoading()
+						that.loading = false;
+						if(res.code==1){
+							if(res.code==1){
+								that.refreshing = false;
+								that.loadsAll = true;
+								var numData = JSON.parse(JSON.stringify(res.data.list))
+								if(numData.length==0){
+								  that.finished = true
+								  return false
+								}
+								if(that.postData.page_no==1){
+								  that.list = numData
+								}else{
+								  that.list = that.list.concat(numData)
+								}
+							}
+						}else{
+							vant.Toast(res.msg)
+						}
+					})
+				},
+				goback(){
+					history.go(-1)
+				},
+				addClass(item){          //添加至班级
+					var obj = {
+						teacher_id:item.teacher_id,
+						classes_ids:[this.class_id]
+					}
+					var that = this
+					this.$refs.loadings.openLoading()
+					obj.classes_ids = JSON.stringify(obj.classes_ids)
+					ajax("school/classes/classes_teacher_add",'POST',obj,function(res){
+						that.$refs.loadings.closedLoading()
+						vant.Toast(res.msg);
+						if(res.code==1){
+							setTimeout(function(){
+								location.href = "classDetails.html?title="+that.title+"&class_id="+that.class_id+"&back=2"
+							},700)
+						}
+					})
+				}
+			}
+	    });
+	
+	
+	</script>
+</html>

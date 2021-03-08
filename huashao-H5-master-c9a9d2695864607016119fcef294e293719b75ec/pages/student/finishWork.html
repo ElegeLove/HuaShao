@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>完成作业</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/finishWork.css">
+</head>
+
+<body>
+    <div id="finishWork" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">完成作业</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div>
+                <textarea v-model="clockMain" name="" id="" cols="30" rows="26" placeholder="请输入作业内容~"></textarea>
+            </div>
+            <div class="main_img">
+                <!-- <img src="../../images/student/pic_add.png" alt=""> -->
+                <div class="main_pic">
+                    <div v-if="imgPath.length > 0">
+                        <img v-for="item in imgPath" :src="item.path" alt="">
+                    </div>
+                    <img v-if="imgPath.length < 9" src="../../images/student/pic_add.png" @click="uploadimg" alt="">
+                </div>
+                <div class="main_img_text">最多添加9张</div>
+            </div>
+            <div class="main_btn" @click="release">下一步</div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#finishWork',
+        data() {
+            return {
+                show: false,
+                student_task_id: '',
+                clockMain: '',
+                imgPath: []
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("id");
+            this.student_task_id = id;
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            release() {
+                let imgArr = [];
+                this.imgPath.forEach(function(item){
+                    imgArr.push(item.id)
+                });
+                // let that = this;
+                // ajax('student/task/do_task', "POST", {
+                //     "content": that.clockMain,
+                //     "student_task_id": that.student_task_id,
+                //     "attachment": JSON.stringify(imgArr),
+                // }, (res) => {
+                //     if (res.code == 1) {
+                //         // that.dataVal = res.data.result;
+                //         that.show = true;
+                //     }
+                // })
+            },
+            //图片上传
+            uploadimg() {
+                let that = this;
+                AndroidRouter('selectPic', 9, function (res) {
+                    that.imgPath = res;
+                })
+            },
+            goShare() {
+                location.href = './sharePunch.html?id=' + this.student_task_id;
+            }
+        }
+    });
+</script>
+
+</html>

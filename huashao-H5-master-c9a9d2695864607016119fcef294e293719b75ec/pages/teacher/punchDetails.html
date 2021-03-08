@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>打卡详情</title>
+		<script src="../../js/public/rem.js"></script>
+		<script src="../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../allCss/public.css">
+		<link rel="stylesheet" href="../../allCss/teacher/studentList.css">
+		 <link rel="stylesheet" href="../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="top">
+			    <div class="topBox">
+			        <img class="topImg" src="../../images/student/icon_back.png" alt="" @click="goback">
+			        <div class="topTitle">打卡详情</div>
+			        <div class="topImg"></div>
+			    </div>
+			</div>
+			<div class="thcheckTab" v-if="loafShow">
+				<van-tabs v-model="active"  line-width="30" :border="false" title-inactive-color="#999999" title-active-color="#333333" color="#2EC5E0" class="typeArrs"  @click="checkType">
+				  <van-tab v-for="(item,index) in typeArr" :key="index" :title="item.tit"></van-tab>
+				</van-tabs>
+			</div>
+			<div class="listBox" v-cloak>
+				<div class="list" v-for="(item,index) in peopleList" v-if="peopleList.length!==0">
+					<div class="user" @click="goUerPage(item)">
+						<img :src="item.head" onerror="this.src = '../../images/teacher/error.png'"/>
+						<span>{{item.name}}</span>
+					</div>
+					<div class="cpres" v-if="active==0">
+						<p>{{item.score}}</p>
+					</div>
+					<div class="fotBtn" v-if="active!==1" @click="looks(item)">
+						<p>查看练习</p>
+					</div>
+				</div>
+				<div v-if="peopleList.length==0&&loafShow" class="nullEmptys">
+					<img src="../../images/student/null.png" />
+					<p>什么都没有...</p>
+				</div>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+		
+	</body>
+	<script src="../../js/public/vue.js"></script>
+	<script src="../../js/public/vant.js"></script>
+	<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+				   typeArr:[],
+				   active:0,           //tab得选中目标
+				   allData:"",
+				   peopleList:[],
+				   loafShow:false
+	            }
+	        },
+	        mounted() {
+				var id = GetQueryValue("id")
+				var order = GetQueryValue("order")
+				this.active = Number(order)
+				this.getDetails(id)
+				this.ids = id
+	        },
+	        methods: {
+				goUerPage(item){           //用户主页
+					location.href = "mys/outhPage.html?id="+item.id+"&u_type=0"
+				},
+				getDetails(id){        //获取数据
+					var obj = {
+						task_publish_id:id
+					}
+					var that = this;
+					this.$refs.loadings.openLoading()
+					ajax("teacher/Teachertask/publishTaskDetail",'POST',obj,function(res){
+						if(res.code==1){
+							that.loafShow = true
+							var datas = JSON.parse(JSON.stringify(res.data))
+							that.allData = datas
+							that.typeArr = [{tit:"已完成学生 ("+datas.student_list.done_num+")",order:1},{tit:"未完成学生 ("+datas.student_list.undone_num+")",order:2}]
+							if(that.active==0){
+								that.peopleList = datas.student_list.done_student
+							}else{
+								that.peopleList = datas.student_list.undone_student
+							}
+						}else{
+							vant.Toast(res.msg)
+						}
+						that.$refs.loadings.closedLoading()
+					})
+				},
+	            looks(item) {
+	               location.href = "lookHomework.html?status=1&id="+item.student_task_id
+	            },
+				goback(){
+					history.go(-1)
+				},
+				checkType(it){              //切换tab
+					var order = this.typeArr[it].order
+					if(order==1){
+						this.peopleList = this.allData.student_list.done_student
+					}else{
+						this.peopleList = this.allData.student_list.undone_student
+					}
+				}
+	        }
+	    });
+	
+	
+	</script>
+</html>

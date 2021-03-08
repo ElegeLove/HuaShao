@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>查看作业</title>
+		<script src="../../../../js/public/rem.js"></script>
+		<script src="../../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../../allCss/teacher/lookHomework.css">
+		<link rel="stylesheet" href="../../../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box"  v-cloak>
+			<div class="top">
+			    <div class="topBox">
+			        <img class="topImg" src="../../../../images/student/icon_back.png" alt="" @click="goback">
+			        <div class="topTitle danshen">图文作业</div>
+			        <div class="topImg"></div>
+			    </div>
+			</div>
+			<div class="cont" v-if="allData!==''">
+				<div class="titlesd">
+					{{allData.opus_name}}
+				</div>
+				<div class="align_items userInfos">
+					<div class="align_items lef">
+						<img :src="allData.student_head" onerror="this.src = '../../../../images/teacher/error.png'"/>
+						<span class="danshen">{{allData.student_name}}</span>
+					</div>
+					<div class="align_items rig">
+						<div class="align_items" @click="zans">
+							<img src="../../../../images/teacher/loves.png" v-if="allData.is_click==1"/>
+							<img src="../../../../images/teacher/Ic_thumbup_03.png" v-else />
+							<span>{{allData.click_num}}</span>
+						</div>
+						<div class="align_items" @click="cancel(true)">
+							<img src="../../../../images/teacher/Ic_comments_03.png" />
+							<span>{{allData.comment_num}}</span>
+						</div>
+					<!-- 	<div class="align_items">
+							<img src="../../../../images/teacher/colltiosn.png" v-if="allData.is_collection==1"/>
+							<img src="../../../../images/teacher/Ic_collection_02.png" v-else/>
+							<span>{{allData.collection_num}}</span>
+						</div> -->
+					</div>
+				</div>
+				<p>{{allData.content}}</p>
+				<div v-for="(it,ix) in allData.attachment" :key="ix" class="atachment imgBoxss">
+					<img :src="it.path" class="bg" onerror="this.src = '../../../../images/teacher/error.png'"/>
+				</div>
+			</div>
+			<img src="../../../../images/teacher/homeWolrk.png" class="homeTit" @click="goHomeTitle"/>
+			<van-popup v-model="show" round position="bottom">
+				<div class="popAlerts">
+					<div class="popTitle">
+						<p>评论</p>
+						<img src="../../../../images/teacher/ic_cancle.png" @click="cancel(false)"/>
+					</div>
+					<div class="boxsdf">
+					<van-list
+					      v-model="loading"
+					      :finished="finished"
+					      :immediate-check="false"
+					      finished-text="已加载完毕"
+					      @load="onLoad"
+					      :offset="10"
+					    >
+							<div class="contents">
+								<div class="divs" v-for="(it,ix) in commentList" :key="ix">
+									<div class="align_items topdf">
+										<div class="align_items">
+											<img :src="it.user_head" onerror="this.src = '../../../../images/teacher/error.png'"/>
+											<span class="danshen">{{it.user_name}}</span>
+										</div>
+										<p>{{it.create_time}}</p>
+									</div>
+									<div class="bot">
+										<p>{{it.content}}</p>
+										<div v-if="it.replay.length!==0">
+											<div class="align_items">
+												<span>{{it.replay.replay_name}}：</span>
+												<p>{{it.replay.content}}</p>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+					 </van-list>
+					 </div>
+				</div>
+			</van-popup>
+			<div class="keybord rowCenters" @click.stop="emptysd" v-if="show">
+			   <input class="ipt" placeholder="发表一下你的看法" ref="inputs" v-model="content"/>
+			   <p @click.stop="subot">发送</p>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../../../js/public/vue.js"></script>
+	<script src="../../../../js/public/vant.js"></script>
+	<script src="../../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					loadsAll:false,
+					loading:false,
+					finished:false,
+					commentList:[],           //评论列表
+					id:"",
+					content:"",
+					show:false,
+					allData:"",
+					commtData:{
+						student_task_opus_id:"",
+						page_no:1,
+						page_size:15
+					},
+					status:""            //status为1是从我发布的练习进入学生列表-查看详情    2是待点评进入     88是学生主页进入详情
+	            }
+	        },
+			mounted(){
+				var status = GetQueryValue("status")
+				var id = GetQueryValue("id")
+				var opus_id = GetQueryValue("opus_id")
+				this.id = id
+				this.commtData.student_task_opus_id = opus_id
+				this.status = status
+				this.getDetails(id)
+				this.getCommentList()
+			},
+	        methods: {
+				onLoad(){      //上拉加载
+				  this.commtData.page_no++
+				  this.getCommentList()
+				},
+				reloadComment(){
+					this.commtData.page_no = 1
+					this.loading = false
+					this.finished = false
+					this.commentList = []
+					this.getCommentList()
+				},
+				getCommentList(){            //获取评论列表
+					var that = this;
+					ajax('school/task/student_opus_comment_list','POST',this.commtData,function(res){
+						that.loading = false
+						if(res.code==1){
+							that.loadsAll = true
+							var numData = JSON.parse(JSON.stringify(res.data))
+							if(numData.list.length==0){
+							  that.finished = true
+							  return false
+							}
+							if(that.page==1){
+							  that.commentList = numData.list
+							}else{
+							  that.commentList = that.commentList.concat(numData.list)
+							}
+						}
+					})
+				},
+				
+				goHomeTitle(){           //作业题目跳转
+					location.href = "homeworkDetails.html?id="+this.allData.task_id
+				},
+				subot(){           //评论确定
+					var obj = {
+						student_task_opus_id:this.commtData.student_task_opus_id,
+						content:this.content
+					}
+					var that = this;
+					ajax("school/task/student_opus_comment",'POST',obj,function(res){
+						vant.Toast(res.msg)
+						if(res.code==1){
+							that.content = ""
+							that.allData.comment_num+=1
+							that.reloadComment()
+						}
+					})
+					this.show = false
+				},
+				cancel(bool){       //取消
+					this.show = bool
+					var that = this;
+				},
+				zans(){          //点赞
+					var that = this;
+					ajax("school/task/opus_click",'POST',{student_task_opus_id:this.commtData.student_task_opus_id},function(res){
+						vant.Toast(res.msg)
+						if(res.code==1){
+							if(that.allData.is_click==1){
+								that.allData.is_click = 0;
+								that.allData.click_num-=1
+							}else{
+								that.allData.is_click = 1;
+								that.allData.click_num+=1;
+							}
+						}
+					})
+				},
+				getDetails(id){
+					var postObj = {
+						student_task_id:id
+					}
+					var that = this;
+					this.$refs.loadings.openLoading()
+					ajax("school/task/student_task_opus",'POST',postObj,function(res){
+						that.$refs.loadings.closedLoading()
+						if(res.code==1){
+							that.allData = JSON.parse(JSON.stringify(res.data.result))
+						}else{
+							vant.Toast(res.msg)
+						}
+					})
+				},
+				goback(){
+					history.go(-1)
+				}
+	        }
+	    });
+	
+	
+	</script>
+</html>

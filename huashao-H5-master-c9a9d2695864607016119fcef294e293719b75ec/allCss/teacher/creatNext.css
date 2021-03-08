@@ -1,0 +1,247 @@
+#box{
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	overflow-y: scroll;
+/* 	-webkit-overflow-scrolling: touch;
+	overflow-scrolling: touch; */
+	padding-top: 1rem;
+	padding-bottom: 2rem;
+	background-color: white;
+}
+.fixeds{
+	width: 100%;
+/* 	position: fixed;
+	top: 0;
+	overflow: hidden;
+	left: 0; */
+	z-index: 400;
+	background-color: white;
+}
+.checkClass{
+	width: 100%;
+	box-sizing: border-box;
+	padding: 0.35rem 0.3rem 0 0.3rem;
+}
+.checkClass>.stadent{
+	margin-top: 0.49rem;
+	box-sizing: border-box;
+	padding-bottom: 0.54rem;
+}
+.checkClass .altitles{
+	display: flex;
+	align-items: flex-start;
+}
+.checkClass .altitles>.rigs{
+	margin-left: 0.21rem;
+	overflow: hidden;
+}
+.checkClass .altitles>div>span{
+	font-size: 0.3rem;
+	color: #333333;
+}
+.checkClass .altitles>div img{
+	width: 0.36rem;
+	height: 0.36rem;
+}
+.checkClass .addTypes{
+	width: 100%;
+	box-sizing: border-box;
+	flex-wrap: wrap;
+}
+.checkClass .addTypes>div{
+	margin-top: 0.29rem;
+	position: relative;
+	box-sizing: border-box;
+	padding: 0.18rem 0.4rem;
+	border-radius: 0.1rem;
+}
+.checkClass .addTypes>.newsAdd{
+	background-color: #F5F5F5;
+	font-size: 0.26rem;
+	color: #999999;
+	position: relative;
+	margin-right: 0.3rem;
+}
+.checkClass .addTypes>.newsAdd>img{
+	width: 0.3rem;
+	height: 0.3rem;
+	position: absolute;
+	top: -0.15rem;
+	right: -0.15rem;
+}
+.checkClass .altitles>.rigs .adds{
+	font-size: 0.26rem;
+	color: #CACACA;
+	border: 0.02rem dashed #CACACA;
+}
+.checkClass .altitles>.rigs .addStudent{
+	flex-wrap: wrap;
+	margin-top: 0.36rem;
+	display: flex;
+}
+.checkClass .altitles>.rigs .addStudent>div>img{
+	width: 0.7rem;
+	height: 0.7rem;
+	border-radius: 50%;
+}
+.checkClass .altitles>.rigs .addStudent>div{
+	margin-bottom: 0.4rem;
+	margin-right: 0.39rem;
+}
+.checkClass .altitles>.rigs .addStudent>div>p{
+	font-size: 0.24rem;
+	color: #333333;
+	margin-top: 0.11rem;
+	max-width: 0.8rem;
+	line-height: 0.32rem;
+}
+.checkClass .altitles>.rigs .addStudent>img{
+	width: 0.7rem;
+	height: 0.7rem;
+}
+.content{
+	width: 100%;
+	/* min-height: 100%; */
+	background-color: #F5F5F5;
+	box-sizing: border-box;
+	padding: 0 0.3rem;
+	overflow: hidden;
+}
+.content>div{
+	width: 100%;
+	background-color: white;
+	border-radius: 0.1rem;
+	margin-top: 0.29rem;
+	box-sizing: border-box;
+}
+.content>div>p{
+	font-size: 0.36rem;
+	color: #333333;
+	font-weight: bold;
+	box-sizing: border-box;
+	padding: 0.35rem 0.25rem;
+	border-bottom: 0.02rem solid #EEEEEE;
+}
+.content>div>div{
+	justify-content: space-between;
+	box-sizing: border-box;
+	padding: 0.54rem 0.25rem;
+}
+.content>div>div>p{
+	font-size: 0.3rem;
+	color: #333333;
+}
+.content>div>div>p>span{
+	font-size: 0.3rem;
+	color: #FB4330;
+}
+.content>div>div>div{
+	font-size: 0.3rem;
+	color: #999999;
+}
+.content>div>div>div>img{
+	width: 0.4rem;
+	height: 0.4rem;
+}
+.fotBtn{
+	width: 100%;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	box-sizing: border-box;
+	padding: 0.15rem 0.3rem;
+	background-color: white;
+}
+.fotBtn>div{
+	justify-content: center;
+	margin-bottom: 0.34rem;
+	margin-top: 0.1rem;
+}
+.fotBtn>div>img{
+	width: 0.28rem;
+	height: 0.28rem;
+	margin-right: 0.13rem;
+}
+.fotBtn>div>span{
+	font-size: 0.26rem;
+	color: #666666;
+}
+.fotBtn>p{
+	width: 100%;
+	height: 0.88rem;
+	background-color: #2EC5E0;
+	font-size: 0.36rem;
+	color: #FFFFFF;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 0.44rem;
+	box-shadow: 0 0.05rem 0 #15A9C3;
+}
+.fotBtn>.gon{
+	width: 100%;
+	height: 0.88rem;
+	background-color: #2EC5E0;
+	font-size: 0.36rem;
+	color: #FFFFFF;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 0.44rem;
+	box-shadow: 0 0.05rem 0 #15A9C3;
+	border: 0;
+}
+.timePop .van-picker__toolbar{
+	align-items: center;
+}
+.allBoxs>div{
+	justify-content: space-between;
+	height: 1.2rem;
+	border-bottom: 0.02rem solid #EEEEEE;
+}
+.dataTims>p,.dianBox>p{
+	font-size: 0.3rem;
+	color: #333333;
+}
+.dataTims>p>span{
+	font-size: 0.3rem;
+	color: #FB4330;
+}
+.dataTims>div>input{
+	font-size: 0.3rem;
+	color: #999999;
+	text-align: right;
+}
+.dataTims>div>img{
+	width: 0.4rem;
+	height: 0.4rem;
+}
+.dianBox>div>img{
+	width: 1.22rem;
+	height: 0.57rem;
+}
+.rdiosss{
+	box-sizing: border-box;
+	padding: 0.4rem 0.3rem;
+}
+.rdiosss>img{
+	width: 0.28rem;
+	height: 0.28rem;
+	margin-right: 0.13rem;
+}
+.rdiosss>p{
+	font-size: 0.26rem;
+	color: #666666;
+}
+.timePop .van-picker__frame{
+	top: 44% !important;
+}
+.timePop .van-popup--bottom{
+	border-radius: 0.5rem 0.5rem 0 0;
+}
+.van-picker__columns>div:nth-of-type(5){
+	display: none !important;
+}

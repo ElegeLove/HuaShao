@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>老师点评</title>
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/student/teacherComments.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+</head>
+
+<body>
+    <div id="box" v-cloak @scroll="scolls">
+        <div>
+            <div class="head_top" :style="{background:scoll?'#fff':'transparent'}">
+                <div class="head_topBox">
+                    <img class="head_topImg" src="../../images/student/ic_return_white.png" alt="" @click="goback" v-if="!scoll">
+                    <img class="head_topImg" src="../../images/student/icon_back.png" alt="" @click="goback" v-else>
+                    <div class="head_topTitle" :style="{color:scoll?'black':'#fff'}">老师点评</div>
+                    <div class="head_topImg"></div>
+                </div>
+            </div>
+            <div class="coreds">
+                <div>
+                    <p>{{dataVal.score}}</p>
+                    <div>
+                        — 分数 —
+                    </div>
+                </div>
+            </div>
+            <div class="padd">
+                <div class="videos align_items">
+                    <div class="audios align_items" @click="vicePlay(dataVal.attachment_music.path,dataVal.task_name)" v-if="dataVal.attachment_music && dataVal.attachment_music != ''">
+                        <img src="../../images/student/Collection_voice.png" />
+                        <span>{{dataVal.attachment_music.duration}}〞</span>
+                    </div>
+                    <div class="videoAuto" v-if="dataVal.attachment_vedio && dataVal.attachment_vedio != ''">
+                        <img :src="dataVal.attachment_vedio.other_path" />
+                        <div>
+                            <img src="../../images/teacher/ic_bofang.png" @click="videoPlay(dataVal.attachment_vedio.path,dataVal.task_name)" />
+                        </div>
+                    </div>
+                </div>
+                <div class="details">
+                    <p>{{dataVal.content}}</p>
+                    <div v-for="item in dataVal.attachment_img">
+                        <img :src="item.path" class="bg" />
+                    </div>
+                </div>
+                <div v-for="items in dataVal.replays">
+                    <div v-if="dataVal.replays.length > 0" class="repay">
+                        <p>{{items.user_name}}回复:</p>
+                        <div>{{items.content}}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="fotBtn_teas" v-if="dataVal.allow_reply == 1" @click="replay">
+                <p>回复点评</p>
+            </div>
+            <van-popup v-model="show" round position="bottom">
+                <div class="replayMain">
+                    <input type="text" ref='inputs' v-model="replayVal" placeholder="请输入回复内容">
+                    <div @click="sunClick">发送</div>
+                </div>
+            </van-popup>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#box',
+        data() {
+            return {
+                scoll: false,
+                allData: "",
+                dataVal: {},
+                show: false,
+                replayVal: '',
+                dataId: '',
+                taskId: '',
+                commentId: '',
+                gobackVal: false
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("id");
+            this.gobackVal = GetQueryValue("goback");
+            this.dataId = id;
+            this.getData(id);
+            // var id = GetQueryValue("id")
+            // this.getDetails(id)
+        },
+        methods: {
+            scolls(e) {
+                var scrollTop = e.target.scrollTop
+                scrollTop > 67 ? this.scoll = true : this.scoll = false
+            },
+            goback() {
+                if (this.gobackVal) {
+                    history.go(-1);
+                } else {
+                    AndroidRouter('closePage', '');
+                }
+            },
+            getData(id) {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                this.$refs.loadings.openLoading();
+                let that = this;
+                ajax('student/task/student_opus_comment_info', "POST", {
+                    student_task_opus_id: id,
+                    is_review: 1
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.dataVal = res.data.result;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        that.taskId = res.data.result.student_task_opus_id;
+                        that.commentId = res.data.result.student_opus_comment_id;
+                    }
+                })
+            },
+            replay() {
+                this.show = true;
+                this.$refs.inputs.focus()
+            },
+            sunClick() {
+                let that = this;
+                ajax('student/task/student_opus_comment', "POST", {
+                    student_task_opus_id: that.taskId,
+                    pid: that.commentId,
+                    content: that.replayVal
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.show = false;
+                        that.replayVal = '';
+                        that.getData(that.dataId);
+                    }
+                })
+            },
+            // 音频播放
+            vicePlay(url, name) {
+                var obj = {
+                    title: name,
+                    path: url
+                }
+                AndroidRouter('playVoice', JSON.stringify(obj))
+            },
+            // 视频播放
+            videoPlay(url, name) {
+                let data = {
+                    "title": name,
+                    "path": url
+                }
+                AndroidRouter('playVideo', JSON.stringify(data))
+            }
+        }
+    });
+</script>
+
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>打卡</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/clockIn.css">
+</head>
+
+<body>
+    <div id="clockIn" class="content" v-cloak>
+        <van-pull-refresh v-model="isLoading" success-text="刷新成功" @refresh="onRefresh" class="content">
+            <div class="main">
+                <div class="main_top">
+                    <div class="main_top_num">
+                        <div class="main_top_num_main">
+                            <img src="../../images/student/pic_star01.png" alt="">
+                            <div class="main_top_num_main_num">{{dataVal.star_num}}<span>枚</span></div>
+                            <div class="main_top_num_main_text">
+                                已经累计打卡<span>{{dataVal.punch_clock_all_days}}</span>天，获得小五星{{dataVal.star_num}}枚，朋友晒一下吧！
+                            </div>
+                            <div class="main_top_num_main_btn" @click="share">分享打卡成绩</div>
+                        </div>
+                        <div class="main_top_num_right" @click="goRules">规则</div>
+                    </div>
+                    <div class="main_top_list">
+                        <div class="list_item">
+                            <div class="list_item_top">{{dataVal.punch_clock_all_days}}<span>天</span></div>
+                            <div class="list_item_main">
+                                <div>
+                                    <img src="../../images/student/Icon_cumulativepunch.png" alt="">
+                                    <div>累计打卡</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="list_item">
+                            <div class="list_item_top">{{dataVal.punch_clock_series_days}}<span>天</span></div>
+                            <div class="list_item_main">
+                                <div>
+                                    <img src="../../images/student/Icon_clockingcontinuously.png" alt="">
+                                    <div>连续打卡</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <van-list v-model="isUpLoading" :finished="upFinished" @load="onupLoad" :offset="offset" :immediate-check='checks' finished-text="我是有底线的" v-if="dataList.length > 0">
+                    <div class="main_content">
+                        <div class="main_content_border" v-for="item in dataList" @click="goDetails(item)">
+                            <div class="main_content_title">
+                                <div class="main_content_title_left">{{item.name}}
+                                    <p class="main_content_title_right" v-if="item.tag_name || item.tag_name != ''">{{item.tag_name}}</p>
+                                </div>
+                                <!-- <div class="main_content_title_right" v-if="item.tag_name || item.tag_name != ''">
+                                    {{item.tag_name}}</div> -->
+                            </div>
+                            <div class="main_content_banner">
+                                <div class="main_content_banner_img">
+                                    <img :src="item.cover_img" onerror="this.src = '../../images/teacher/error.png'" v-lazy="item.cover_img" />
+                                </div>
+                                <!-- <img class="main_content_banner_img" :src="item.cover_img" alt=""> -->
+                                <div class="main_content_banner_icon">
+                                    <img v-if="item.task_form == 1" src="../../images/student/Icon_pic.png" alt="">
+                                    <img v-if="item.task_form == 2" src="../../images/student/Icon_audio.png" alt="">
+                                    <img v-if="item.task_form == 3" src="../../images/student/Icon_video.png" alt="">
+                                    <div>{{item.form_text}}<span>练习</span>&nbsp;{{item.end_date}}</div>
+                                </div>
+                                <div class="main_content_banner_right" v-if="item.status == 2">今日打卡</div>
+                                <div class="main_content_banner_rights" v-if="item.status == 1">已打卡</div>
+                                <div class="main_content_banner_rights" v-if="item.status == 0">未打卡</div>
+                            </div>
+                            <div class="main_content_text">{{item.content}}</div>
+                        </div>
+                    </div>
+                </van-list>
+                <div v-if="isShow" class="nullData">
+                    <div>
+                        <img src="../../images/student/null.png" alt="">
+                        <div>暂无数据</div>
+                    </div>
+                </div>
+            </div>
+        </van-pull-refresh>
+        <van-popup v-model="show" position="bottom">
+            <div class="shareBox">
+                <div @click="goShareDetail('WEIXIN')">
+                    <img src="../../images/student/pic_chat.png" alt="">
+                    <div class="shareBox_text">微信</div>
+                </div>
+                <!-- <div @click="goShareDetail('QQ')">
+                    <img src="../../images/student/pic_qq.png" alt="">
+                    <div class="shareBox_text">QQ</div>
+                </div> -->
+                <div @click="goShareDetail('WEIXIN_CIRCLE')">
+                    <img src="../../images/student/pic_friend.png" alt="">
+                    <div class="shareBox_text">朋友圈</div>
+                </div>
+            </div>
+            <div class="cancel" @click="cancel">取消</div>
+        </van-popup>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#clockIn',
+        data() {
+            return {
+                isClick: true,
+                show: false,
+                dataVal: {},
+                dataList: [],
+                pageNo: 1,
+                pageSize: 5,
+                total: '',
+                isShow: false,
+                checks: false,
+                isLoading: false,
+                isUpLoading: false,
+                upFinished: false, //上拉加载完毕
+                offset: 100, //滚动条与底部距离小于 offset 时触发load事件
+            }
+        },
+        mounted() {
+            this.$refs.loadings.openLoading();
+            // this.getInfo(this.pageNo, this.pageSize);
+            AndroidRouter('getUserInfo', "", this.setUserInfo, "setUserInfo")
+                // iosReload();
+                // let url = 'student/clockIn.html';
+                // AndroidRouter('refreshPage', url);
+        },
+        methods: {
+            setUserInfo(res) {
+                localStorage.setItem("token", res)
+                this.getInfo(this.pageNo, this.pageSize);
+                AndroidRouter('onBottomTabClick', 2, this.bottomTab, "setOnBottomTabClick")
+            },
+            bottomTab() {
+                // location.reload()
+                // this.$refs.loadings.openLoading();
+                this.getInfo(this.pageNo, this.pageSize);
+                AndroidRouter('onBottomTabClick', 2, this.bottomTab, "setOnBottomTabClick")
+            },
+            newPage() {
+                this.getInfo(this.pageNo, this.pageSize);
+            },
+            onRefresh() {
+                this.isLoading = true;
+                this.upFinished = false;
+                this.pageNo = 1;
+                this.dataList = [];
+                this.getInfo(this.pageNo, this.pageSize)
+            },
+            onupLoad() { // 上拉调用此函数
+                // e.stopPropagation();
+                this.isUpLoading = false;
+                // this.upFinished = false;
+                this.pageNo++;
+                // this.$refs.loadings.openLoading();
+                this.getInfo(this.pageNo, this.pageSize)
+
+            },
+            getInfo(pageNo, pageSize) {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                let that = this;
+                ajax('student/task/punch_clock_index', "POST", {
+                    "page_no": pageNo,
+                    "page_size": pageSize
+                }, function(res) {
+                    if (res.code == 1) {
+                        that.isLoading = false;
+                        that.dataVal = res.data.result
+                        let rows = res.data.list; //请求返回当页的列表
+                        that.isUpLoading = false;
+                        that.total = res.data.total;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        if (rows == null || rows.length == 0) {
+                            // 加载结束
+                            this.upFinished = true;
+                            if (that.dataList.length < 1) {
+                                that.isShow = true;
+                            } else {
+                                that.isShow = false;
+                            }
+                            return false;
+                        }
+                        if (pageNo == 1) {
+                            that.dataList = rows;
+                        } else {
+
+                            that.dataList = that.dataList.concat(rows);
+                        }
+                        if (that.dataList.length >= that.total) {
+                            that.upFinished = true;
+                        }
+                        if (that.dataList.length < 1) {
+                            that.isShow = true;
+                        } else {
+                            that.isShow = false;
+                        }
+                    } else {
+                        that.isLoading = false;
+                        vant.Toast(res.msg)
+                    }
+                })
+            },
+            //跳转详情页
+            goDetails(val) {
+                let id = '';
+                let type = 0;
+                if (val.no_join_school == 1) {
+                    id = val.task_id;
+                    type = 1;
+                } else {
+                    id = val.student_task_id;
+                    type = 0;
+                }
+                // location.href = './clockPractise.html?id=' + id + '&type=' + type;
+                AndroidRouter('onClosePage', "clickIn1", this.newPage, 'get_closedCall')
+                let url = 'student/clockPractise.html?id=' + id + '&type=' + type;
+                AndroidRouter('newPage', url)
+            },
+            //分享
+            share() {
+                let that = this;
+                if (that.isClick) {
+                    that.isClick = false;
+                    ajax('student/student/mine', "POST", {}, function(res) {
+                            if (res.code == 1) {
+                                ajax('current/share/punch_clock_achievement', "POST", {
+                                    student_share_code: res.data.result.share_code,
+                                    share_url: pageUrl + 'huashao_h5/pages/student/directShare.html'
+                                }, function(ress) {
+                                    if (ress.code == 1) {
+                                        let data = {
+                                            "content": ress.data.result.share.content,
+                                            "description": ress.data.result.share.description,
+                                            "title": ress.data.result.share.title,
+                                            "url": ress.data.result.share.webpageUrl
+                                        };
+                                        AndroidRouter('shareWithUi', JSON.stringify(data), this.setShare, "set_shareWithUi")
+                                    } else {
+                                        vant.Toast(ress.msg)
+                                    }
+                                })
+                            }
+                        })
+                        //定时器
+                    setTimeout(function() {
+                        that.isClick = true;
+                    }, 1000); //一秒内不能重复点击
+                }
+
+            },
+            goShareDetail(val) {
+                let that = this;
+                ajax('student/student/mine', "POST", {}, function(res) {
+                    if (res.code == 1) {
+                        ajax('current/share/punch_clock_achievement', "POST", {
+                            student_share_code: res.data.result.share_code,
+                            share_url: pageUrl + 'huashao_h5/pages/student/directShare.html'
+                        }, function(ress) {
+                            if (ress.code == 1) {
+                                let data = {
+                                    "content": ress.data.result.share.content,
+                                    "description": ress.data.result.share.description,
+                                    "platform": val,
+                                    "title": ress.data.result.share.title,
+                                    "url": ress.data.result.share.webpageUrl
+                                };
+                                AndroidRouter('share', JSON.stringify(data), this.setShare, "set_share")
+                            } else {
+                                vant.Toast(ress.msg)
+                            }
+                        })
+                    }
+                })
+            },
+            setShare(res) {
+                this.show = false;
+            },
+            cancel() {
+                this.show = false;
+            },
+            //规则
+            goRules() {
+                // location.href = './clockInRules.html';
+                let url = 'student/clockInRules.html';
+                AndroidRouter('newPage', url)
+            }
+        }
+    });
+</script>
+
+</html>

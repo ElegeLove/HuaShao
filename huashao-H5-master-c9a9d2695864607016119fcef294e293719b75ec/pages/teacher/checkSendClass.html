@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>选择发布班级</title>
+		<script src="../../js/public/rem.js"></script>
+		<script src="../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../allCss/public.css">
+		<link rel="stylesheet" href="../../allCss/teacher/checkSendClass.css">
+		<link rel="stylesheet" href="../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="heads_top">
+			    <div class="heads_topBox">
+			        <img class="heads_topImg" src="../../images/student/icon_back.png" alt="" @click="goback">
+			        <div class="heads_topTitle">选择发布班级</div>
+			        <div class="heads_rig" @click="submits">确定</div>
+			    </div>
+			</div>
+			<div class="listBox" v-cloak >
+				<div class="align_items" v-for="(item,index) in list" @click="check(item,index)" :key="index" v-if="list.length!==0">
+					<p>{{item.classes_name}}</p>
+					<div>
+						<img src="../../images/teacher/checkBoxOne.png" v-if="item.show"/>
+						<img src="../../images/teacher/checkBoxTwo.png" v-else/>
+					</div>
+				</div>
+				<div v-if="list.length==0&&nullEmptys" class="nullEmptys">
+					<img src="../../images/student/null.png" />
+					<p>什么都没有...</p>
+				</div>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../js/public/vue.js"></script>
+	<script src="../../js/public/vant.js"></script>
+	<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					list:[],
+					classes_ids:[],
+					classes_ids_name:[],
+					nullEmptys:false
+	            }
+	        },
+	        mounted() {
+				this.getList()
+	        },
+	        methods: {
+				getLocal(){
+					var sendData = localStorage.getItem('sendData')
+					if(sendData!==null){
+						var datas = JSON.parse(sendData)
+						this.classes_ids = datas.classes_ids
+						this.classes_ids_name = datas.classes_ids_name
+						this.list.map(function(it){
+							datas.classes_ids.forEach(function(item){
+								if(it.classes_id==item){
+									it.show = true
+								}
+							})
+						})
+					}
+				},
+				getList(){
+					this.$refs.loadings.openLoading()
+					var that = this;
+					ajax("teacher/Teacher/TeacherClassessList",'POST',{},function(res){
+						that.$refs.loadings.closedLoading()
+						if(res.code==1){
+							that.nullEmptys = true
+							var datas = JSON.parse(JSON.stringify(res.data.list))
+							datas.map(function(it){
+								it.show = false
+							})
+							that.list = datas
+							that.getLocal()
+						}else{
+							vant.Toast(res.msg)
+						}
+					})
+				},
+				goback(){
+					history.go(-1)
+				},
+				submits(){
+					if(this.classes_ids.length!==0){
+						var sendData = localStorage.getItem('sendData')
+						if(sendData!==null){
+							var datas = JSON.parse(sendData)
+							datas.classes_ids = this.classes_ids
+							datas.classes_ids_name = this.classes_ids_name
+							localStorage.setItem('sendData',JSON.stringify(datas))
+						}
+						history.go(-1)
+					}else{
+						vant.Toast('请选择班级')
+					}
+				},
+				check(item,index){  //
+					var that = this;
+					item.show?item.show=false:item.show=true
+					if(item.show){
+						this.classes_ids.push(item.classes_id)
+						this.classes_ids_name.push(item.classes_name)
+					}else{
+						this.classes_ids.forEach(function(it,ix){
+							if(it==item.classes_id){
+								that.classes_ids.splice(ix,1)
+								that.classes_ids_name.splice(ix,1)
+							}
+						})
+					}
+				}
+	        }
+	    });
+	
+	
+	</script>
+</html>

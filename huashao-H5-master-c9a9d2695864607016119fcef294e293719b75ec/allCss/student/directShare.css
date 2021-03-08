@@ -1,0 +1,325 @@
+#directShare {
+    width: 100%;
+    padding-bottom: 1.4rem;
+    box-sizing: border-box;
+}
+
+.top {
+    width: 100%;
+    padding: 0.265rem 0.3rem;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 111;
+    background: #ffffff;
+}
+
+.topBox {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topImg {
+    width: 0.4rem;
+    height: 0.4rem;
+}
+
+.topTitle {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.main_top {
+    padding-bottom: 0.36rem;
+    border-bottom: 0.2rem solid #F5F5F5;
+}
+
+.main_top_num {
+    width: 100%;
+    height: 6.2rem;
+    background: url('../../images/student/Background_clockin.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
+
+.main_top_num_main {
+    margin-top: 0.7rem;
+}
+
+.main_top_num_main img {
+    width: 1.74rem;
+    height: 1.7rem;
+}
+
+.main_top_num_main_num {
+    font-size: 0.6rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+    line-height: 1.16rem;
+}
+
+.main_top_num_main_text {
+    font-size: 0.24rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(51, 51, 51, 1);
+    line-height: 0.3rem;
+}
+
+.main_top_list {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.list_item {
+    width: 50%;
+    border-right: 0.01rem solid #F3F3F3;
+    text-align: center;
+}
+
+.list_item_top {
+    font-size: 0.4rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+    line-height: 1.16rem;
+}
+
+.list_item_main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.list_item_main img {
+    width: 0.26rem;
+    height: 0.24rem;
+    margin-right: 0.1rem;
+    flex-shrink: 0;
+    vertical-align: top;
+    margin-bottom: 0.05rem;
+    transform: scale(0.98);
+}
+
+.list_item_main>div {
+    display: flex;
+    align-items: center;
+}
+
+.list_item_main>div>div {
+    font-size: 0.28rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(153, 153, 153, 1);
+}
+
+.list_item:last-child {
+    border: none;
+}
+
+.main_content {
+    width: 100%;
+    padding: 0 0.3rem;
+    box-sizing: border-box;
+}
+
+.main_content_border {
+    width: 100%;
+    padding: 0.4rem 0;
+    box-sizing: border-box;
+    border-bottom: 0.01rem solid #F5F5F5;
+}
+
+.main_content_top {
+    padding-left: 0.18rem;
+    box-sizing: border-box;
+    border-left: 0.08rem solid #2EC5E0;
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+    line-height: 0.4rem;
+    margin-bottom: 0.2rem;
+}
+
+.taskNumm {
+    padding: 0.3rem 0;
+    text-align: center;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.taskNumm img {
+    width: 3.68rem;
+    height: 3.82rem;
+}
+
+.taskNumm>div>div {
+    margin-top: 0.1rem;
+}
+
+.main_content_banner {
+    width: 100%;
+    height: 2.9rem;
+    margin: 0.38rem 0 0.32rem;
+    border-radius: 0.1rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.main_content_banner_img {
+    width: 100%;
+    height: 2.9rem;
+    object-fit: cover;
+}
+
+.main_content_banner_icon {
+    width: 100%;
+    padding: 0.16rem 0.18rem;
+    box-sizing: border-box;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    font-size: 0.2rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(255, 255, 255, 1);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0), rgba(000, 000, 000, 0.4));
+}
+
+.main_content_banner_icon img {
+    width: 0.3rem;
+    height: 0.3rem;
+    margin-right: 0.14rem;
+}
+
+.main_content_title {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.main_content_title_left {
+    font-size: 0.36rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(51, 51, 51, 1);
+}
+
+.main_content_title_right {
+    /* min-width: 1.3rem; */
+    padding: 0 0.2rem;
+    box-sizing: border-box;
+    height: 0.36rem;
+    margin-left: 0.2rem;
+    border: 0.01rem solid rgba(46, 197, 224, 1);
+    border-radius: 0.18rem;
+    font-size: 0.24rem;
+    font-weight: 500;
+    color: rgba(46, 197, 224, 1);
+    line-height: 0.36rem;
+    margin-left: 0.2rem;
+    display: inline-block !important;
+    flex-shrink: 0;
+    /* min-width: 1.3rem; */
+    padding: 0 0.2rem;
+    box-sizing: border-box;
+    font-family: 'miui';
+    flex-shrink: 0;
+    vertical-align: top;
+    margin-top: 0.03rem;
+    transform: scale(0.98);
+}
+
+.main_content_text {
+    margin: 0.34rem 0 0.46rem;
+    font-size: 0.28rem;
+    font-family: 'PingFang SC';
+    font-weight: 500;
+    color: rgba(102, 102, 102, 1);
+    line-height: 0.44rem;
+}
+
+.main_content_footer {
+    width: 2.12rem;
+    height: 0.66rem;
+    background: url('../../images/student/Button_view.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.24rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(255, 255, 255, 1);
+}
+
+.main_understand {
+    width: 100%;
+    margin-top: 0.42rem;
+    padding-bottom: 0.4rem;
+}
+
+.main_understand img {
+    width: 100%;
+    /* height: 2.9rem; */
+    margin-top: 0.42rem;
+}
+
+.main_footer_box {
+    width: 100%;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 11;
+    background-color: #ffffff;
+}
+
+.main_footer {
+    width: 100%;
+    padding: 0.2rem 0;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border: 0.01rem solid rgba(245, 245, 245, 1);
+}
+
+.main_footer_left,
+.main_footer_right {
+    width: 3.34rem;
+    height: 0.86rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.3rem;
+    font-family: 'PingFang SC';
+    font-weight: bold;
+    color: rgba(255, 255, 255, 1);
+}
+
+.main_footer_left {
+    background: url('../../images/student/Button_share.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+}
+
+.main_footer_right {
+    background: url('../../images/student/Button_clock.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center center;
+}

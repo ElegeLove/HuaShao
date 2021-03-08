@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>个人主页</title>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/teacher/userPage.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="t_fixeds">
+				<div class="tops">
+				    <div class="topBox">
+				        <img class="topImg" src="../../../images/teacher/ic_return.png" alt="" @click="goback">
+				        <div class="topTitle">个人主页</div>
+				        <div class="topImg"></div>
+				    </div>
+				</div>
+				<div class="th_padd allpads" v-if="allData!==''">
+					<div class="userMess align_items">
+						<div class="align_items lefs">
+							<img :src="allData.teacher.head" v-if="allData.teacher.head_id!=0"/>
+							<img :src="allData.teacher.head_edit" v-if="allData.teacher.head_id==0"/>
+							<div>
+								<p class="align_items"><span class="danshen">{{allData.teacher.name}}</span><span>ID:{{allData.teacher.id}}</span></p>
+								<div class="align_items">
+									<img src="../../../images/teacher/Ic_edi.png" />
+									<p class="moreshen">{{allData.teacher.personal_sign==""?'这个人很懒，什么也没写~':allData.teacher.personal_sign}}</p>
+								</div>
+							</div>
+						</div>
+						<van-button type="default" @click="updatePage" class="rigs">编辑资料</van-button>
+					</div>
+					<div class="align_items fans">
+						<div @click="goFans(1)">
+							<p>{{allData.followNum.attention_count}}</p>
+							<p>关注</p>
+						</div>
+						<div  @click="goFans(0)">
+							<p>{{allData.followNum.fans_count}}</p>
+							<p>粉丝</p>
+						</div>
+						<div>
+							<p>0</p>
+							<p>获赞</p>
+						</div>
+					</div>
+				</div>
+				<div class="allTxts align_items" v-if="allData!==''">
+					<span></span>
+					<p>风采展示</p>
+				</div>
+			</div>
+		<!-- 	<div class="listBox align_items">
+				<div class="list" v-for="item in 0">
+					<div class="top">
+						<img src="../../../images/teacher/pic_01.png" />
+						<div>
+							<div>
+								<img src="../../../images/teacher/Ic_audio.png" />
+							</div>
+							<p class="danshen">使用20次</p>
+						</div>
+					</div>
+					<div class="bot">
+						<p class="moreshen">表达天气的词汇，表达天气表达天气的词汇</p>
+						<div class="align_items">
+							<div class="align_items">
+								<img src="../../../images/teacher/Ic_browsing.png" />
+								<span>25</span>
+							</div>
+							<div class="align_items">
+								<img src="../../../images/teacher/Ic_love.png" />
+								<span>25</span>
+							</div>
+							<div class="align_items">
+								<img src="../../../images/teacher/Ic_pl.png" />
+								<span>25</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+			</div> -->
+			<div class="nullEmptys mads" v-if="allData!==''">
+				<img src="../../../images/student/null.png" />
+				<p>什么都没有...</p>
+			</div>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script src="../../../js/public/vant.js"></script>
+	<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					allData:""
+	            }
+	        },
+			created(){
+				iosReload()
+				var that = this;
+				ajax("teacher/Teacher/getTeacherInfo",'POST',"",function(res){
+					if(res.code==1){
+						that.allData = res.data;
+					}
+				})
+			},
+	        methods: {
+			  goback(){
+				 AndroidRouter("closePage","")
+				 // history.go(-1)
+			  },
+			  updatePage(){       //编辑资料
+				  location.href = "updateUserpage.html"
+			  },
+			  goFans(type){     //粉丝/关注
+				  location.href = "fans.html?type="+type+"&name="+this.allData.teacher.name+"&u_id="+this.allData.teacher.id+"&u_type=1"
+			  }
+	        }
+	    });
+	
+	
+	</script>
+</html>

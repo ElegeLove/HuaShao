@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>课时名称选择</title>
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+    <link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/principal/l_courseType.css">
+</head>
+
+<body>
+    <div id="box" class="clearEmpty" v-cloak @touchstart.stop="scolls">
+        <div class="fixed">
+            <div class="head_top" style="position: relative;">
+                <div class="head_topBox">
+                    <img class="head_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+                    <div class="head_topTitle">课时名称选择</div>
+                    <div class="head_topImg"></div>
+                </div>
+            </div>
+            <form @submit.prevent="return false">
+                <div class="padds">
+                    <div>
+                        <div class="ipts">
+                            <input v-model="postData.keyword" @keyup.enter="searchIpt" @input="setIptsVal" type="search" />
+                            <div class="align_items" v-show="postData.keyword==''">
+                                <img src="../../../images/teacher/ic_search.png" />
+                                <p>课时名称搜索</p>
+                            </div>
+                        </div>
+                        <div class="seaBtn" @click="searchIpt">
+                            搜索
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="th_padd lists" v-cloak>
+            <div class="danshen" v-for="(item,index) in lists" :key="index" @click="goFiroms(item)">{{item.name}}</div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+</body>
+
+
+
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#box',
+        data() {
+            return {
+                postData: {
+                    keyword: "",
+                    is_system: "",
+                    pid: "",
+                },
+                lists: [],
+                names: ""
+            }
+        },
+        mounted() {
+            var id = GetQueryValue("id")
+            var is_system = GetQueryValue("is_system")
+            var names = GetQueryValue("name")
+            this.postData.is_system = is_system
+            this.postData.pid = id
+            this.names = names;
+            this.$refs.loadings.openLoading();
+            this.getDatas()
+        },
+        methods: {
+            scolls() {
+                var that = this;
+                this.$nextTick(function() {
+                    that.$refs.inputs.blur()
+                })
+            },
+            setIpts(e) {
+                this.postData.keyword = e.target.value
+            },
+            getDatas() {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../../images/loading.gif"
+                // });
+                var that = this;
+                ajax("school/course/course_list", 'POST', this.postData, function(res) {
+                    if (res.code == 1) {
+                        res.data.list.forEach(function(item) {
+                            item.name = item.name + item.num;
+                        });
+                        that.lists = res.data.list;
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                    // vant.Toast.clear();
+                    that.$refs.loadings.closedLoading();
+                })
+            },
+            searchIpt(e) {
+                this.getDatas();
+            },
+            setIptsVal(e) {
+                this.postData.keyword = e.target.value;
+            },
+            goback() {
+                history.go(-1)
+            },
+            goFiroms(item) { //跳转年级选择
+                console.log(item)
+                var names = this.names + "/" + item.name;
+                let dataVal = JSON.parse(localStorage.getItem('dataVal'));
+                dataVal.courseId = item.course_id;
+                dataVal.courseType = names;
+                localStorage.setItem('dataVal', JSON.stringify(dataVal))
+                    // var postData = JSON.parse(localStorage.getItem('sendData'))
+                    // postData.course_id = item.course_id;
+                    // postData.course_name = names
+                    // postData.is_system = item.is_system
+                    // postData.is_main = item.is_main
+                    // localStorage.setItem('sendData', JSON.stringify(postData))
+                history.go(-4)
+            }
+        }
+    });
+</script>
+
+</html>

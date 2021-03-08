@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>消息</title>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/teacher/message.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+	</head>
+
+<body>
+    <div id="tidings" class="content" v-if="allData!==''" v-cloak>
+        <div class="top">
+            <div class="top_title">消息</div>
+            <div class="top_text">{{allData.read_msg_count}}条未读</div>
+        </div>
+		<van-pull-refresh v-model="refreshing" @refresh="onRefresh"  v-cloak style="min-height:90%;">
+        <ul class="list">
+            <li @click="goRouter('homeNotic',1,'task_count')">
+                <a>
+                    <div class="list_img">
+                        <img src="../../../images/teacher/Ic_homework.png" alt="">
+                    </div>
+                    <div class="list_right">
+                        <div class="list_right_top">
+                            <div class="list_right_top_left">作业通知<span v-show="allData.task_count>0"></span></div>
+                            <div class="list_right_top_right">{{allData.task_info.create_time}}</div>
+                        </div>
+                        <div class="list_right_text">{{allData.task_info.length==0?'暂无通知':allData.task_info.title}}</div>
+                    </div>
+                </a>
+            </li>
+            <li @click="goRouter('homeNotic',2,'system_coun')">
+                <a>
+                    <div class="list_img">
+                        <img src="../../../images/teacher/Ic_system.png" alt="">
+                    </div>
+                    <div class="list_right">
+                        <div class="list_right_top">
+                            <div class="list_right_top_left">系统通知<span v-show="allData.system_count>0"></span></div>
+                            <div class="list_right_top_right">{{allData.system_info.create_time}}</div>
+                        </div>
+                        <div class="list_right_text">{{allData.system_info.length==0?'暂无通知':allData.system_info.title}}</div>
+                    </div>
+                </a>
+            </li>
+            <li @click="goRouter('commentsLikes',3,'comment_count')">
+                <a>
+                    <div class="list_img">
+                        <img src="../../../images/teacher/Ic_comments.png" alt="">
+                    </div>
+                    <div class="list_right">
+                        <div class="list_right_top">
+                            <div class="list_right_top_left">评论点赞<span v-show="allData.comment_count>0"></span></div>
+                            <div class="list_right_top_right">{{allData.comment_info.create_time}}</div>
+                        </div>
+                        <div class="list_right_text">{{allData.comment_info.length==0?'暂无通知':allData.comment_info.title}}</div>
+                    </div>
+                </a>
+            </li>
+            <li @click="goRouter('walletNotice',4)">
+                <a>
+                    <div class="list_img">
+                        <img src="../../../images/teacher/Ic_wallet.png" alt="">
+                    </div>
+                    <div class="list_right">
+                        <div class="list_right_top">
+                            <div class="list_right_top_left">钱包通知</div>
+                            <div class="list_right_top_right"></div>
+                        </div>
+                        <div class="list_right_text">暂无消息</div>
+                    </div>
+                </a>
+            </li>
+            <li @click="goRouter('followNotice',5,'fans_count')">
+                <a>
+                    <div class="list_img">
+                        <img src="../../../images/teacher/Ic_attention.png" alt="">
+                    </div>
+                    <div class="list_right">
+                        <div class="list_right_top">
+                            <div class="list_right_top_left">关注通知<span v-show="allData.fans_count>0"></span></div>
+                            <div class="list_right_top_right">{{allData.fans_info.create_time}}</div>
+                        </div>
+                        <div class="list_right_text">{{allData.fans_info.length==0?'暂无通知':allData.fans_info.title}}</div>
+                    </div>
+                </a>
+            </li>
+        </ul>
+		</van-pull-refresh>
+    </div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#tidings',
+        data() {
+            return {
+                allData:"",
+				refreshing: false
+            }
+        },
+        created() {
+			var that = this;
+			AndroidRouter('getUserInfo',"",this.setUserInfo,"setUserInfo")
+			// that.getDetails()
+        },
+        methods: {
+			setOnBottomTabClick(){
+				this.getDetails()
+				AndroidRouter('onBottomTabClick',3,this.setOnBottomTabClick,"setOnBottomTabClick")
+			},
+			setUserInfo(res){         //获取token回调
+				localStorage.setItem("token",res)
+				this.getDetails()
+				AndroidRouter('onBottomTabClick',3,this.setOnBottomTabClick,"setOnBottomTabClick")
+			}, 
+			closeCall(){         //监听回调
+				this.getDetails()
+			},
+			onRefresh() {           //刷新
+			  this.getDetails()
+			},
+			getDetails(){
+				var that = this;
+				ajax("teacher/Msg/msgList",'POST',{},function(res){
+					that.refreshing = false;
+					if(res.code==1){
+						that.allData = res.data
+					}
+				})
+			},
+			goRouter(route,type,mess){
+				localStorage.removeItem("primordial")
+				var urls = "teacher/message/"+route+".html?type="+type
+				this.allData[mess] = 0
+				AndroidRouter('onClosePage',"messagesd",this.closeCall,"get_closedCall")
+				AndroidRouter("newPage",urls)
+				// location.href = "./"+route+".html?type="+type
+			}
+        }
+    });
+</script>
+</html>

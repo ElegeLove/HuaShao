@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>意见反馈</title>
+    <script src="../../../js/public/rem.js"></script>
+    <script src="../../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../../allCss/public.css">
+	<link rel="stylesheet" href="../../../allCss/vant.css">
+    <link rel="stylesheet" href="../../../allCss/teacher/feedBacks.css">
+</head>
+
+<body>
+    <div id="feedBack" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="head_topImg" @click="goBack" src="../../../images/student/icon_back.png" alt="">
+                <div class="topTitle">意见反馈</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="main_title">
+                <img src="../../../images/student/ic_jianyi.png" alt="">
+                <div>意见与建议</div>
+            </div>
+            <div class="areags">
+                <textarea name="" id="" placeholder="您的建议对我们十分重要~" v-model="postData.content"></textarea>
+            </div>
+            <div class="main_img">
+				<div v-for="(it,ix) in postData.attachment_arr" :key="ix">
+					<img :src="it.path" class="bg"/>
+					<img src="../../../images/teacher/ic_del.png" class="dele" @click="deleteOuthImg(ix)"/>
+				</div>
+				<div v-if="postData.attachment_arr.length<6" @click="uploads">
+					<img src="../../../images/student/pic_add.png" alt="" class="bg">
+				</div>
+            </div>
+			<div class="fotBtn_teath">
+				<van-button type="default" class="gon" @click="submits">提交</van-button>
+			</div>
+        </div>
+		<loadings ref="loadings"/>
+    </div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#feedBack',
+        data() {
+            return {
+				postData:{
+					content:"",
+					attachment:[],
+					attachment_arr:[]
+				},
+			}
+        },
+        mounted() {
+
+        },
+        methods: {
+            goBack() {
+				AndroidRouter("closePage","")
+                // history.go(-1);
+            },
+			deleteOuthImg(ix){
+				this.postData.attachment.splice(ix,1)
+				this.postData.attachment_arr.splice(ix,1)
+			},
+			uploads(){
+				var nums = 6-(this.postData.attachment.length)
+				AndroidRouter("selectPic",nums,this.set_selectPic,"set_selectPic")
+			},
+			set_selectPic(res){           //上传图片回调
+				var that = this;
+				var resPen = JSON.parse(res)
+				resPen.forEach(function(it){
+					that.postData.attachment.push(it.id)
+					that.postData.attachment_arr.push({path:it.path})
+				})
+			},
+			submits(){          //提交
+				if(this.postData.content==""){
+					return vant.Toast("请输入您的建议")
+				}
+				var that = this;
+				this.$refs.loadings.openLoading()
+				ajax("teacher/Teacher/feedback",'POST',this.postData,function(res){
+					that.$refs.loadings.closedLoading()
+					vant.Toast(res.msg)
+					if(res.code==1){
+						setTimeout(function(){
+							AndroidRouter("closePage","")
+						},700)
+					}
+				})
+			}
+        }
+    });
+</script>
+
+</html>

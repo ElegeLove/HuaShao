@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>粉丝与关注</title>
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/fansAttention.css">
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vant@2.2/lib/index.css"> -->
+    <style>
+
+    </style>
+</head>
+
+<body>
+    <div id="fansAttention" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">{{userInfo.name}}</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="tabs">
+            <div v-for="(item,index) in tabArr" :class="active==index?'antives':'tabsText'" @click="check(index)">
+                {{item}}</div>
+        </div>
+        <van-pull-refresh v-model="isLoading" v-if="listData.length > 0" success-text="刷新成功" @refresh="onRefresh" style="min-height: 90%;">
+            <van-list v-model="isUpLoading" :finished="upFinished" @load="onupLoad" :offset="offset" :immediate-check='checks'>
+                <div class="listBoxs">
+                    <div v-for="item in listData">
+                        <div class="items" v-if="item.fans_type == 0 || item.follow_type == 0">
+                            <div class="items_left" @click="goHome(item.student_id,item.fans_type,item.follow_type)">
+                                <img class="items_left_img" :src="item.student_head" alt="">
+                                <div>
+                                    <p class="items_left_title">{{item.student_name}}</p>
+                                    <p class="items_left_text">{{item.student_personal_sign}}</p>
+                                </div>
+                            </div>
+                            <div class="items_right" v-if="active==0" @click="addFollow(item.student_id,item.fans_type,item.follow_type)">
+                                {{item.is_mutual == 0?stastu:'互相关注'}}</div>
+                            <div class="items_right" v-else @click="addFollow(item.student_id,item.fans_type,item.follow_type)">{{stastu}}</div>
+                        </div>
+                        <div class="items" v-if="item.fans_type == 1 || item.follow_type == 1">
+                            <div class="items_left" @click="goHome(item.teacher_id,item.fans_type,item.follow_type)">
+                                <img class="items_left_img" :src="item.teacher_head" alt="">
+                                <div>
+                                    <p class="items_left_title">{{item.teacher_name}}</p>
+                                    <p class="items_left_text">{{item.teacher_personal_sign}}</p>
+                                </div>
+                            </div>
+                            <div class="items_right" v-if="active==0&&item.is_mutual == 0" @click="addFollow(item.teacher_id,item.fans_type,item.follow_type)">{{stastu}}</div>
+                            <div class="items_right" v-if="active==0&&item.is_mutual == 1" @click="addFollow(item.teacher_id,item.fans_type,item.follow_type)">互相关注</div>
+                            <div class="items_right" v-if="active==1" @click="addFollow(item.teacher_id,item.fans_type,item.follow_type)">{{stastu}}</div>
+                        </div>
+                    </div>
+                </div>
+            </van-list>
+        </van-pull-refresh>
+        <div v-if="isShow" class="nullData">
+            <div>
+                <img src="../../images/student/null.png" alt="">
+                <div>暂无数据</div>
+            </div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#fansAttention',
+        data() {
+            return {
+                tabArr: [],
+                active: 0,
+                listData: [],
+                stastu: '',
+                studentId: '',
+                type: '',
+                userInfo: {},
+                pageNo: 1,
+                pageSize: 10,
+                total: '',
+                checks: false,
+                isShow: false,
+                isLoading: false,
+                isUpLoading: false,
+                upFinished: false, //上拉加载完毕
+                offset: 100, //滚动条与底部距离小于 offset 时触发load事件
+            }
+        },
+        created() {
+
+        },
+        mounted() {
+            this.$refs.loadings.openLoading();
+            var id = GetQueryValue("id");
+            var active = GetQueryValue("active");
+            var type = GetQueryValue("type");
+            this.studentId = id;
+            this.active = active;
+            this.type = type;
+            // this.getFans(id);
+            // this.getFollow(id);
+            let that = this;
+            this.getTabInfo(type, id);
+            // if (type == 0) {
+            //     ajax('student/student/student_center', "POST", {
+            //         "page_no": 1,
+            //         "page_size": 5,
+            //         "student_id": id
+            //     }, (res) => {
+            //         if (res.code == 1) {
+            //             that.userInfo = res.data.result;
+            //             that.tabArr = ["粉丝（" + res.data.result.fans_num + "）", "关注（" + res.data.result.follow_num + "）"];
+            //         }
+            //     })
+            // } else {
+            //     ajax('student/student/teacher_center', 'POST', { 'teacher_id': id }, (res) => {
+            //         if (res.code == 1) {
+            //             that.userInfo = res.data.teacher;
+            //             that.tabArr = ["粉丝（" + res.data.followNum.fans_count + "）", "关注（" + res.data.followNum.attention_count + "）"];
+            //         }
+            //     })
+            // }
+            // vant.Toast.loading({
+            //     message: '',
+            //     forbidClick: true,
+            //     loadingType: 'spinner',
+            //     duration: 0,
+            //     icon: "../../images/loading.gif"
+            // });
+            if (active == 1) {
+                this.stastu = "已关注";
+                this.getFollow(this.pageNo, this.pageSize, id, type);
+            } else {
+                this.stastu = "关注TA";
+                this.getFans(this.pageNo, this.pageSize, id, type);
+            }
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            getTabInfo(type, id) {
+                let that = this;
+                if (type == 0) {
+                    ajax('student/student/student_center', "POST", {
+                        "page_no": 1,
+                        "page_size": 5,
+                        "student_id": id
+                    }, function(res) {
+                        if (res.code == 1) {
+                            that.userInfo = res.data.result;
+                            // that.tabArr = [];
+                            that.tabArr = ["粉丝（" + res.data.result.fans_num + "）", "关注（" + res.data.result.follow_num + "）"];
+                        }
+                    })
+                } else {
+                    ajax('student/student/teacher_center', 'POST', {
+                        'teacher_id': id
+                    }, function(res) {
+                        if (res.code == 1) {
+                            // that.tabArr = [];
+                            that.userInfo = res.data.teacher;
+                            that.tabArr = ["粉丝（" + res.data.followNum.fans_count + "）", "关注（" + res.data.followNum.attention_count + "）"];
+                        }
+                    })
+                }
+            },
+            check(i) {
+                this.active = i;
+                this.pageNo = 1;
+                this.listData = [];
+                if (i == 1) {
+                    this.stastu = "已关注";
+                    this.getFollow(this.pageNo, this.pageSize, this.studentId, this.type);
+                } else {
+                    this.stastu = "关注TA";
+                    this.getFans(this.pageNo, this.pageSize, this.studentId, this.type);
+                }
+                this.getTabInfo(this.type, this.studentId);
+            },
+            onRefresh() {
+                this.isLoading = true;
+                this.upFinished = false;
+                this.pageNo = 1;
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                if (this.active == 1) {
+                    this.stastu = "已关注";
+                    this.getFollow(this.pageNo, this.pageSize, this.studentId, this.type);
+                } else {
+                    this.stastu = "关注TA";
+                    this.getFans(this.pageNo, this.pageSize, this.studentId, this.type);
+                }
+            },
+            onupLoad() { // 上拉调用此函数
+                // e.stopPropagation();
+                this.isUpLoading = false;
+                // this.upFinished = false;
+                this.pageNo++;
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                // this.$refs.loadings.openLoading();
+                if (this.active == 1) {
+                    this.stastu = "已关注";
+                    this.getFollow(this.pageNo, this.pageSize, this.studentId, this.type);
+                } else {
+                    this.stastu = "关注TA";
+                    this.getFans(this.pageNo, this.pageSize, this.studentId, this.type);
+                }
+
+            },
+            getFans(pageNo, pageSize, id, type) {
+                let that = this;
+                ajax('student/student/fans_list', "POST", {
+                    "page_no": pageNo,
+                    "page_size": pageSize,
+                    "v_id": id,
+                    "v_type": type
+                }, function(res) {
+                    if (res.code == 1) {
+                        let rows = res.data.list; //请求返回当页的列表
+                        that.isUpLoading = false;
+                        that.total = res.data.total;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        if (rows == null || rows.length === 0) {
+                            // 加载结束
+                            if (that.listData.length < 1) {
+                                that.isShow = true;
+                            } else {
+                                that.isShow = false;
+                            }
+                            this.upFinished = true;
+                            return false;
+                        }
+                        if (pageNo == 1) {
+                            that.listData = rows;
+                        } else {
+                            that.listData = that.listData.concat(rows);
+                        }
+                        if (that.listData.length >= that.total) {
+                            that.upFinished = true;
+                        }
+                        if (that.listData.length < 1) {
+                            that.isShow = true;
+                        } else {
+                            that.isShow = false;
+                        }
+                    }
+                    that.isLoading = false;
+                })
+            },
+            getFollow(pageNo, pageSize, id, type) {
+                let that = this;
+                ajax('student/student/follow_list', "POST", {
+                    "page_no": pageNo,
+                    "page_size": pageSize,
+                    "u_id": id,
+                    "u_type": type
+                }, function(res) {
+                    if (res.code == 1) {
+                        let rows = res.data.list; //请求返回当页的列表
+                        that.isUpLoading = false;
+                        that.total = res.data.total;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                        if (rows == null || rows.length === 0) {
+                            // 加载结束
+                            this.upFinished = true;
+                            if (that.listData.length < 1) {
+                                that.isShow = true;
+                            } else {
+                                that.isShow = false;
+                            }
+                            return false;
+                        }
+                        if (pageNo == 1) {
+                            that.listData = rows;
+                        } else {
+                            that.listData = that.listData.concat(rows);
+                        }
+                        if (that.listData.length >= that.total) {
+                            that.upFinished = true;
+                        }
+                        if (that.listData.length < 1) {
+                            that.isShow = true;
+                        } else {
+                            that.isShow = false;
+                        }
+                    }
+                    that.isLoading = false;
+                })
+            },
+            goHome(id, fans, follow) {
+                let type = '';
+                if (fans) {
+                    type = fans;
+                } else if (follow) {
+                    type = follow;
+                }
+                if (fans == 0 || follow == 0) {
+                    location.href = './otherPrincipalPage.html?id=' + id + '&type=' + type + '&goback=true';
+                } else {
+                    location.href = './teaOuthPage.html?id=' + id + '&type=' + type;
+                }
+            },
+            addFollow(id, fans, follow) {
+                let type = '';
+                if (fans) {
+                    type = fans;
+                } else if (follow) {
+                    type = follow;
+                }
+                let that = this;
+                ajax('student/student/follow_add', "POST", {
+                    "v_id": id,
+                    "v_type": type
+                }, function(res) {
+                    if (res.code == 1) {
+                        vant.Toast(res.msg)
+                        setTimeout(function() {
+                            that.getTabInfo(this.type, this.studentId);
+                            if (type == fans) {
+                                that.getFans(that.pageNo, that.pageSize, that.studentId, that.type);
+                            } else {
+                                that.getFollow(that.pageNo, that.pageSize, that.studentId, that.type);
+                            }
+                        }, 1000)
+                    } else {
+                        vant.Toast(res.msg)
+                    }
+                    that.getTabInfo(that.type, that.studentId);
+                })
+            }
+        }
+    });
+</script>
+
+
+</html>

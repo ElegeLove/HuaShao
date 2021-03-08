@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>忘记密码</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/forgetPwd.css">
+</head>
+
+<body>
+    <div id="forgetPwd" class="content">
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">忘记密码</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="inp main_phone">
+                <input type="number" maxlength="11" placeholder="请输入手机号" />
+            </div>
+            <div class="inp verCode">
+                <input type="number" placeholder="请输入验证码">
+                <button class="main_verCode" :disabled="disabled" @click="getCode">{{verCode}}</button>
+            </div>
+            <div class="inp">
+                <input type="text" placeholder="请重置密码">
+            </div>
+            <div class="inp">
+                <input type="text" placeholder="再次输入密码">
+            </div>
+            <div class="btn">立即注册</div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script>
+    new Vue({
+        el: '#forgetPwd',
+        data() {
+            return {
+                disabled: false,
+                verCode: '获取验证码'
+            }
+        },
+        mounted() {
+
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            getCode() {
+                this.disabled = true;
+                let num = 6;
+                let timer;
+                timer = setInterval(function(){
+                    num--;
+                    if (num <= 0) {
+                        clearInterval(timer)
+                        this.verCode = '获取验证码';
+                        this.disabled = false;
+                    } else {
+                        this.verCode = num;
+                    }
+                }, 1000)
+            }
+        }
+    });
+</script>
+
+</html>

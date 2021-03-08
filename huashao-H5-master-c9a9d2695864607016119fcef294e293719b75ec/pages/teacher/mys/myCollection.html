@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>我的收藏</title>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/teacher/myCollection.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="top">
+			    <div class="topBox">
+			        <img class="head_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+			        <div class="head_topTitle">我的收藏</div>
+			        <div class="topImg"></div>
+			    </div>
+			</div>
+			<van-pull-refresh v-model="refreshing" @refresh="onRefresh" style="min-height: 90%;"  v-cloak v-if="list.length!==0">
+				<van-list
+				  v-model="loading"
+				  :finished="finished"
+				   :offset="10"
+				   :immediate-check="false"
+				  @load="onLoad">
+					<div class="listBoxs">
+						<div class="items" v-for="(item,index) in list" :kye="index" @click.stop="goDetails(item)">
+							<div class="items_top">
+								<img class="items_top_img" :src="item.cover_img" alt="" onerror="this.src = '../../../images/teacher/error.png'">
+								<img src="../../../images/teacher/Ic_audio.png" v-if="item.form==2" class="items_top_icon"/>
+								<img src="../../../images/teacher/Ic_pic_03.png" v-if="item.form==1" class="items_top_icon"/>
+								<img src="../../../images/teacher/Ic_video_03.png" v-if="item.form==3" class="items_top_icon"/>
+								<div class="start" @click.stop="collections(item)">
+									<img src="../../../images/teacher/Ic_collection_03.png" alt="" v-if="!item.check">
+									<img src="../../../images/teacher/nocos.png" alt="" v-else >
+								</div>
+							</div>
+							<div class="items_main">
+								{{item.task_name}}             
+							</div>
+					<!-- 		<div class="items_footer">
+								<div class="items_footerlist">
+									<img src="../../../images/teacher/Ic_browsing.png" alt="">
+									<div>25</div>
+								</div>
+								<div class="items_footerlist">
+									<img src="../../../images/teacher/Ic_love.png" alt="">
+									<div>54</div>
+								</div>
+								<div class="items_footerlist">
+									<img src="../../../images/teacher/Ic_pl.png" alt="">
+									<div>16</div>
+								</div>
+							</div> -->
+						</div>
+					</div>
+			</van-list>
+			</van-pull-refresh>
+			<div v-if="list.length==0&&nullEmptys" class="nullEmptys maginsd">
+				<img src="../../../images/student/null.png" />
+				<p>什么都没有...</p>
+			</div>
+			<loadings ref="loadings"/>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script src="../../../js/public/vant.js"></script>
+	<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+	<script src="../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					 loading: false,
+					 finished: false,
+					 refreshing: false,
+					 page:1,
+					 list:[],
+					 nullEmptys:false
+	            }
+	        },
+			mounted(){
+				this.getList()
+			},
+	        methods: {
+			  goback(){
+				  AndroidRouter("closePage","")
+				 // history.go(-1)
+			  },
+			  onRefresh() {           //刷新
+			    this.finished = false;
+			    this.loading = true;
+			    this.page = 1
+			    this.getList()
+			  },
+			  onLoad() {        //上拉加载
+			    this.page++
+			    this.getList()
+			  },
+			  collections(item){       //收藏
+				  ajax("teacher/Teachertask/collectionTask",'POST',{task_id:item.task_id},function(res){
+				  	vant.Toast(res.msg)
+					if(res.code==1){
+						if(res.data.collection_type==0){      //取消
+							item.check=true
+						}else{       //收藏
+							item.check=false
+						}
+					}
+				  })
+			  },
+			  goDetails(item){          //详情
+				  location.href = "../homeworkDetails.html?id="+item.task_id+"&status=2"
+			  },
+			  getList(){              //请求
+				if(this.page==1){
+				   this.$refs.loadings.openLoading() 
+				}
+				var that = this;
+			  	ajax("teacher/Teachertask/collectionList",'POST',{page:this.page},function(res){
+					that.loading = false
+			  		that.$refs.loadings.closedLoading()
+			  		if(res.code==1){
+						that.nullEmptys = true
+			  			that.loading = false
+			  			that.refreshing = false
+						var alldatas = res.data.list
+						alldatas.forEach((it)=>{
+							it.check = false
+						})
+			  			if(res.data.list.length==0){
+			  			  that.finished = true
+			  			  if(that.page==1){
+			  				   that.list = []
+			  			  }
+			  			  return false
+			  			}
+			  			if(that.page==1){
+			  			  that.list = alldatas
+			  			}else{
+			  			  that.list = that.list.concat(alldatas)
+			  			}
+			  		}else{
+			  			vant.Toast(res.msg)
+			  		}
+			  	})
+			  },
+	        }
+	    });
+	
+	
+	</script>
+</html>

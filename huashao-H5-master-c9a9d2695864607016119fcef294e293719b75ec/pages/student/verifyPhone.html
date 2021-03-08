@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>验证手机号</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/verifyPhone.css">
+</head>
+
+<body>
+    <div id="verifyPhone" class="content" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">验证手机号</div>
+                <div class="topImg"></div>
+            </div>
+        </div>
+        <div class="main">
+            <div class="inp main_phone">
+                <input type="number" maxlength="11" v-model="phoneVal" oninput="if(value.length>11)value=value.slice(0,11)" readonly="readonly" placeholder="请输入新手机号码" />
+            </div>
+            <div class="inp verCode">
+                <input type="number" v-model="codeVal" placeholder="请输入验证码">
+                <button class="main_verCode" :disabled="disabled" @click="getCode">{{verCode}}</button>
+            </div>
+            <div class="btn" @click="next">下一步</div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#verifyPhone',
+        data() {
+            return {
+                disabled: false,
+                verCode: '获取验证码',
+                phoneVal: '',
+                codeVal: '',
+                status: ''
+            }
+        },
+        mounted() {
+            this.status = GetQueryValue("status");
+            let that = this;
+            ajax('student/student/student', "POST", {}, function(res) {
+                if (res.code == 1) {
+                    that.phoneVal = res.data.result.mobile
+                }
+            })
+        },
+        methods: {
+            goBack() {
+                history.go(-1);
+            },
+            getCode() {
+                let that = this;
+                ajax('student/login/get_sms_captcha', "POST", {
+                    "mobile": that.phoneVal,
+                    "scene": 7
+                }, function(res) {
+                    console.log(res)
+                    if (res.code == 1) {
+                        that.disabled = true;
+                        let num = Number(res.data.sms_time);
+                        console.log(num, typeof(num))
+                        let timer;
+                        timer = setInterval(function() {
+                            num--;
+                            if (num <= 0) {
+                                clearInterval(timer)
+                                that.verCode = '获取验证码';
+                                that.disabled = false;
+                            } else {
+                                that.verCode = num;
+                            }
+                        }, 1000)
+                    } else {
+                        vant.Toast(res.msg);
+                    }
+                })
+            },
+            next() {
+                let that = this;
+                ajax('student/student/check_edit_pass_captcha', "POST", {
+                    "captcha": that.codeVal
+                }, function(res) {
+                    if (res.code == 1) {
+                        if (that.status == 0) {
+                            location.href = "./setPwd.html?codeVal=" + that.codeVal;
+                        } else {
+                            location.href = './changePwd.html?codeVal=' + that.codeVal;
+                        }
+                    } else {
+                        vant.Toast(res.msg);
+                    }
+                })
+            }
+        }
+    });
+</script>
+
+</html>

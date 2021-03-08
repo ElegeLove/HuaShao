@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>创建打卡</title>
+	<script src="../../../js/public/rem.js"></script>
+	<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+	<link rel="stylesheet" href="../../../allCss/public.css">
+	<link rel="stylesheet" href="../../../allCss/vant.css">
+	<link rel="stylesheet" href="../../../allCss/principal/l_creareClockIn.css">
+</head>
+
+<body>
+	<div id="box" v-cloak>
+		<div class="th_top">
+			<div class="th_topBox">
+				<img class="th_topImg" src="../../../images/student/icon_back.png" alt="" @click="goback">
+				<div class="th_topTitle">创建打卡</div>
+				<div class="th_topImg"></div>
+			</div>
+		</div>
+		<div class="th_padd opts">
+			<div class="align_items divBox">
+				<p><span>*</span>练习名称</p>
+				<div class="align_items">
+					<input placeholder="请输入练习名称" v-model="postData.task_name" />
+				</div>
+			</div>
+			<div class="align_items divBox" @click="openFoot(1)">
+				<p><span>*</span>年级</p>
+				<div class="align_items">
+					<input placeholder="请选择" readonly="readonly" v-model="postData.grade_name" />
+					<img src="../../../images/teacher/ic_more.png" />
+				</div>
+			</div>
+			<div class="uploadBox">
+				<p><span>*</span>作业封面</p>
+				<div>
+					<div v-if="postData.cover_imgss!==''">
+						<img :src="postData.cover_imgss" class="imgs" />
+						<img src="../../../images/teacher/ic_del.png" class="dele" @click="deleteImg" />
+					</div>
+					<div v-else @click="uploadImg">
+						<img src="../../../images/teacher/pic_09.png" class="imgs" />
+					</div>
+				</div>
+			</div>
+			<div class="align_items divBox" @click="openFoot(2)">
+				<p><span>*</span>打卡类型</p>
+				<div class="align_items">
+					<input placeholder="请选择" readonly="readonly" v-model="postData.task_tag_name" />
+					<img src="../../../images/teacher/ic_more.png" />
+				</div>
+			</div>
+			<div class="align_items divBox" @click="openFoot(3)">
+				<p><span>*</span>打卡形式</p>
+				<div class="align_items">
+					<input placeholder="请选择" readonly="readonly" v-model="postData.form_name" />
+					<img src="../../../images/teacher/ic_more.png" />
+				</div>
+			</div>
+			<div class="iptBox">
+				<p><span>*</span>作业内容</p>
+				<textarea rows="6" v-model="postData.content" placeholder="请输入打卡内容"></textarea>
+			</div>
+			<div class="uploadBox">
+				<div style="margin-top: 0;">
+					<div v-for="(it,ix) in postData.content_images_arr" :key="ix">
+						<img :src="it.url" class="imgs" />
+						<img src="../../../images/teacher/ic_del.png" class="dele" @click="deleteOuthImg(ix)" />
+					</div>
+					<div v-if="postData.content_images_arr.length<7" @click="uploadOuthImg">
+						<img src="../../../images/teacher/pic_09.png" class="imgs" />
+					</div>
+				</div>
+			</div>
+			<div class="uploadBox">
+				<p>视频附件<span class="moves">(不超过3个)</span></p>
+				<div>
+					<div v-for="(its,itx) in postData.attachment_arr" :key="itx">
+						<img :src="its.cover_path" class="imgs" />
+						<img src="../../../images/teacher/ic_del.png" class="dele" @click="deleteVideo(itx)" />
+					</div>
+					<div v-if="postData.attachment_arr.length<3" @click="UploadVideo">
+						<img src="../../../images/teacher/pic_09.png" class="imgs" />
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="fotBtn">
+			<van-button type="default" class="gon" @click="goNext">完成创建</van-button>
+		</div>
+		<van-popup v-model="footShow" round position="bottom" style="max-height: 70%;">
+			<div class="popTitle">
+				<p>{{footTxt}}</p>
+				<img src="../../../images/teacher/ic_cancle.png" @click="checkFoot(false)" />
+			</div>
+			<div class="popCont">
+				<div class="align_items" v-for="(it,ix) in listArr" :key="ix" @click="checkLabel(it,ix)">
+					<p>{{it.tit}}</p>
+					<div>
+						<img src="../../../images/teacher/xq_yuan.png" v-if="it.show" />
+						<img src="../../../images/teacher/xq_yuan2.png" v-else />
+					</div>
+				</div>
+			</div>
+			<div class="fotBtn">
+				<van-button type="default" class="gon" @click="checkFoot(false)">确定</van-button>
+			</div>
+		</van-popup>
+	</div>
+</body>
+<script src="../../../js/public/vue.js"></script>
+<script src="../../../js/public/vant.js"></script>
+<script src="../../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../../js/public/index.js"></script>
+<script>
+	new Vue({
+		el: '#box',
+		data() {
+			return {
+				footShow: false,         //底部弹窗
+				listArr: [],
+				postData: {
+					task_name: "",
+					form: "",
+					form_name: "",
+					is_system: 0,
+					is_main: 0,
+					cover_img: "",
+					cover_imgss: "",
+					content_images: [],
+					content_images_arr: [],        //自定义显示
+					content: "",
+					task_tag_id: "",
+					task_tag_name: "",
+					end_date: "",
+					is_comment: 0,
+					classes_ids: [],
+					classes_ids_name: [],
+					syn_school: 0,
+					attachment: [],
+					attachment_arr: [],                 //自定义显示
+					grade_id: "",
+					grade_name: "",
+					students: [],
+					students_name: [],
+					task_list: [{ txt: "", end_date: "" }],
+					check: 1
+				},
+				tostData: {
+					task_name: "请输入练习名称",
+					grade_id: "请选择年级",
+					cover_img: "请上传作业封面",
+					task_tag_id: "请选择打卡类型",
+					form: "请选择打卡形式",
+					content: "请输入作业内容"
+				},
+				type: 0,                //用于判断当前点击的是哪个下拉
+				footTxt: "",
+				classType: [],            //年级数据
+				leiTypes: [],                //打卡类型
+				cardTypes: [
+					{ id: 1, form_name: '图文', show: false },
+					{ id: 2, form_name: '音频', show: false },
+					{ id: 3, form_name: '视频', show: false },
+				],           	//打卡形式
+				postKey: "",
+				status_type: ""
+			}
+		},
+		created() {
+			var status_type = GetQueryValue("status_type")
+			this.status_type = status_type
+			// this.getLocal()
+			this.getClass()
+			this.getTaskType()
+			this.getHomeForm()
+		},
+		methods: {
+			// getLocal(){    //获取缓存数据
+			// 	var localPost = localStorage.getItem('sendData')
+			// 	if(localPost!==null){
+			// 	   var datas = JSON.parse(localPost)
+			// 	   this.postData = datas
+			// 	}
+			// },
+			uploadImg() {         //上传图片
+				AndroidRouter('selectPic', 1, this.setPic, "set_selectPic");
+			},
+			setPic(res) {
+				var res = JSON.parse(res)
+				this.postData.cover_img = res[0].id;
+				this.postData.cover_imgss = res[0].path;
+			},
+			deleteImg() {           //删除封面
+				this.postData.cover_img = ""
+				this.postData.cover_imgss = ""
+			},
+			deleteOuthImg(ix) {           //删除其他图片
+				this.postData.content_images.splice(ix, 1)
+				this.postData.content_images_arr.splice(ix, 1)
+			},
+			uploadOuthImg() {        //上传其他图片
+				let num = 7 - this.postData.content_images_arr.length;
+				AndroidRouter('selectPic', num, this.setPics, "set_selectPic");
+			},
+			setPics(res) {
+				var resPen = JSON.parse(res)
+				let that = this;
+				resPen.forEach(function (item) {
+					that.postData.content_images.push(item.id)
+					that.postData.content_images_arr.push({ url: item.path })
+				})
+			},
+			UploadVideo() {         //上传视频
+				AndroidRouter('selectVideo', 3, this.setVideo, "set_selectVideo")
+				// var that = this;
+				// AndroidRouter('selectVideo', "1", function (res) {
+				// 	var resPen = JSON.parse(res)
+				// 	that.postData.attachment.push(resPen.coverPathId)
+				// 	that.postData.attachment_arr.push({ coverPath: resPen.cover_path, coverPathId: resPen.cover_path_id, videoPath: resPen.video_loc_path, url: "" })
+				// })
+			},
+			// 视频
+			setVideo(res) {
+				let resopen = JSON.parse(res)
+				let arr = [];
+				let arr1 = [];
+				let that = this;
+				// let dataVal = {
+				// 	cover_path_id: res.cover_path_id,
+				// 	video_loc_path: res.video_loc_path
+				// }
+				// let dataVal1 = {
+				// 	cover_path_id: resopen.cover_path_id,
+				// 	cover_path: resopen.cover_path
+				// }
+				arr.push({
+					cover_path_id: resopen.cover_path_id,
+					video_loc_path: resopen.video_loc_path
+				})
+				that.postData.attachment_arr.push({
+					cover_path_id: resopen.cover_path_id,
+					cover_path: resopen.cover_path
+				});
+				AndroidRouter('uploadVideo', JSON.stringify(arr), this.setuploadVideo, "set_uploadVideo");
+			},
+			setuploadVideo(res) {
+				this.postData.attachment = JSON.parse(res);
+			},
+			deleteVideo(ix) {             //删除视频
+				if (this.status_type == "edit") {
+					this.postData.attachment.splice(ix, 1)
+				}
+				this.postData.attachment_arr.splice(ix, 1)
+			},
+			getClass() {        //获取年级数据
+				var that = this;
+				ajax("school/task/grade_list", 'POST', { is_system: 1 }, function (res) {
+					if (res.code == 1) {
+						res.data.list.forEach(function (it) {
+							that.classType.push({ tit: it.name, value: it.grade_id, show: false })
+						})
+					}
+				})
+			},
+			getTaskType() {        //获取打卡类型
+				let that = this;
+				ajax("school/task/school_task_tag_list", 'POST', { type: 1 }, function (res) {
+					if (res.code == 1) {
+						res.data.list.forEach(function (it) {
+							that.leiTypes.push({ tit: it.tag_name, value: it.task_tag_id, show: false })
+						})
+					}
+				})
+			},
+			getHomeForm() {         //获取打卡形式
+				let arr = [];
+				this.cardTypes.forEach(function (it) {
+					arr.push({ tit: it.form_name, value: it.id, show: false })
+				})
+				this.cardTypes = arr;
+				// var that = this;
+				// ajax("school/task/school_task_tag_list", 'POST', { type: 0 }, function (res) {
+				// 	if (res.code == 1) {
+				// 		res.data.list.forEach(function (it) {
+				// 			that.cardTypes.push({ tit: it.tag_name, value: it.task_tag_id, show: false })
+				// 		})
+				// 	}
+				// })
+			},
+
+			goNext() {              //下一步
+				// var arr = Object.keys(this.tostData)
+				// for (var i = 0; i < arr.length; i++) {           //非空验证
+				// 	if (this.postData[arr[i]] == '') {
+				// 		vant.Toast(this.tostData[arr[i]])
+				// 		return;
+				// 	}
+				// }
+				let data = {
+					"cover_img": this.postData.cover_img,
+					"name": this.postData.task_name,
+					"grade_id": this.postData.grade_id,
+					"task_tag_id": this.postData.task_tag_id,
+					"attachment": JSON.stringify(this.postData.attachment),
+					"form": this.postData.form,
+					"content": this.postData.content,
+					"content_images": JSON.stringify(this.postData.content_images)
+				}
+				// let data4 = {
+				// 	"attachment": JSON.stringify(this.postData.attachment),
+				// 	"content": this.postData.content,
+				// 	"content_images": JSON.stringify(this.postData.content_images)
+				// }
+				// vant.Toast(JSON.stringify(data4))
+				var that = this;
+				ajax("school/task/school_punch_clock_add", 'POST', data, function (res) {
+					if (res.code == 1) {
+						vant.Toast(res.msg);
+						setTimeout(function () {
+							AndroidRouter('closePage', "")
+						}, 1000)
+					} else {
+						vant.Toast(res.msg)
+					}
+				})
+
+
+				// this.postData.task_list[0].txt = this.postData.task_name
+				// localStorage.setItem('sendData',JSON.stringify(this.postData))
+				// location.href = "../IssuePunch.html?status=1&status_type="+this.status_type
+			},
+			goback() {
+				// history.go(-1)
+				AndroidRouter('closePage', "")
+			},
+			checkFoot(bool) {        //打开关闭弹窗
+				this.footShow = bool
+			},
+			openFoot(type) {            //1是作业标签      2是作业形式      3是作业时长
+				this.type = type
+				var that = this;
+				if (type == 1) {
+					this.footTxt = "年级"
+					this.postKey = {
+						id: "grade_id",
+						name: "grade_name"
+					}
+					this.listArr = JSON.parse(JSON.stringify(this.classType))
+					this.listArr.forEach(function (it) {
+						if (it.value == that.postData.grade_id) {
+							it.show = true
+						}
+					})
+				} else if (type == 2) {
+					this.footTxt = "打卡类型"
+					this.postKey = {
+						id: "task_tag_id",
+						name: "task_tag_name"
+					}
+					this.listArr = JSON.parse(JSON.stringify(this.leiTypes))
+					this.listArr.forEach(function (it) {
+						if (it.value == that.postData.task_tag_id) {
+							it.show = true
+						}
+					})
+				} else {
+					this.footTxt = "打卡形式"
+					this.postKey = {
+						id: "form",
+						name: "form_name"
+					}
+					this.listArr = JSON.parse(JSON.stringify(this.cardTypes))
+					this.listArr.forEach(function (it) {
+						if (it.value == that.postData.form) {
+							it.show = true
+						}
+					})
+				}
+				this.checkFoot(true)
+			},
+			checkLabel(it, i) {           //选择标签
+				this.listArr.map(function (item, index) {
+					item.show = false
+				})
+				// this.listArr[i].show = true;
+				it.show = true;
+				this.postData[this.postKey.id] = it.value
+				this.postData[this.postKey.name] = it.tit
+			}
+		}
+	});
+</script>
+
+</html>

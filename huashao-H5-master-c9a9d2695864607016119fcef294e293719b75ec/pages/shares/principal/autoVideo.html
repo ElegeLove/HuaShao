@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport"
+		    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<title>播放</title>
+		<link href="../../../allCss/principal/video-js.css" rel="stylesheet">
+		
+		<script src="../../../js/principal/video.js"></script>
+		<script src="../../../js/public/rem.js"></script>
+		<script src="../../../js/public/jquery-3.2.1.min.js"></script>
+		<link rel="stylesheet" href="../../../allCss/public.css">
+		<link rel="stylesheet" href="../../../allCss/vant.css">
+		<link rel="stylesheet" href="../../../allCss/principal/autoVideo.css">
+		
+	</head>
+	<body>
+		<div id="box" v-cloak>
+			<div class="top">
+			    <div class="topBox">
+			        <img class="topImg" @click="goBack" src="../../../images/student/ic_back_white.png" alt="">
+			        <div class="topTitle danshen">{{txt}}</div>
+					<p class="emptyssd"></p>
+			        <!-- <img class="topImg" @click="goShare(true)" src="../../../images/student/Ic_share_02.png" alt=""> -->
+			    </div>
+			</div>
+			<video id="example_video_1" class="video-js vjs-default-skin" controls preload="none" 
+			>	
+			<source :src="src" type="video/mp4"></source>
+			</video>
+		</div>
+	</body>
+	<script src="../../../js/public/vue.js"></script>
+	<script src="../../../js/public/vant.js"></script>
+	<script src="../../../js/public/index.js"></script>
+	<script>
+	    new Vue({
+	        el: '#box',
+	        data() {
+	            return {
+					txt:"",
+					src:""
+	            }
+	        },
+			created(){
+				var mess = JSON.parse(localStorage.getItem("videoMess"))
+				this.txt = mess.txt
+				this.src = mess.path
+			},
+			mounted(){
+				var player = videojs('example_video_1', {
+				    loop: true,
+					controls: true,
+					pausedtrue:false,
+					autoplay:true,
+					preload: "auto",
+				  });
+			},
+	        methods: {
+				goBack(){
+					history.go(-1)
+				}
+	        }
+	    });
+	</script>
+	
+</html>

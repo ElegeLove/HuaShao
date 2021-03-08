@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>我的荣誉</title>
+    <!-- head 中 -->
+    <script src="../../js/public/rem.js"></script>
+    <script src="../../js/public/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" href="../../allCss/public.css">
+    <link rel="stylesheet" href="../../allCss/vant.css">
+    <link rel="stylesheet" href="../../allCss/student/myHonor.css">
+</head>
+
+<body>
+    <div id="myHonor" v-cloak>
+        <div class="top">
+            <div class="topBox">
+                <img class="topImg" @click="goBack" src="../../images/student/icon_back.png" alt="">
+                <div class="topTitle">我的荣誉</div>
+                <div class="toptext" @click="goRule">规则</div>
+            </div>
+        </div>
+        <div class="tabs">
+            <div v-for="(item,index) in tabArr" :class="active==item.type?'antives':'tabsText'"
+                @click="check(item.type)">
+                <div>
+                    <img :src="item.imgPath" alt="">
+                    <div>{{item.title}}</div>
+                </div>
+            </div>
+        </div>
+        <div class="tabss">
+            <div :class="actives=='classes'?'antivess':'tabsText'" @click="checks('classes')">
+                <van-dropdown-menu active-color="#2EC5E0">
+                    <van-dropdown-item @change="changeVal" v-model="homework" :title='homeworkVal'
+                        :options="homeworkData" />
+                </van-dropdown-menu>
+            </div>
+            <div :class="actives=='school'?'antivess':'tabsText'" @click="checks('school')">
+                学校排行榜</div>
+        </div>
+        <div class="main">
+            <div class="main_top">
+                <div class="main_top_left">
+                    <div class="left_num">{{dataVal.my_ranking}}</div>
+                    <img :src="dataVal.head" alt="">
+                    <div class="left_name">{{dataVal.name}}</div>
+                    <div class="left_btn" @click="goDetails(activeIndex)">查看明细</div>
+                </div>
+                <div class="main_top_right"><span>x</span>&nbsp;{{dataVal.num}}</div>
+            </div>
+            <div class="list">
+                <div class="main_top" v-for="items in listData">
+                    <div class="main_top_left">
+                        <div class="left_num">{{items.ranking}}</div>
+                        <img :src="items.head" alt="">
+                        <div class="left_name">{{items.name}}</div>
+                    </div>
+                    <div class="main_top_right">x {{items.num}}</div>
+                </div>
+            </div>
+        </div>
+        <loadings ref="loadings" />
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('.content').css('minHeight', $(window).height() + 'px');
+        })
+    </script>
+</body>
+<script src="../../js/public/vue.js"></script>
+<script src="../../js/public/vant.js"></script>
+<script src="../../js/public/WebViewJavascriptBridge.js"></script>
+<script src="../../js/public/index.js"></script>
+<script>
+    new Vue({
+        el: '#myHonor',
+        data() {
+            return {
+                active: 'medal',
+                tabArr: [{
+                    title: '评优奖章',
+                    imgPath: '../../images/student/Pic_medal.png',
+                    type: 'medal'
+                }, {
+                    title: '打卡之星',
+                    imgPath: '../../images/student/Pic_star.png',
+                    type: 'star'
+                }, {
+                    title: '作业繁花',
+                    imgPath: '../../images/student/Pic_flower.png',
+                    type: 'flower'
+                },],
+                actives: 'classes',
+                tabArrs: [{
+                    title: '班级排行榜',
+                    type: 'classes'
+                }, {
+                    title: '学校排行榜',
+                    type: 'school'
+                },],
+                listData: [],
+                myVal: {},
+                dataVal: {},
+                homeworkData: [],
+                homework: 0,
+                homeworkVal: '',
+                classId: ''
+            }
+        },
+        created() {
+            var type;
+            if (localStorage.getItem('type')) {
+                type = localStorage.getItem('type');
+            } else {
+                type = GetQueryValue("type");
+            }
+            if (type == 'medal') {
+                this.activeIndex = 1;
+            } else if (type == 'star') {
+                this.activeIndex = 2;
+            } else {
+                this.activeIndex = 3;
+            }
+            this.active = type;
+        },
+        mounted () {
+            this.$refs.loadings.openLoading();
+            this.getClassList();
+        },
+        methods: {
+            goBack() {
+                localStorage.removeItem('type')
+                AndroidRouter('closePage', '');
+            },
+            goRule() {
+                localStorage.setItem('type', this.active);
+                location.href = './honorRules.html?goback=true'
+                // let url = 'student/honorRules.html';
+                // AndroidRouter('newPage', url);
+            },
+            //菜单栏选中--全部练习库
+            changeVal(val) {
+                let aa = this.homeworkData.filter(function (it) {
+                    return it.value == val;
+                })
+                this.homeworkVal = '班级排行榜-' + aa[0].text;
+                this.$refs.loadings.openLoading();
+                this.getInfo(this.active, this.actives, val);
+            },
+            getClassList() {
+                let that = this;
+                ajax('student/classes/classes_list', "POST", {}, function (res) {
+                    if (res.code == 1) {
+                        let arr = [];
+                        res.data.list.forEach(function (item, i) {
+                            let obj = {
+                                text: item.name,
+                                value: item.classes_id
+                            }
+                            arr.push(obj)
+                        });
+                        that.homework = arr[0].value;
+                        that.homeworkData = arr;
+                        that.homeworkVal = '班级排行榜-' + arr[0].text;
+                        
+                        that.getInfo(that.active, that.actives, arr[0].value);
+                    }
+                })
+            },
+            check(i) {
+                this.active = i;
+                if (i == 'medal') {
+                    this.activeIndex = 1;
+                } else if (i == 'star') {
+                    this.activeIndex = 2;
+                } else {
+                    this.activeIndex = 3;
+                }
+                this.actives = 'classes';
+                this.homework = this.homeworkData[0].value;
+                this.homeworkVal = '班级排行榜-' + this.homeworkData[0].text;
+                this.$refs.loadings.openLoading();
+                this.getInfo(i, this.actives, this.homeworkData[0].value);
+            },
+            checks(i) {
+                console.log(i)
+                this.actives = i;
+                if (i == 'school') {
+                    // this.classId = '';
+                    this.$refs.loadings.openLoading();
+                    this.getInfo(this.active, i);
+                }
+            },
+            getInfo(reward, ranking, homework) {
+                // vant.Toast.loading({
+                //     message: '',
+                //     forbidClick: true,
+                //     loadingType: 'spinner',
+                //     duration: 0,
+                //     icon: "../../images/loading.gif"
+                // });
+                // ranking_type 是 STRING 筛选类型(classes班级排行school学校排行)
+                // reward_type 是 STRING 筛选类型(flower花花排行star星星排行medal奖章排行)
+                let that = this;
+                ajax('student/honor/honer_ranking_list', "POST", {
+                    "ranking_type": ranking,
+                    "reward_type": reward,
+                    "classes_id": homework,
+                }, function (res) {
+                    if (res.code == 1) {
+                        that.listData = res.data.list;
+                        that.dataVal = res.data.student;
+                        // vant.Toast.clear();
+                        that.$refs.loadings.closedLoading();
+                    }
+                })
+            },
+            goDetails(i) {
+                localStorage.setItem('type', this.active)
+                location.href = './honorDetails.html?type=' + i;
+                // let url = 'student/honorDetails.html?type=' + i;
+                // AndroidRouter('newPage', url);
+            },
+            replaceParamVal(paramName, replaceWith) {
+                var oUrl = location.href.toString();
+                var re = eval('/(' + paramName + '=)([^&]*)/gi');
+                var nUrl = oUrl.replace(re, paramName + '=' + replaceWith);
+                location = nUrl;
+                window.location.href = nUrl
+            }
+        }
+    });
+</script>
+
+</html>
